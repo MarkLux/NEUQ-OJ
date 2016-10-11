@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Shanghai',
 
     /*
     |--------------------------------------------------------------------------
@@ -151,10 +151,10 @@ return [
         /*
          * Application Service Providers...
          */
-        App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
+        NEUQOJ\Providers\AppServiceProvider::class,
+        NEUQOJ\Providers\AuthServiceProvider::class,
+        NEUQOJ\Providers\EventServiceProvider::class,
+        NEUQOJ\Providers\RouteServiceProvider::class,
 
     ],
 

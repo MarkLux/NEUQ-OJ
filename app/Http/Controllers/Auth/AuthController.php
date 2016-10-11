@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace NEUQOJ\Http\Controllers\Auth;
 
-use App\User;
+use NEUQOJ\User;
 use Validator;
-use App\Http\Controllers\Controller;
+use NEUQOJ\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 

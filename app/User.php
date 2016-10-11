@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace NEUQOJ;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 

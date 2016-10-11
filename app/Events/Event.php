@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events;
+namespace NEUQOJ\Events;
 
 abstract class Event
 {

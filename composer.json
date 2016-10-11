@@ -1,6 +1,6 @@
 {
-    "name": "laravel/laravel",
-    "description": "The Laravel Framework.",
+    "name": "neuqeroj/laravel",
+    "description": "NEUQ-OJ",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
     "type": "project",
@@ -20,7 +20,8 @@
             "database"
         ],
         "psr-4": {
-            "App\\": "app/"
+            "NEUQOJ\\": "app/",
+            "NEUQOJ\\Repository\\":"repository/src/"
         }
     },
     "autoload-dev": {
