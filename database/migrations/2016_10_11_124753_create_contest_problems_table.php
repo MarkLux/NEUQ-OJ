@@ -16,7 +16,7 @@ class CreateContestProblemsTable extends Migration
             $table->bigInteger('contest_id');
             $table->bigInteger('problem_id');
             $table->string('title',200);
-            $table->integer('num');
+            $table->integer('num')->default(0);
             $table->timestamps();
         });
     }
