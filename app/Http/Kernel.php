@@ -3,6 +3,7 @@
 namespace NEUQOJ\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use NEUQOJ\Http\Middleware\FlowControllerMiddleware;
 
 class Kernel extends HttpKernel
 {
@@ -49,5 +50,6 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Foundation\Http\Middleware\Authorize::class,
         'guest' => \NEUQOJ\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'flow' => FlowControllerMiddleware::class,
     ];
 }

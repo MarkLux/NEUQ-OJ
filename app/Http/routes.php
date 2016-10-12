@@ -10,8 +10,10 @@
 | and give it the controller to call when that URI is requested.
 |
 */
+Route::group(['middleware' => 'flow'], function () {
 
-Route::get('/', function (\NEUQOJ\Repository\Eloquent\Table1Repository $repository) {
-    return $repository->getByMult(['id' => 1, 'name' => 'trons'],['name']);
-    return view('welcome');
+    Route::get('/', function (\NEUQOJ\Repository\Eloquent\Table1Repository $repository) {
+        return view('welcome');
+    });
 });
+
