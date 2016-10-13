@@ -4,9 +4,9 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Table1 extends Model
+class Token extends Model
 {
-    protected $table = 'table1';
     public $timestamps = false;
-    protected $guarded = [];
+
+    //
 }
