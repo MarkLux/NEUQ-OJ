@@ -3,6 +3,8 @@
 namespace NEUQOJ\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\Redis;
+use League\Flysystem\Exception;
 use NEUQOJ\Common\FlowToken;
 use NEUQOJ\Common\RedisHelper;
 use NEUQOJ\Common\Utils;
@@ -20,7 +22,6 @@ class FlowControllerMiddleware
     public function handle($request, Closure $next, $cost = 1)
     {
         $userId = 1;
-
         $cache = RedisHelper::command('Hmget', 'userId' . $userId, [
             'token',
             'time'
@@ -31,11 +32,6 @@ class FlowControllerMiddleware
                 'token' => FlowToken::DEFAULT_TOKEN,
                 'time' => Utils::createTimeStamp()
             ];
-        } else {
-            $cache = RedisHelper::command('Hmget', 'userId' . $userId, [
-                'token',
-                'time'
-            ]);
         }
 
         list($isAllow, $current) = FlowToken::isAllow($cost, $cache['token'], $cache['time']);

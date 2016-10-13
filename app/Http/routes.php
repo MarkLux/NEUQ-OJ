@@ -10,9 +10,9 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-Route::group(['middleware' => 'flow'], function () {
+Route::group(['middleware' => 'flow:100'], function () {
 
-    Route::get('/', function (\NEUQOJ\Repository\Eloquent\Table1Repository $repository) {
+    Route::get('/', function () {
         return view('welcome');
     });
 });
