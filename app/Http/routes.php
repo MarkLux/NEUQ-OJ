@@ -11,7 +11,7 @@
 |
 */
 
-Route::get('/', function (\NEUQOJ\Repository\Eloquent\Table1Repository $repository) {
-    return $repository->getByMult(['id' => 1, 'name' => 'trons'],['name']);
+Route::get('/', function (\NEUQOJ\Repository\Eloquent\RoleRepository $repository) {
+    return $repository->getByMult(['id' => 1, 'name' => 'ff'],['name']);
     return view('welcome');
 });
