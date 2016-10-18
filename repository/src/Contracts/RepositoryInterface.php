@@ -16,4 +16,5 @@ interface RepositoryInterface
     function insert(array $data);
     function update(array $data, $id, $attribute="id");
     function delete($id);
+    function paginate($page = 1, $size = 15, $params = [] ,$columns = ['*']);
 }

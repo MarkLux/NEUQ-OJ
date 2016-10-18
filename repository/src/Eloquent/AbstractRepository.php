@@ -50,7 +50,7 @@ abstract class AbstractRepository implements RepositoryInterface
     function insert(array $data)
     {
         return $this->model
-            ->create($data);
+            ->insert($data);
     }
 
     function update(array $data, $id, $attribute="id")
@@ -64,5 +64,17 @@ abstract class AbstractRepository implements RepositoryInterface
     {
         return $this->model
             ->destory($id);
+    }
+
+    function paginate($page = 1, $size = 15, $param = [], $columns = ['*'])
+    {
+        $qb = $this->model;
+        if(!empty($size))
+            $qb->where($param);
+        return $qb
+            ->skip($size * --$page)
+            ->take($size)
+            ->get($columns);
+
     }
 }
