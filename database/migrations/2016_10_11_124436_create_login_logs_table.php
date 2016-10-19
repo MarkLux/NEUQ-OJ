@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateDiscussionTable extends Migration
+class CreateLoginLogsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,14 +12,12 @@ class CreateDiscussionTable extends Migration
      */
     public function up()
     {
-        Schema::create('discussion', function ($table) {
-            $table->increments('id');;
-            $table->bigInteger('problem_id');
+        Schema::create('login_logs', function (Blueprint $table) {
+            $table->increments('id');
             $table->bigInteger('user_id');
-            $table->bigInteger('father');
-            $table->text('content');
-            $table->string('ip');
-
+            $table->string('ip',100);
+            $table->dateTime('time');
+            $table->timestamps();
         });
     }
 
@@ -30,6 +28,6 @@ class CreateDiscussionTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('login_logs');
     }
 }

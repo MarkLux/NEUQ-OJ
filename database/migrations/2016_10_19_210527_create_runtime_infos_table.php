@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateNewsTable extends Migration
+class CreateRuntimeInfosTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,13 +12,10 @@ class CreateNewsTable extends Migration
      */
     public function up()
     {
-        Schema::create('news', function ($table) {
-            $table->increments('id');;
-            $table->bigInteger('author_id');
-            $table->string('title');
-            $table->text('content');
-            $table->tinyInteger('importance');
-
+        Schema::create('runtime_infos', function (Blueprint $table) {
+            $table->bigInteger('solution_id');
+            $table->text('error');
+            $table->timestamps();
         });
     }
 
@@ -29,6 +26,6 @@ class CreateNewsTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('runtime_infos');
     }
 }

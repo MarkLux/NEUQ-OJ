@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMessageRelationTable extends Migration
+class CreateUserPrivilegesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,15 +12,12 @@ class CreateMessageRelationTable extends Migration
      */
     public function up()
     {
-        Schema::create('message_relation', function ($table) {
-            $table->integer('id');
-            $table->integer('conversation_id');
-            $table->integer('message_id');
-            $table->boolean('is_read');
+        Schema::create('user_privileges', function (Blueprint $table) {
+            $table->bigInteger('user_id');
+            $table->integer('privilege_id');
+            $table->timestamps();
         });
     }
-
-
 
     /**
      * Reverse the migrations.
@@ -29,6 +26,6 @@ class CreateMessageRelationTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('user_privileges');
     }
 }

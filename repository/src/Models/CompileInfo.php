@@ -4,7 +4,7 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class MessageRelation extends Model
+class CompileInfo extends Model
 {
     //
 }

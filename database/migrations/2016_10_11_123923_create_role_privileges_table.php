@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProblemKeyTable extends Migration
+class CreateRolePrivilegesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,13 +12,10 @@ class CreateProblemKeyTable extends Migration
      */
     public function up()
     {
-        Schema::create('problem_key', function ($table) {
-            $table->increments('problem_id');
-            $table->string('title');
-            $table->text('key');
-            $table->bigInteger('author_id');
-            $table->string('author_name');
-
+        Schema::create('role_privileges', function (Blueprint $table) {
+            $table->integer('role_id');
+            $table->integer('privilege_id');
+            $table->timestamps();
         });
     }
 
@@ -29,6 +26,6 @@ class CreateProblemKeyTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('role_privileges');
     }
 }
