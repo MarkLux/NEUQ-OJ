@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateRolePrivilegesTable extends Migration
+class CreateProblemGroupAdmissionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,9 +12,10 @@ class CreateRolePrivilegesTable extends Migration
      */
     public function up()
     {
-        Schema::create('role_privileges', function (Blueprint $table) {
-            $table->integer('role_id');
-            $table->integer('privilege_id');
+        Schema::create('problem_group_admissions', function (Blueprint $table) {
+            $table->bigInteger('problem_group_id');
+            $table->bigInteger('user_group_id');
+            $table->primary(['problem_group_id','user_group_id']);
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ class CreateRolePrivilegesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('role_privileges');
+        Schema::drop('problem_group_admissions');
     }
 }

@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateSourceCodesTable extends Migration
+class CreateMessageRelationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,11 +12,11 @@ class CreateSourceCodesTable extends Migration
      */
     public function up()
     {
-        Schema::create('source_codes', function (Blueprint $table) {
-            $table->bigInteger('solution_id');
-            $table->text('source');
-            $table->boolean('private');
-            $table->string('password',45);
+        Schema::create('message_relations', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('conversation_id');
+            $table->integer('message_id');
+            $table->enum('choices',['0','1']);
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ class CreateSourceCodesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('source_codes');
+        Schema::drop('message_relations');
     }
 }

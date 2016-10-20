@@ -4,7 +4,7 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProblemCategoryRelation extends Model
+class Config extends Model
 {
     //
 }
