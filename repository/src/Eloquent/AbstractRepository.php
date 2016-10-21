@@ -1,8 +1,11 @@
 <?php
 namespace NEUQOJ\Repository\Eloquent;
+use Carbon\Carbon;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 use NEUQOJ\Repository\Contracts\RepositoryInterface;
+use NEUQOJ\Repository\Models\News;
 
 /**
  * Created by PhpStorm.
@@ -12,8 +15,10 @@ use NEUQOJ\Repository\Contracts\RepositoryInterface;
  */
 abstract class AbstractRepository implements RepositoryInterface
 {
-    /** @var Model $model */
+    /** @var Builder $model */
     private $model;
+
+    protected $timestamps = true;
 
     function __construct(Container $app)
     {
@@ -49,12 +54,50 @@ abstract class AbstractRepository implements RepositoryInterface
 
     function insert(array $data)
     {
+        if($this->timestamps){
+            $current = new Carbon();
+
+            if(! is_array(reset($data))){
+                $data = array_merge($data,
+                    [
+                        'created_at' => $current,
+                        'updated_at' => $current,
+                    ]);
+            }else{
+                foreach ($data as  $key => $value) {
+                    $data[$key] = array_merge($value,
+                        [
+                            'created_at' => $current,
+                            'updated_at' => $current,
+                        ]);
+                }
+            }
+
+        }
         return $this->model
             ->insert($data);
     }
 
     function update(array $data, $id, $attribute="id")
     {
+        if($this->timestamps){
+            $current = new Carbon();
+
+            if(! is_array(reset($data))){
+                $data = array_merge($data,
+                    [
+                        'updated_at' => $current,
+                    ]);
+            }else{
+                foreach ($data as  $key => $value) {
+                    $data[$key] = array_merge($value,
+                        [
+                            'updated_at' => $current,
+                        ]);
+                }
+            }
+
+        }
         return $this->model
             ->where($attribute, '=', $id)
             ->update($data);
@@ -76,5 +119,10 @@ abstract class AbstractRepository implements RepositoryInterface
             ->take($size)
             ->get($columns);
 
+    }
+
+    private function freshTimestamp()
+    {
+        return new Carbon;
     }
 }
