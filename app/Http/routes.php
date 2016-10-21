@@ -11,7 +11,8 @@
 |
 */
 
-Route::get('/', function (\NEUQOJ\Repository\Eloquent\RoleRepository $repository) {
-    return $repository->getByMult(['id' => 1, 'name' => 'ff'],['name']);
+Route::get('/', function (\NEUQOJ\Repository\Eloquent\UserRepository $repository) {
     return view('welcome');
 });
+
+Route::post('/register','AuthController@register');

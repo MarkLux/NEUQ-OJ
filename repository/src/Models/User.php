@@ -1,6 +1,6 @@
 <?php
 
-namespace NEUQOJ;
+namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
