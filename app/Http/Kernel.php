@@ -29,7 +29,7 @@ class Kernel extends HttpKernel
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \NEUQOJ\Http\Middleware\VerifyCsrfToken::class,
+//            \NEUQOJ\Http\Middleware\VerifyCsrfToken::class,
         ],
 
         'api' => [
