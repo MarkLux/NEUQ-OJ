@@ -8,6 +8,8 @@
 
 namespace NEUQOJ\Repository\Eloquent;
 
+use Illuminate\Contracts\Auth\Authenticatable;
+
 class UserRepository extends AbstractRepository
 {
     function model()

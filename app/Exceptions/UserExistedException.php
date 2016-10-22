@@ -11,5 +11,5 @@ namespace NEUQOJ\Exceptions;
 
 class UserExistedException extends BaseException
 {
-    protected $code = 20003;
+    protected $code = 1001;
 }

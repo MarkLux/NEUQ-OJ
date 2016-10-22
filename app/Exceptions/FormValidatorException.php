@@ -9,10 +9,10 @@
 namespace NEUQOJ\Exceptions;
 
 
-class ValidatorException extends BaseException
+class FormValidatorException extends BaseException
 {
 
-    protected $code = 20004;
+    protected $code = 1005;
 
     public function __construct(array $data=[''])
     {
