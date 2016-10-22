@@ -43,6 +43,8 @@ class AuthController extends Controller
          *Need VerifyCode check here...
           */
 
+//        dd($user);
+
         $userRepository->insert($user);
 
         return response()->json([
