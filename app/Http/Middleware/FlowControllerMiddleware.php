@@ -21,6 +21,9 @@ class FlowControllerMiddleware
      */
     public function handle($request, Closure $next, $cost = 1)
     {
+        if(!env('IS_REDIS', false)){
+            return $next($request);
+        }
         $userId = 1;
         $cache = RedisHelper::command('Hmget', 'userId' . $userId, [
             'token',
