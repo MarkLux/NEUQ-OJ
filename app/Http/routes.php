@@ -10,10 +10,11 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-Route::group(['middleware' => 'flow:100'], function () {
 
-    Route::get('/', function () {
-        return view('welcome');
-    });
+Route::get('/', function () {
+    return 'here is the main page!!';
 });
 
+Route::post('/register','AuthController@register');
+
+Route::post('/login','AuthController@login');
