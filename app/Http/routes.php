@@ -11,8 +11,8 @@
 |
 */
 
-Route::get('/', function (\NEUQOJ\Repository\Eloquent\UserRepository $repository) {
-    return view('welcome');
+Route::get('/', function () {
+    return 'here is the main page!!';
 });
 
 Route::post('/register','AuthController@register');
