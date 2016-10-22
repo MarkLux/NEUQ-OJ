@@ -14,7 +14,7 @@ class CreateUserGroupRelationsTable extends Migration
     {
         Schema::create('user_group_relations', function (Blueprint $table) {
             $table->bigInteger('group_id');
-            $table->bigInteger('user_id')->primary();
+            $table->bigInteger('user_id');
             $table->string('user_name',100);
             $table->string('user_code',45);
             $table->string('user_tag',100);
