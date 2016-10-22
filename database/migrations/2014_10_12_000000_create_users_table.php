@@ -23,7 +23,7 @@ class CreateUsersTable extends Migration
             $table->string('school',100);
             $table->bigInteger('code_length');
             $table->string('signature',512);
-            $table->string('avatar',100);
+            $table->tinyInteger('status');
             $table->rememberToken();
             $table->timestamps();
         });

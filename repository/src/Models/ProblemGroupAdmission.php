@@ -4,7 +4,7 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class CompileInfo extends Model
+class ProblemGroupAdmission extends Model
 {
     //
 }
