@@ -101,6 +101,8 @@ class AuthController extends Controller
         if($user == null)
             throw new UserNotExistException();
 
+//        dd($user->password);
+
         if(!Hash::check($request->password,$user->password))
             throw new PasswordErrorException();
 
@@ -141,4 +143,5 @@ class AuthController extends Controller
         ]);
 
     }
+
 }
