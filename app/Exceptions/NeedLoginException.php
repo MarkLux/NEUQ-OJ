@@ -12,4 +12,6 @@ namespace NEUQOJ\Exceptions;
 class NeedLoginException extends BaseException
 {
     protected $code = 1004;
+
+    protected $data = "Need Login";
 }

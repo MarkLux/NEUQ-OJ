@@ -12,4 +12,6 @@ namespace NEUQOJ\Exceptions;
 class PasswordErrorException extends BaseException
 {
     protected $code = 1003;
+
+    protected $data = "Password Error";
 }

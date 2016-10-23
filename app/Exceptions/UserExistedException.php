@@ -12,4 +12,6 @@ namespace NEUQOJ\Exceptions;
 class UserExistedException extends BaseException
 {
     protected $code = 1001;
+
+    protected $data = "User Existed";
 }
