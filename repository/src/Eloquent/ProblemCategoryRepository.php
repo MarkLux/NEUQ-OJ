@@ -7,7 +7,7 @@
  */
 namespace NEUQOJ\Repository\Eloquent;
 
-class CategoryRepository extends AbstractRepository
+class ProblemCategoryRepository extends AbstractRepository
 {
     public function model()
     {
