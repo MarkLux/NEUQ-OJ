@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProblemKeyTable extends Migration
+class CreateProblemKeysTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,13 +12,13 @@ class CreateProblemKeyTable extends Migration
      */
     public function up()
     {
-        Schema::create('problem_key', function ($table) {
-            $table->increments('problem_id');
-            $table->string('title');
+        Schema::create('problem_keys', function (Blueprint $table) {
+            $table->bigInteger('problem_id')->primary();
+            $table->string('title',100);
             $table->text('key');
             $table->bigInteger('author_id');
             $table->string('author_name');
-
+            $table->timestamps();
         });
     }
 
@@ -29,6 +29,6 @@ class CreateProblemKeyTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('problem_keys');
     }
 }

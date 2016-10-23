@@ -4,7 +4,7 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ContestProblem extends Model
+class ProblemGroup extends Model
 {
     //
 }

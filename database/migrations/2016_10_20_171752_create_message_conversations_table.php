@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMessageCoversationTable extends Migration
+class CreateMessageConversationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,18 +12,17 @@ class CreateMessageCoversationTable extends Migration
      */
     public function up()
     {
-
-        Schema::create('message_conversation', function ($table) {
-            $table->increments('id');;
+        Schema::create('message_conversations', function (Blueprint $table) {
+            $table->increments('id');
             $table->bigInteger('from_id');
-            $table->bigInteger('to_id');
+            $table->bigInteger('told');
             $table->integer('message_num');
             $table->integer('latest_message_user_id');
             $table->integer('latest_message_time');
             $table->text('latest_message_content');
-            $table->enum('type' ,['text','image','video','audio']);
+            $table->enum('choices',['text','image','vedio','audio']);
             $table->integer('unread_num');
-
+            $table->timestamps();
         });
     }
 
@@ -34,6 +33,6 @@ class CreateMessageCoversationTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('message_conversations');
     }
 }

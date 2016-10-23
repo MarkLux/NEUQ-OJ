@@ -16,7 +16,7 @@ class CreateProblemCategoryRelationsTable extends Migration
             $table->bigInteger('problem_id');
             $table->integer('category_id');
             $table->string('problem_title',100);
-            $table->string('category_name',45);
+            $table->string('category_title',45);
             $table->timestamps();
         });
     }

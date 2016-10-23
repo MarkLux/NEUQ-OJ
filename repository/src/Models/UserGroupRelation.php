@@ -4,7 +4,7 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProblemKey extends Model
+class UserGroupRelation extends Model
 {
     //
 }

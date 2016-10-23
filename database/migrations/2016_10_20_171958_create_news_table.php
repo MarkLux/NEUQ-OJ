@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateSourceCodesTable extends Migration
+class CreateNewsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,11 +12,12 @@ class CreateSourceCodesTable extends Migration
      */
     public function up()
     {
-        Schema::create('source_codes', function (Blueprint $table) {
-            $table->bigInteger('solution_id');
-            $table->text('source');
-            $table->boolean('private');
-            $table->string('password',45);
+        Schema::create('news', function (Blueprint $table) {
+            $table->increments('id');
+            $table->bigInteger('author_id');
+            $table->string('title',100);
+            $table->text('content');
+            $table->tinyInteger('importance');
             $table->timestamps();
         });
     }
@@ -28,6 +29,6 @@ class CreateSourceCodesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('source_codes');
+        Schema::drop('news');
     }
 }

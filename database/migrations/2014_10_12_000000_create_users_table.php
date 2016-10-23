@@ -18,11 +18,12 @@ class CreateUsersTable extends Migration
             $table->string('mobile',45);
             $table->integer('submit');
             $table->integer('solved');
-            $table->string('password',45);
-            $table->dateTime('reg_time');
+            $table->string('password',255);
             $table->string('name',100);
             $table->string('school',100);
             $table->bigInteger('code_length');
+            $table->string('signature',512);
+            $table->tinyInteger('status');
             $table->rememberToken();
             $table->timestamps();
         });

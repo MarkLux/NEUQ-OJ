@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePrivilegesTable extends Migration
+class CreateSourceCodesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,10 +12,11 @@ class CreatePrivilegesTable extends Migration
      */
     public function up()
     {
-        Schema::create('privileges', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name',45);
-            $table->string('description',100);
+        Schema::create('source_codes', function (Blueprint $table) {
+            $table->bigInteger('solution_id')->primary();
+            $table->text('source');
+            $table->boolean('private');
+            $table->string('password',45);
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ class CreatePrivilegesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('privileges');
+        Schema::drop('source_codes');
     }
 }

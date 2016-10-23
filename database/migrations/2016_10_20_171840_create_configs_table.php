@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMessageRelationTable extends Migration
+class CreateConfigsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,15 +12,12 @@ class CreateMessageRelationTable extends Migration
      */
     public function up()
     {
-        Schema::create('message_relation', function ($table) {
-            $table->integer('id');
-            $table->integer('conversation_id');
-            $table->integer('message_id');
-            $table->boolean('is_read');
+        Schema::create('configs', function (Blueprint $table) {
+            $table->string('key',100);
+            $table->string('value',100);
+            $table->timestamps();
         });
     }
-
-
 
     /**
      * Reverse the migrations.
@@ -29,6 +26,6 @@ class CreateMessageRelationTable extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('configs');
     }
 }
