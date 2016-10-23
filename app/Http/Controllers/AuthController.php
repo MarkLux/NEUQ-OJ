@@ -26,14 +26,14 @@ class AuthController extends Controller
     {
 
         //手机和邮箱都应该检查
-        $user = $userRepository->getBy('email',$request->email);
+        $user = $userRepository->getBy('email',$request->email)->first();
 
-        if($user->all()!=null)
+        if($user!=null)
             throw new UserExistedException();
 
         $user = $userRepository->getBy('mobile',$request->mobile);
 
-        if($user->all()!=null)
+        if($user!=null)
             throw new UserExistedException();
 
         //可以考虑修改错误信息为自定义中文
@@ -74,7 +74,6 @@ class AuthController extends Controller
     {
         //先验证输入数据,method是登陆方式，可选手机或者邮箱
         $validator = Validator::make($request->all(),[
-            'login_method' => 'required',
             'name' => 'required|max:100',
             'identifier' => 'required|max:100',
             'password' => 'required|min:6'
@@ -87,16 +86,18 @@ class AuthController extends Controller
             throw new FormValidatorException($data);
         }
 
-        if($request->login_method == 'email')
+        $patternEmail = '/\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/';
+        $patternMobile ='/(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}/';
+        if(preg_match($patternEmail,$request->identifier))
         {
             $user = $userRepository->getBy('email',$request->identifier)->first();
         }
-        elseif ($request->login_method == 'mobile')
+        elseif (preg_match($patternMobile,$request->identifier))
         {
-            $user = $userRepository->getBy('mobile',$request->indentifier)->first();
+            $user = $userRepository->getBy('mobile',$request->identifier)->first();
         }
         else
-            throw new FormValidatorException(['Wrong Param For Method']);
+            throw new FormValidatorException(['Wrong Param']);
 
         if($user == null)
             throw new UserNotExistException();
@@ -106,16 +107,19 @@ class AuthController extends Controller
         if(!Hash::check($request->password,$user->password))
             throw new PasswordErrorException();
 
+//        dd($user);
+
         //为该登陆用户生成token
 
         $token = $tokenRepository->getBy('user_id',$user->id)->first();
 
         if($token == null)
         {
+            $tokenStr = md5(uniqid());
             $time = time();
             $data = [
                 'user_id' => $user->id,
-                'token' => md5(uniqid()),
+                'token' => $tokenStr,
                 'created_at' => $time,
                 'updated_at' => $time,
                 'expires_at' => $time + 1728000000,
@@ -126,8 +130,9 @@ class AuthController extends Controller
         else
         {
             $time = time();
+            $tokenStr = md5(uniqid());
             $data = [
-                'token' => md5(uniqid()),
+                'token' => $tokenStr,
                 'updated_at' => $time,
                 'expires_at' => $time+1728000000
             ];
@@ -138,7 +143,7 @@ class AuthController extends Controller
             'code' => '0',
             'data' => [
                 'user' => $user,
-                'token' => $token->token
+                'token' => $tokenStr
             ]
         ]);
 

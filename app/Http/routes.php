@@ -18,3 +18,9 @@ Route::get('/', function () {
 Route::post('/register','AuthController@register');
 
 Route::post('/login','AuthController@login');
+
+Route::group(['middleware' => 'token'],function (){
+    Route::get('/profile',function (){
+        return "hello";
+    });
+});

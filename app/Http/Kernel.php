@@ -51,5 +51,6 @@ class Kernel extends HttpKernel
         'guest' => \NEUQOJ\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'flow' => FlowControllerMiddleware::class,
+        'token' => \NEUQOJ\Http\Middleware\TokenMiddleware::class
     ];
 }

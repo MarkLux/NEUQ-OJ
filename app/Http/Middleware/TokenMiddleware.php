@@ -18,19 +18,32 @@ class TokenMiddleware
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next,TokenRepository $tokenRepository,UserRepository $userRepository)
+
+    protected $userRepository;
+    protected $tokenRepository;
+
+    public function __construct(UserRepository $ur,TokenRepository $tr)
     {
+        $this->userRepository = $ur;
+        $this->tokenRepository = $tr;
+    }
+
+    public function handle($request, Closure $next)
+    {
+
         if(!$request->hasHeader('token'))
             throw new NeedLoginException();
 
         $tokenStr = $request->header('token');
-        $token = $tokenRepository->getBy('token',$tokenStr)->first();
+
+        $token = $this->tokenRepository->getBy('token',$tokenStr)->first();
+
         if($token == null)
             throw new NeedLoginException();
 
         if($token->expires_at < time())
             throw new TokenExpireException();
-        $user = $userRepository->get($token->user_id);
+        $user = $this->userRepository->get($token->user_id);
 
         $request->user = $user;
         return $next($request);
