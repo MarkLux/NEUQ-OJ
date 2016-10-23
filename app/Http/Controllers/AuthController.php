@@ -28,12 +28,12 @@ class AuthController extends Controller
         //手机和邮箱都应该检查
         $user = $userRepository->getBy('email',$request->email);
 
-        if($user->all()!=null)
+        if($user->first()!=null)
             throw new UserExistedException();
 
         $user = $userRepository->getBy('mobile',$request->mobile);
 
-        if($user->all()!=null)
+        if($user->first()!=null)
             throw new UserExistedException();
 
         //可以考虑修改错误信息为自定义中文
