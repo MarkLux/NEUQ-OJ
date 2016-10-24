@@ -72,7 +72,6 @@ class AuthController extends Controller
 
     public function login(Request $request,UserRepository $userRepository,TokenRepository $tokenRepository)
     {
-        //先验证输入数据,method是登陆方式，可选手机或者邮箱
         $validator = Validator::make($request->all(),[
             'name' => 'required|max:100',
             'identifier' => 'required|max:100',
@@ -85,6 +84,8 @@ class AuthController extends Controller
 
             throw new FormValidatorException($data);
         }
+
+        //正则验证登陆方式
 
         $patternEmail = '/\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/';
         $patternMobile ='/(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}/';
@@ -106,8 +107,6 @@ class AuthController extends Controller
 
         if(!Hash::check($request->password,$user->password))
             throw new PasswordErrorException();
-
-//        dd($user);
 
         //为该登陆用户生成token
 
