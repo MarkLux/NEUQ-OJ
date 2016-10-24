@@ -31,7 +31,7 @@ class AuthController extends Controller
         if($user!=null)
             throw new UserExistedException();
 
-        $user = $userRepository->getBy('mobile',$request->mobile);
+        $user = $userRepository->getBy('mobile',$request->mobile)->first();
 
         if($user!=null)
             throw new UserExistedException();

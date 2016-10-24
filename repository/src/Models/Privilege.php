@@ -1,6 +1,6 @@
 <?php
 
-namespace NEUQOJ\..\repository\src\Models;
+namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
