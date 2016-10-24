@@ -10,6 +10,7 @@ namespace NEUQOJ\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserExistedException;
@@ -17,6 +18,7 @@ use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Http\Controllers\Controller;
 use NEUQOJ\Repository\Eloquent\TokenRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
+use NEUQOJ\Services\TokenService;
 use Validator;
 
 class AuthController extends Controller
@@ -24,18 +26,6 @@ class AuthController extends Controller
 
     public function register(Request $request,UserRepository $userRepository)
     {
-
-        //手机和邮箱都应该检查
-        $user = $userRepository->getBy('email',$request->email)->first();
-
-        if($user!=null)
-            throw new UserExistedException();
-
-        $user = $userRepository->getBy('mobile',$request->mobile)->first();
-
-        if($user!=null)
-            throw new UserExistedException();
-
         //可以考虑修改错误信息为自定义中文
         $validator = Validator::make($request->all(),[
             'name' => 'required|max:100',
@@ -50,6 +40,17 @@ class AuthController extends Controller
 
             throw new FormValidatorException($data);
         }
+
+        //手机和邮箱都应该检查
+        $user = $userRepository->getBy('email',$request->email)->first();
+
+        if($user!=null)
+            throw new UserExistedException();
+
+        $user = $userRepository->getBy('mobile',$request->mobile)->first();
+
+        if($user!=null)
+            throw new UserExistedException();
 
         $user= [
             'name' => $request->name,
@@ -70,7 +71,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request,UserRepository $userRepository,TokenRepository $tokenRepository)
+    public function login(Request $request,TokenService $tokenService,UserRepository $userRepository)
     {
         $validator = Validator::make($request->all(),[
             'name' => 'required|max:100',
@@ -87,13 +88,11 @@ class AuthController extends Controller
 
         //正则验证登陆方式
 
-        $patternEmail = '/\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/';
-        $patternMobile ='/(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}/';
-        if(preg_match($patternEmail,$request->identifier))
+        if(Utils::IsEmail($request->identifier))
         {
             $user = $userRepository->getBy('email',$request->identifier)->first();
         }
-        elseif (preg_match($patternMobile,$request->identifier))
+        elseif (Utils::IsMobile($request->identifier))
         {
             $user = $userRepository->getBy('mobile',$request->identifier)->first();
         }
@@ -110,33 +109,35 @@ class AuthController extends Controller
 
         //为该登陆用户生成token
 
-        $token = $tokenRepository->getBy('user_id',$user->id)->first();
+        $tokenStr = $tokenService->makeToken($user->id,$request->ip());
 
-        if($token == null)
-        {
-            $tokenStr = md5(uniqid());
-            $time = time();
-            $data = [
-                'user_id' => $user->id,
-                'token' => $tokenStr,
-                'created_at' => $time,
-                'updated_at' => $time,
-                'expires_at' => $time + 1728000000,
-                'ip' => $request->ip()
-            ];
-            $tokenRepository->insert($data);
-        }
-        else
-        {
-            $time = time();
-            $tokenStr = md5(uniqid());
-            $data = [
-                'token' => $tokenStr,
-                'updated_at' => $time,
-                'expires_at' => $time+1728000000
-            ];
-            $tokenRepository->update($data,$token->id);
-        }
+//        $token = $tokenRepository->getBy('user_id',$user->id)->first();
+//
+//        if($token == null)
+//        {
+//            $tokenStr = md5(uniqid());
+//            $time = Utils::createTimeStamp();
+//            $data = [
+//                'user_id' => $user->id,
+//                'token' => $tokenStr,
+//                'created_at' => $time,
+//                'updated_at' => $time,
+//                'expires_at' => $time + 1728000000,
+//                'ip' => $request->ip()
+//            ];
+//            $tokenRepository->insert($data);
+//        }
+//        else
+//        {
+//            $time = time();
+//            $tokenStr = md5(uniqid());
+//            $data = [
+//                'token' => $tokenStr,
+//                'updated_at' => $time,
+//                'expires_at' => $time+1728000000
+//            ];
+//            $tokenRepository->update($data,$token->id);
+//        }
 
         return response()->json([
             'code' => '0',
