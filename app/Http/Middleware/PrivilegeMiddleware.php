@@ -27,21 +27,23 @@ class PrivilegeMiddleware
         $this->usrPriRepo = $usrPriRepository;
     }
 
-    public function handle($request, Closure $next,$priStr)
+    public function handle($request, Closure $next, ... $params)
     {
-        $privilege = $this->priRepo->getBy('name',$priStr)->first();
+        foreach ($params as $priStr) {
 
-        if($privilege == null)
-            throw new PrivilegeNotExistException();
+            $privilege = $this->priRepo->getBy('name', $priStr)->first();
 
-        $result = $this->usrPriRepo->getByMult([
-            'user_id' => $request->user->id,
-            'privilege_id' => $privilege->id
-        ])->first();
+            if($privilege == null)
+                throw new PrivilegeNotExistException();
 
-        if($result == null)
-            throw new NoPermissionException();
+            $result = $this->usrPriRepo->getByMult([
+                'user_id' => $request->user->id,
+                'privilege_id' => $privilege->id
+            ])->first();
 
+            if ($result == null)
+                throw new NoPermissionException();
+        }
 
         return $next($request);
     }

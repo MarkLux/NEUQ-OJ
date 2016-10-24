@@ -111,34 +111,6 @@ class AuthController extends Controller
 
         $tokenStr = $tokenService->makeToken($user->id,$request->ip());
 
-//        $token = $tokenRepository->getBy('user_id',$user->id)->first();
-//
-//        if($token == null)
-//        {
-//            $tokenStr = md5(uniqid());
-//            $time = Utils::createTimeStamp();
-//            $data = [
-//                'user_id' => $user->id,
-//                'token' => $tokenStr,
-//                'created_at' => $time,
-//                'updated_at' => $time,
-//                'expires_at' => $time + 1728000000,
-//                'ip' => $request->ip()
-//            ];
-//            $tokenRepository->insert($data);
-//        }
-//        else
-//        {
-//            $time = time();
-//            $tokenStr = md5(uniqid());
-//            $data = [
-//                'token' => $tokenStr,
-//                'updated_at' => $time,
-//                'expires_at' => $time+1728000000
-//            ];
-//            $tokenRepository->update($data,$token->id);
-//        }
-
         return response()->json([
             'code' => '0',
             'data' => [
