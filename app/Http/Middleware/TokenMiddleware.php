@@ -43,7 +43,7 @@ class TokenMiddleware
 
         if($token->expires_at < time())
             throw new TokenExpireException();
-        $user = $this->userRepository->get($token->user_id);
+        $user = $this->userRepository->get($token->user_id)->first();
 
         $request->user = $user;
         return $next($request);
