@@ -19,6 +19,3 @@ Route::post('/register','AuthController@register');
 
 Route::post('/login','AuthController@login');
 
-Route::get('/',function (NEUQOJ\Repository\Eloquent\ProblemCategoryRepository $problemCategoryRepository) {
-    return $problemCategoryRepository->getBy('id',1,['name']);
-});
