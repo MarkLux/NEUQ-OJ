@@ -23,4 +23,8 @@ Route::group(['middleware' => 'token'],function (){
     Route::get('/profile',function (){
         return "hello";
     });
+
+    Route::get('/test',['middleware' => 'privilege:create-post',function (){
+        echo "You Have The Right!";
+    }]);
 });
