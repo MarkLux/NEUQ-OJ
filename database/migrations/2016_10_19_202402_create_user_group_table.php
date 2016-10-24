@@ -29,6 +29,6 @@ class CreateUserGroupTable extends Migration
      */
     public function down()
     {
-        Schema::drop('user_group');
+        Schema::drop('user_groups');
     }
 }

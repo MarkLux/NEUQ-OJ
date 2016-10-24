@@ -4,7 +4,7 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserPrivilege extends Model
+class UserPrivilegeRelation extends Model
 {
     //
 }
