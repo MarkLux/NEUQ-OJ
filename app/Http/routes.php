@@ -28,3 +28,4 @@ Route::group(['middleware' => 'token'],function (){
         echo "You Have The Right!";
     }]);
 });
+Route::post('/testRegister','TestController@register');
