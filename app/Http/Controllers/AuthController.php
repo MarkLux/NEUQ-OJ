@@ -19,12 +19,13 @@ use NEUQOJ\Http\Controllers\Controller;
 use NEUQOJ\Repository\Eloquent\TokenRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Services\TokenService;
+use NEUQOJ\Services\UserService;
 use Validator;
 
 class AuthController extends Controller
 {
 
-    public function register(Request $request,UserRepository $userRepository)
+    public function register(Request $request,UserService $userService)
     {
         //可以考虑修改错误信息为自定义中文
         $validator = Validator::make($request->all(),[
@@ -41,15 +42,14 @@ class AuthController extends Controller
             throw new FormValidatorException($data);
         }
 
+        //正则检查手机号
+        if(!Utils::IsMobile($request->mobile))
+        {
+            throw new FormValidatorException(["Valid Moblie Number"]);
+        }
+
         //手机和邮箱都应该检查
-        $user = $userRepository->getBy('email',$request->email)->first();
-
-        if($user!=null)
-            throw new UserExistedException();
-
-        $user = $userRepository->getBy('mobile',$request->mobile)->first();
-
-        if($user!=null)
+        if($userService->isUserExist('mobile',$request->mobile)||$userService->isUserExist('email',$request->email))
             throw new UserExistedException();
 
         $user= [
@@ -57,21 +57,21 @@ class AuthController extends Controller
             'email' => $request->email,
             'mobile' => $request->mobile,
             'password' => bcrypt($request->password),
-            'school' => $request->school
+            'school' => $request->school?$request->school:"Unknown"
         ];
 
         /*
-         *邮件和短信验证逻辑....
+         *缺少邮箱和手机验证检查
           */
 
-        $userRepository->insert($user);
+        $userService->createUser($user);
 
         return response()->json([
             'code' => '0'
         ]);
     }
 
-    public function login(Request $request,TokenService $tokenService,UserRepository $userRepository)
+    public function login(Request $request,TokenService $tokenService,UserService $userService,UserRepository $userRepository)
     {
         $validator = Validator::make($request->all(),[
             'name' => 'required|max:100',
@@ -90,19 +90,17 @@ class AuthController extends Controller
 
         if(Utils::IsEmail($request->identifier))
         {
-            $user = $userRepository->getBy('email',$request->identifier)->first();
+            $user = $userService->getUser($request->identifier,'email');
         }
         elseif (Utils::IsMobile($request->identifier))
         {
-            $user = $userRepository->getBy('mobile',$request->identifier)->first();
+            $user = $userService->getUser($request->identifier,'mobile');
         }
         else
-            throw new FormValidatorException(['Wrong Param']);
+            throw new FormValidatorException(['Invalid Indentifier Format']);
 
         if($user == null)
             throw new UserNotExistException();
-
-//        dd($user->password);
 
         if(!Hash::check($request->password,$user->password))
             throw new PasswordErrorException();

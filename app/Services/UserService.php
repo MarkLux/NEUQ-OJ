@@ -17,23 +17,15 @@ class UserService
 {
     private $userRepo;
 
+
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepo = $userRepository;
     }
 
-    public function isUserMobileExist($mobile)
+    public function isUserExist($attribute,$param)
     {
-        $user = $this->userRepo->getBy('mobile',$mobile)->first();
-        if($user == null)
-            return false;
-        else
-            return true;
-    }
-
-    public function isUserEmailExist($email)
-    {
-        $user = $this->userRepo->getBy('email',$email)->first();
+        $user = $this->userRepo->getBy($attribute,$param)->first();
         if($user == null)
             return false;
         else
