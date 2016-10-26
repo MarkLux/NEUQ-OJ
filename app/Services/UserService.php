@@ -23,7 +23,7 @@ class UserService
         $this->userRepo = $userRepository;
     }
 
-    public function isUserExist($attribute,$param)
+    public function isUserExist(string $attribute,string $param):bool
     {
         $user = $this->userRepo->getBy($attribute,$param)->first();
         if($user == null)
@@ -32,20 +32,20 @@ class UserService
             return true;
     }
 
-    public function getUser($id,$attribute = "id")
+    public function getUser(int $id,string $attribute = 'id')
     {
-        if($attribute == "id")
+        if($attribute == 'id')
             return $this->userRepo->get($id)->first();
         else
             return $this->userRepo->getBy($attribute,$id)->first();
     }
 
-    public function updateUser(array $data,$id,$attribute = "id")
+    public function updateUser(array $data,int $id,string $attribute = 'd'):int
     {
         return $this->userRepo->update($data,$id,$attribute);
     }
 
-    public function createUser($data)
+    public function createUser(array $data):bool
     {
         return $this->userRepo->insert($data);
     }

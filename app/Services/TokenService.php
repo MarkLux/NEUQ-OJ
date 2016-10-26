@@ -29,7 +29,7 @@ class TokenService
         $this->tokenRepo = $tokenRepository;
     }
 
-    private function hasToken($userId)
+    private function hasToken(int $userId):bool
     {
         $user = $this->userRepo->get($userId)->first();
 
@@ -44,7 +44,7 @@ class TokenService
             return true;
     }
 
-    private function createToken($userId,$ip)
+    private function createToken(int $userId,string $ip):string
     {
         $tokenStr = md5(uniqid());
         $time = Utils::createTimeStamp();

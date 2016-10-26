@@ -22,4 +22,11 @@ class UtilsTest extends TestCase
         $this->assertFalse(\NEUQOJ\Common\Utils::IsEmail($test4));
         $this->assertFalse(\NEUQOJ\Common\Utils::IsEmail($test5));
     }
+
+    public function testCreateTimeStamp(){
+        $time1 = \NEUQOJ\Common\Utils::createTimeStamp();
+        sleep(1);
+        $time2 = \NEUQOJ\Common\Utils::createTimeStamp();
+        $this->assertTrue($time1 < $time2);
+    }
 }
