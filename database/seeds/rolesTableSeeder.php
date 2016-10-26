@@ -16,7 +16,17 @@ class rolesTableSeeder extends Seeder
                 array(
                     'name'=>'teacher',
                     'description'=>'教师角色',
+                    'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
+                ),
+                array
+                (
+                    'name'=>'admin',
+                    'description'=>'（超级）管理员',
+                    'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 )
+
             )
         );
     }

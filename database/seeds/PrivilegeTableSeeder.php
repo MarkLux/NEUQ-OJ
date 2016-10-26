@@ -15,23 +15,33 @@ class PrivilegeTableSeeder extends Seeder
             array(
                 array(
                     'name'=>'operate-user',
-                    'description'=>'对用户的操作：admin(含）以上'
+                    'description'=>'对用户的操作：admin(含）以上',
+                    'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString(),
                 ),
                 array(
                     'name'=>'operate-group',
-                    'description'=>'对用户组,竞赛，作业，考试的操作:teacher（含）之上'
+                    'description'=>'对用户组,竞赛，作业，考试的操作:teacher（含）之上',
+                    'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
                 array(
                     'name'=>'operate-problem',
-                    'description'=>'对题目的操作：teacher（含）之上'
+                    'description'=>'对题目的操作：teacher（含）之上',
+                    'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
                 array(
                     'name'=>'operate-teacher-apply',
-                    'description'=>'对教师申请的操作：admin（含）以上'
+                    'description'=>'对教师申请的操作：admin（含）以上',
+                    'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString(),
                 ),
                 array(
                     'name'=>'operate-admin-apply',
-                    'description'=>'对管理员申请的操作：superAdmin'
+                    'description'=>'对管理员申请的操作：superAdmin',
+                    'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 )
             )
         );

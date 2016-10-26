@@ -17,11 +17,14 @@ class PrivilegeController extends Controller
     {
 
     }
-
+/*
+ * 提交教师申请
+ */
     public function applyTeacherTo(Request $request)
     {
-        $apply_tea = $request->apply_tea;
-        $user = $request->id;
+
+        $user = $request->user->id;
+
 
 
     }
