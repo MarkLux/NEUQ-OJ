@@ -1,18 +1,16 @@
 <?php
 namespace NEUQOJ\Common;
+
+use Illuminate\Foundation\Testing\TestCase;
+
 /**
  * Created by PhpStorm.
  * User: trons
  * Date: 16/10/12
  * Time: 下午8:49
  */
-class Utils
+class Utils extends TestCase
 {
-    const SALT = 'bX7av6HhjvI5rifNhOiJ';
-
-    public static function encryption($password){
-        return md5(self::SALT.$password);
-    }
 
     static function createTimeStamp(){
         list($micro, $se) = explode(' ', microtime());
@@ -29,4 +27,15 @@ class Utils
         return preg_match($patternMobile,$str);
     }
 
+    /**
+     * Creates the application.
+     *
+     * Needs to be implemented by subclasses.
+     *
+     * @return \Symfony\Component\HttpKernel\HttpKernelInterface
+     */
+    public function createApplication()
+    {
+        // TODO: Implement createApplication() method.
+    }
 }

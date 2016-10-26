@@ -30,7 +30,7 @@ class PrivilegeMiddleware
     public function handle($request, Closure $next, ... $params)
     {
         foreach ($params as $priStr) {
-
+            //TODO 查询操作放在for循环外
             $privilege = $this->priRepo->getBy('name', $priStr)->first();
 
             if($privilege == null)
