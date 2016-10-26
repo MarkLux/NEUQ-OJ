@@ -17,6 +17,7 @@ class CreateUserGroupTable extends Migration
             $table->bigInteger('owner_id');
             $table->string('name',100);
             $table->string('description',512);
+            $table->string('password');
             $table->integer('size');
             $table->timestamps();
         });
