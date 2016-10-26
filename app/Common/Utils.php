@@ -8,11 +8,6 @@ namespace NEUQOJ\Common;
  */
 class Utils
 {
-    const SALT = 'bX7av6HhjvI5rifNhOiJ';
-
-    public static function encryption($password){
-        return md5(self::SALT.$password);
-    }
 
     static function createTimeStamp(){
         list($micro, $se) = explode(' ', microtime());
