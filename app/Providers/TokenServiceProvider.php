@@ -3,9 +3,9 @@
 namespace NEUQOJ\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use NEUQOJ\Services\UserService;
+use NEUQOJ\Services\TokenService;
 
-class UserServiceProvider extends ServiceProvider
+class TokenServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.
@@ -24,8 +24,8 @@ class UserServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('UserService',function($app){
-            return new UserService();
+        $this->app->singleton('TokenService',function ($app){
+            return new TokenService();
         });
     }
 }

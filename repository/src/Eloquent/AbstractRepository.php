@@ -15,15 +15,12 @@ use NEUQOJ\Repository\Models\News;
  */
 abstract class AbstractRepository implements RepositoryInterface
 {
-    /** @var Builder $model */
+    /** @var Model $model */
     private $model;
-
-    protected $timestamps = true;
 
     function __construct(Container $app)
     {
-        $model = $app->make($this->model());
-        $this->model = $model->newQuery();
+        $this->model = $app->make($this->model());
     }
 
     abstract function model();
@@ -54,7 +51,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
     function insert(array $data)
     {
-        if($this->timestamps){
+        if($this->model->timestamps){
             $current = new Carbon();
 
             if(! is_array(reset($data))){
@@ -80,7 +77,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
     function update(array $data, $id, $attribute="id")
     {
-        if($this->timestamps){
+        if($this->model->timestamps){
             $current = new Carbon();
 
             if(! is_array(reset($data))){

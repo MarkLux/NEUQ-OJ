@@ -11,7 +11,7 @@ namespace NEUQOJ\Repository\Eloquent;
 
 class TokenRepository extends AbstractRepository
 {
-    protected $timestamps = false;
+//    protected $timestamps = false;
 
     function model()
     {
