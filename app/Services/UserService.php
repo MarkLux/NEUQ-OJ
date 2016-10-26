@@ -49,4 +49,11 @@ class UserService
     {
         return $this->userRepo->insert($data);
     }
+
+    public function activeUser($userId)
+    {
+        $user = $this->userRepo->get($userId);
+        if($user!=null && $user->status != 1)
+            $this->userRepo->update(['status' => 1],$userId);
+    }
 }
