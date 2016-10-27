@@ -20,11 +20,14 @@ Route::post('/register','AuthController@register');
 Route::post('/login','AuthController@login');
 
 Route::group(['middleware' => 'token'],function (){
-    Route::get('/profile',function (){
-        return "hello";
+    Route::get('/profile',function (\Illuminate\Http\Request $request){
+        dd($request->user);
     });
-
+    Route::get('/getinfo','UserController@getUserInfo');
     Route::get('/test',['middleware' => 'privilege:check,create-post',function (){
         echo "You Have The Right!";
     }]);
 });
+
+
+Route::post('/updateinfo','UserController@updateUserInfo');

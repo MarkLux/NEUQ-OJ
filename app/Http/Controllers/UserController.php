@@ -5,7 +5,7 @@ namespace NEUQOJ\Http\Controllers;
 use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\UserExistedException;
 use NEUQOJ\Http\Controllers\Controller;
-use NEUQOJ\Http\Request;
+use Illuminate\Http\Request;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Services\UserService;
 
@@ -21,10 +21,11 @@ class UserController extends Controller
     public function getUserInfo(Request $request)
     {
         $user = $request->user;
+        //dd($user);
         return response()->json([
-            'code'  =>  0,
-            'data'  =>  [
-                'user'  =>  $user
+            'code' => 0,
+            'data' => [
+                'user' => $user
             ]
         ]);
     }
@@ -39,14 +40,17 @@ class UserController extends Controller
     {
         $user = $request->user;
         $data = [
-            'name'=> $request->name,
-            'email' => $request->email,
-            'mobile' => $request->mobile,
-            'school' =>$request->school,
-            'signature' => $request->signature
+            'name'=> $user->name,
+            'email' => $user->name,
+            'mobile' => $user->name,
+            'school' => $user->name,
+            'signature' => $user->name
         ];
 
         $userService->updateUser($data,$user->id);
+        return response()->json([
+            'code' => 0,
+        ]);
     }
 
     /**

@@ -6,6 +6,7 @@
  * Time: 下午10:36
  */
 namespace NEUQOJ\Http\Controllers;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use NEUQOJ\Common\Utils;
