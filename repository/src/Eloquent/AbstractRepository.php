@@ -16,7 +16,7 @@ use NEUQOJ\Repository\Models\News;
 abstract class AbstractRepository implements RepositoryInterface
 {
     /** @var Model $model */
-    private $model;
+    protected $model;
 
     function __construct(Container $app)
     {

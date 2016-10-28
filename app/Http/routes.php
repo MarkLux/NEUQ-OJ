@@ -24,7 +24,7 @@ Route::group(['middleware' => 'token'],function (){
         return "hello";
     });
 
-    Route::get('/test',['middleware' => 'privilege:check,create-post',function (){
+    Route::get('/test',['middleware' => 'privilege:chec,create-post',function (){
         echo "You Have The Right!";
     }]);
 });

@@ -15,4 +15,10 @@ class UsrPriRepository extends AbstractRepository
     {
         return "NEUQOJ\Repository\Models\UserPrivilegeRelation";
     }
+
+    function getRes($userId,array $privileges)
+    {
+        return $this->model->where('user_id',$userId)->whereIn('privilege_id',$privileges)->get();
+    }
+
 }
