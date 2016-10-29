@@ -21,7 +21,7 @@ class TokenService
     private $userRepo;
     private $tokenRepo;
 
-    private static  $EXPIRE_TIME = 1728000000;
+    private static  $EXPIRE_TIME = 10800000;
 
     public function __construct(UserRepository $userRepository,TokenRepository $tokenRepository)
     {
@@ -29,7 +29,7 @@ class TokenService
         $this->tokenRepo = $tokenRepository;
     }
 
-    private function hasToken($userId)
+    public function hasToken($userId)
     {
         $user = $this->userRepo->get($userId)->first();
 
@@ -106,5 +106,15 @@ class TokenService
             return true;
         else
             return false;
+    }
+
+    public function destoryToken($userId)
+    {
+        $token = $this->tokenRepo->getBy('user_id',$userId)->first();
+
+        if($token!=null)
+            return $this->tokenRepo->update(['token' => ''],$token->id);
+
+        return -1;
     }
 }

@@ -15,9 +15,4 @@ class PrivilegeRepository extends AbstractRepository
     {
         return "NEUQOJ\Repository\Models\Privilege";
     }
-
-    function getIn($param,array $data,array $columns = ['*'])
-    {
-        return $this->model->whereIn($param,$data)->get($columns);
-    }
 }

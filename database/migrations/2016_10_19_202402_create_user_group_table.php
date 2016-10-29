@@ -18,6 +18,7 @@ class CreateUserGroupTable extends Migration
             $table->string('name',100);
             $table->string('description',512);
             $table->integer('size');
+            $table->integer('max_size');
             $table->timestamps();
         });
     }

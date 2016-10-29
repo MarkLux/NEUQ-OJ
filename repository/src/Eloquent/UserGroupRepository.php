@@ -13,6 +13,6 @@ class UserGroupRepository extends AbstractRepository
 {
     function model()
     {
-        return "NEUQOJ\Repostiory\Models\UserGroup";
+        return "NEUQOJ\Repository\Models\UserGroup";
     }
 }

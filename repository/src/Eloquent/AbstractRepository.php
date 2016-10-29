@@ -49,6 +49,13 @@ abstract class AbstractRepository implements RepositoryInterface
             ->get($columns);
     }
 
+    function getIn($param,array $data,array $columns = ['*'])
+    {
+        return $this->model
+            ->whereIn($param,$data)
+            ->get($columns);
+    }
+
     function insert(array $data)
     {
         if($this->model->timestamps){

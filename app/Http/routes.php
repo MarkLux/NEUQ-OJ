@@ -20,11 +20,10 @@ Route::post('/register','AuthController@register');
 Route::post('/login','AuthController@login');
 
 Route::group(['middleware' => 'token'],function (){
-    Route::get('/profile',function (){
-        return "hello";
+    Route::get('/logout','AuthController@logout');
+    Route::group(['prefix' => 'user-group'],function(){
+        Route::post('/create',[
+            'middleware' => 'privilege:create-group',
+            'uses'=>'UserGroupController@createNewGroup']);
     });
-
-    Route::get('/test',['middleware' => 'privilege:chec,create-post',function (){
-        echo "You Have The Right!";
-    }]);
 });
