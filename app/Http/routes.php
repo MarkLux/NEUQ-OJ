@@ -25,5 +25,7 @@ Route::group(['middleware' => 'token'],function (){
         Route::post('/create',[
             'middleware' => 'privilege:create-group',
             'uses'=>'UserGroupController@createNewGroup']);
+        Route::get('/{id}/index','UserGroupController@getIndex');
+        Route::post('/{id}/join-in','UserGroupController@joinGroup');
     });
 });

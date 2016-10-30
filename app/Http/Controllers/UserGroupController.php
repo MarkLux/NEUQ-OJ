@@ -6,9 +6,13 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\NoPermissionException;
+use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserGroupExistedException;
+use NEUQOJ\Exceptions\UserGroupNotExistException;
 use NEUQOJ\Http\Requests;
 use NEUQOJ\Services\UserGroupService;
+use Illuminate\Support\Facades\Hash;
 
 class UserGroupController extends Controller
 {
@@ -66,14 +70,43 @@ class UserGroupController extends Controller
         //TODO 获取组列表并显示
     }
 
-    public function getIndex()
+    public function getIndex(Request $request,$groupId)
     {
-        //TODO 显示用户组信息
+        $group = $this->userGroupService->getGroupById($groupId);
+
+        if($group == null)
+            throw new UserGroupNotExistException();
+
+        //先判断访问者与用户组的关系
+
+        if(!$this->userGroupService->isUserInGroup($request->user->id,$groupId)&&$group->owner_id!=$request->user->id)
+            throw new NoPermissionException();
+
+        //TODO 显示更多信息
+        $data = $this->userGroupService->getMembers($groupId);
+
+        return response()->json($data);
     }
 
-    public function joinGroup()
+    public function joinGroup(Request $request,$groupId)
     {
-        //TODO 用户申请加入一个用户组
+        $group = $this->userGroupService->getGroupById($groupId);
+
+        if($group == null)
+            throw new UserGroupNotExistException();
+
+        if(!Hash::check($request->password,$group->password))
+            throw new PasswordErrorException();
+
+        if($this->userGroupService->isUserInGroup($request->user->id,$groupId))
+            throw new UserInGroupExcepstion();
+
+        if($this->userGroupService->addUserTo($request->user,$groupId))
+            return response()->json([
+                "code" => 0
+            ]);
+        else
+            throw new InnerError();
     }
 
     public function dismiss()
