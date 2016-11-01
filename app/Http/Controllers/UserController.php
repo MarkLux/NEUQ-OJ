@@ -64,13 +64,8 @@ class UserController extends Controller
      */
     public function banUser(Request $request,UserService $userService)
     {
-        $name = $request->name;
-        $user = $userService->getUser($name,"name");
-        $data = [
-            "status" => -1,
-        ];
-        $userService->updateUser($data,$user->id);
-
+        $id = $request->id;
+        $userService->banUser($id);
         return response()->json([
             "code" => 0
         ]);
@@ -100,6 +95,4 @@ class UserController extends Controller
             'code' => 0,
         ]);
     }
-
-
 }

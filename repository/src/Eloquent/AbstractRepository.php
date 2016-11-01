@@ -115,7 +115,6 @@ abstract class AbstractRepository implements RepositoryInterface
             ->skip($size * --$page)
             ->take($size)
             ->get($columns);
-
     }
 
     private function freshTimestamp()

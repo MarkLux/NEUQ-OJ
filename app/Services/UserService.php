@@ -17,7 +17,6 @@ class UserService
 {
     private $userRepo;
 
-
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepo = $userRepository;
@@ -32,7 +31,7 @@ class UserService
             return true;
     }
 
-    public function getUser($id,$attribute = "id")
+    public function getUser($id, $attribute = "id")
     {
         if($attribute == "id")
             return $this->userRepo->get($id)->first();
@@ -40,7 +39,7 @@ class UserService
             return $this->userRepo->getBy($attribute,$id)->first();
     }
 
-    public function updateUser(array $data,$id,$attribute = "id")
+    public function updateUser(array $data,$id, $attribute = "id")
     {
         return $this->userRepo->update($data,$id,$attribute);
     }
@@ -48,5 +47,13 @@ class UserService
     public function createUser($data)
     {
         return $this->userRepo->insert($data);
+    }
+
+    public function banUser($id, $attribute = "id")
+    {
+        $data = [
+          'status' => -1,
+        ];
+        return $this->userRepo->update($data,$id,$attribute);
     }
 }
