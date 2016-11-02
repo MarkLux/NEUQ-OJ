@@ -8,9 +8,11 @@
 
 namespace NEUQOJ\Services;
 
+use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\UsrPriRepository;
+use Predis\Cluster\Distributor\EmptyRingException;
 
 
 class UserService
@@ -22,7 +24,7 @@ class UserService
         $this->userRepo = $userRepository;
     }
 
-    public function isUserExist($attribute,$param)
+    public function isUserExist($attribute,$param):bool
     {
         $user = $this->userRepo->getBy($attribute,$param)->first();
         if($user == null)
@@ -49,11 +51,28 @@ class UserService
         return $this->userRepo->insert($data);
     }
 
-    public function banUser($id, $attribute = "id")
+    public function lockUser($id):bool
     {
-        $data = [
-          'status' => -1,
-        ];
-        return $this->userRepo->update($data,$id,$attribute);
+        $user = $this->userRepo->get($id)->first();
+
+        if($user==null) {
+            return false;
+        }else {
+            $this->userRepo->update(['status'=>-1],$user['id']);
+            return true;
+        }
     }
+
+    public function unlockUser($id):bool
+    {
+        $user = $this->userRepo->get($id)->first();
+
+        if($user==null) {
+            return false;
+        }else {
+            $this->userRepo->update(['status'=>1],$user['id']);
+            return true;
+        }
+    }
+
 }

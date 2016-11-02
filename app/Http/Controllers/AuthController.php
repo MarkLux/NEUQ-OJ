@@ -96,4 +96,12 @@ class AuthController extends Controller
             ]
         ]);
     }
+
+    public function logout(Request $request,TokenService $tokenService)
+    {
+        $tokenService->destroyToken($request->user->id);
+        return response()->json([
+            'code' => '0',
+        ]);
+    }
 }

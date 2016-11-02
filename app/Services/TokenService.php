@@ -107,4 +107,12 @@ class TokenService
         else
             return false;
     }
+
+    public function destroyToken($userId)
+    {
+        $token = $this->tokenRepo->getBy('user_id',$userId)->first();
+        if(!empty($token))
+            return $this->tokenRepo->update(['token'=>""],$token->id);
+        return -1;
+    }
 }
