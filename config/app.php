@@ -156,6 +156,7 @@ return [
         NEUQOJ\Providers\EventServiceProvider::class,
         NEUQOJ\Providers\RouteServiceProvider::class,
         NEUQOJ\Providers\UserServiceProvider::class,
+        NEUQOJ\Providers\PrivilegeServiceProvider::class
 
     ],
 

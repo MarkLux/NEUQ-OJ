@@ -27,5 +27,8 @@ Route::group(['middleware' => 'token'],function (){
     Route::get('/test',['middleware' => 'privilege:check,create-post',function (){
         echo "You Have The Right!";
     }]);
+    Route::post('/applyTeacher','PrivilegeController@applyTeacher');
+    Route::post('/getApply','ApplyController@getApply');
+    Route::post('/confirmRoleApply','ApplyController@confirmRoleApply');
 });
 Route::post('/testRegister','TestController@register');

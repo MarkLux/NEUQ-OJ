@@ -8,29 +8,44 @@
 
 namespace NEUQOJ\Services;
 
-
+use NEUQOJ\Repository\Eloquent\UserRepository;
 class PrivilegeService
 {
-    private $privilegeRepository;
-    private $usrPriRepository;
 
-    public function __construct(PrivilegeRepository $privilegeRepository,UsrPriRepository $usrPriRepository)
+    const TEACHER ='teacher';
+    const ADMIN = 'admin';
+    const RoleTea = 1;
+    const RoleAdmin = 2;
+    private $usrRe;
+    public function __construct()
     {
-        $this->privilegeRepository= $privilegeRepository;
-        $this->usrPriRepository =  $usrPriRepository;
+//       $this->usrRe = $userRepository;
     }
     /*
      * 确认做出请求的用户的角色
+     * 获取用户id
+     * 数据库查询role字段
+     * 为空定位学生 ，1 为教师 2 为管理员
+     *
      */
 
-    public function confirmRole()
+    public function confirmRole($id,UserRepository $userRepository)
     {
 
+        $user = $userRepository->getBy('mobile',$id)->first();
+
+        $role = $user->role;
+        //dd($role);dd($user);
+        if($user->role)
+        {
+            if($role == 1)
+                return self::TEACHER;
+            if ($role == 2)
+                return self::ADMIN;
+        }
+        else
+            return false;
     }
 
-    public function findRole()
-    {
-
-    }
 
 }
