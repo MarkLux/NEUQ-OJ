@@ -24,9 +24,12 @@ class UserService
         $this->userRepo = $userRepository;
     }
 
-    public function isUserExist($attribute,$param):bool
+    public function isUserExist(string $attribute,string $param):bool
     {
-        $user = $this->userRepo->getBy($attribute,$param)->first();
+        $user = $this->userRepo
+            ->getBy($attribute,$param)
+            ->first();
+
         if($user == null)
             return false;
         else
@@ -36,41 +39,53 @@ class UserService
     public function getUser(int $id, string $attribute = "id"):array
     {
         if($attribute == "id")
-            return $this->userRepo->get($id)->first();
+            return $this->userRepo
+                ->get($id)
+                ->first();
         else
-            return $this->userRepo->getBy($attribute,$id)->first();
+            return $this->userRepo
+                ->getBy($attribute,$id)
+                ->first();
     }
 
     public function updateUser(array $data,int $id, string $attribute = "id"):int
     {
-        return $this->userRepo->update($data,$id,$attribute);
+        return $this->userRepo
+            ->update($data,$id,$attribute);
     }
 
-    public function createUser(array $data):int
+    public function createUser(array $data):bool
     {
-        return $this->userRepo->insert($data);
+        return $this->userRepo
+            ->insert($data);
     }
 
     public function lockUser(int $id):bool
     {
-        $user = $this->userRepo->get($id)->first();
+        $user = $this->userRepo
+            ->get($id)
+            ->first();
 
         if($user==null) {
             return false;
         }else {
-            $this->userRepo->update(['status'=>-1],$user['id']);
+            $this->userRepo
+                ->update(['status'=>-1],$user['id']);
             return true;
         }
     }
 
     public function unlockUser(int $id):bool
     {
-        $user = $this->userRepo->get($id)->first();
+        $user = $this->userRepo
+            ->get($id)
+            ->first();
 
         if($user==null) {
             return false;
         }else {
-            $this->userRepo->update(['status'=>1],$user['id']);
+            $this->userRepo
+                ->update(['status'=>1],$user['id']);
             return true;
         }
     }
