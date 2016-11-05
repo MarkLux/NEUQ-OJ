@@ -33,7 +33,7 @@ class UserService
             return true;
     }
 
-    public function getUser($id, $attribute = "id")
+    public function getUser(int $id, string $attribute = "id"):array
     {
         if($attribute == "id")
             return $this->userRepo->get($id)->first();
@@ -41,17 +41,17 @@ class UserService
             return $this->userRepo->getBy($attribute,$id)->first();
     }
 
-    public function updateUser(array $data,$id, $attribute = "id")
+    public function updateUser(array $data,int $id, string $attribute = "id"):int
     {
         return $this->userRepo->update($data,$id,$attribute);
     }
 
-    public function createUser($data)
+    public function createUser(array $data):int
     {
         return $this->userRepo->insert($data);
     }
 
-    public function lockUser($id):bool
+    public function lockUser(int $id):bool
     {
         $user = $this->userRepo->get($id)->first();
 
@@ -63,7 +63,7 @@ class UserService
         }
     }
 
-    public function unlockUser($id):bool
+    public function unlockUser(int $id):bool
     {
         $user = $this->userRepo->get($id)->first();
 
