@@ -18,6 +18,7 @@ class UsrPriRepository extends AbstractRepository
 
     function getRes($userId,array $privileges)
     {
+        //一个高耦合的写法
         return $this->model->where('user_id',$userId)->whereIn('privilege_id',$privileges)->get();
     }
 

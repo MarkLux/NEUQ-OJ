@@ -107,6 +107,35 @@ abstract class AbstractRepository implements RepositoryInterface
             ->update($data);
     }
 
+    /**
+     * 多条件限定查找
+     */
+    function updateWhere(array $condition,array $data)
+    {
+        if($this->model->timestamps){
+            $current = new Carbon();
+
+            if(! is_array(reset($data))){
+                $data = array_merge($data,
+                    [
+                        'updated_at' => $current,
+                    ]);
+            }else{
+                foreach ($data as  $key => $value) {
+                    $data[$key] = array_merge($value,
+                        [
+                            'updated_at' => $current,
+                        ]);
+                }
+            }
+
+        }
+        return $this->model
+            ->where($condition)
+            ->update($data);
+    }
+
+
     function delete($id)
     {
         return $this->model

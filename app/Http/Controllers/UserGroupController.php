@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserGroupExistedException;
@@ -47,7 +48,7 @@ class UserGroupController extends Controller
         ];
 
         if(!$this->userGroupService->createUserGroup($request->user->id,$data))
-            throw new UserGroupExistedException();
+            throw new InnerError();
 
 //        if($request->members!=null)
 //        {

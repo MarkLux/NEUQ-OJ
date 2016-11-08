@@ -8,6 +8,7 @@
 
 namespace NEUQOJ\Services;
 
+use NEUQOJ\Exceptions\UserGroupExistedException;
 use NEUQOJ\Http\Requests\Request;
 use NEUQOJ\Repository\Eloquent\UserGroupRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
@@ -28,10 +29,9 @@ class UserGroupService
     }
 
     /*
-     *创建用户组，如果该用户已经创建过一个同名的用户组
-     * 使用返回-1的方法出现了bug
+     *创建用户组，如果该用户已经创建过一个同名的用户组抛出异常
      */
-    public function createUserGroup($ownerId,array $data)
+    public function createUserGroup(int $ownerId,array $data):bool
     {
         $userGroup = $this->userGroupRepo->getByMult([
             'owner_id' => $ownerId,
@@ -39,12 +39,12 @@ class UserGroupService
         ])->first();
 
         if($userGroup!=null)
-            return false;
+            throw new UserGroupExistedException();
 
         $data['owner_id'] = $ownerId;
         $data['size'] = 0;
 
-        return $this->userGroupRepo->insert($data);
+        return $this->userGroupRepo->insert($data) == 1;
     }
 
     public function isGroupExist($groupId)
