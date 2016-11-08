@@ -25,29 +25,30 @@ abstract class AbstractRepository implements RepositoryInterface
 
     abstract function model();
 
-    function all(array $columns = ['*'])
+    function all(array $columns = ['*']):array
     {
         return $this->model->get($columns);
     }
 
-    function get($id, array $columns = ['*'], $primary = 'id')
+    function get(int $id, array $columns = ['*'],string $primary = 'id'):array
     {
         return $this->model
             ->where($primary, $id)
             ->get($columns);
     }
 
-    function getBy($param, $value,array $columns = ['*']){
+    function getBy(string $param,string $value,array $columns = ['*']):array {
         return $this->model
             ->where($param, $value)
             ->get($columns);
     }
 
-    function getByMult(array $params, array $columns = ['*']){
+    function getByMult(array $params, array $columns = ['*']):array {
         return $this->model
             ->where($params)
             ->get($columns);
     }
+
 
     function getIn($param,array $data,array $columns = ['*'])
     {
@@ -56,7 +57,7 @@ abstract class AbstractRepository implements RepositoryInterface
             ->get($columns);
     }
 
-    function insert(array $data)
+    function insert(array $data):bool
     {
         if($this->model->timestamps){
             $current = new Carbon();
@@ -82,7 +83,7 @@ abstract class AbstractRepository implements RepositoryInterface
             ->insert($data);
     }
 
-    function update(array $data, $id, $attribute="id")
+    function update(array $data,int $id, string $attribute="id"):int
     {
         if($this->model->timestamps){
             $current = new Carbon();
@@ -106,6 +107,7 @@ abstract class AbstractRepository implements RepositoryInterface
             ->where($attribute, '=', $id)
             ->update($data);
     }
+
 
     /**
      * 多条件限定查找
@@ -136,13 +138,13 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
 
-    function delete($id)
+    function delete(int $id):int
     {
         return $this->model
             ->destory($id);
     }
 
-    function paginate($page = 1, $size = 15, $param = [], $columns = ['*'])
+    function paginate(int $page = 1,int $size = 15,array $param = [],array $columns = ['*']):array
     {
         $qb = $this->model;
         if(!empty($size))
@@ -154,7 +156,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
     }
 
-    private function freshTimestamp()
+    private function freshTimestamp():Carbon
     {
         return new Carbon;
     }

@@ -44,7 +44,7 @@ class TokenService
             return true;
     }
 
-    private function createToken($userId,$ip)
+    private function createToken(int $userId,string $ip):string
     {
         $tokenStr = md5(uniqid());
         $time = Utils::createTimeStamp();
