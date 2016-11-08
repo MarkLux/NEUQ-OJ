@@ -11,6 +11,7 @@ namespace NEUQOJ\Services;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\UsrPriRepository;
+use NEUQOJ\Services\Contracts\UserServiceInterface;
 
 
 class UserService
