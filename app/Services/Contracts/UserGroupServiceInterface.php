@@ -8,6 +8,8 @@
 
 namespace NEUQOJ\Services\Contracts;
 
+use NEUQOJ\Repository\Models\User;
+
 
 interface UserGroupServiceInterface
 {
@@ -17,14 +19,16 @@ interface UserGroupServiceInterface
 
     function getGroupById(int $id);
 
-    function getGroupBy(string $param,$value);
+    function getGroupBy(string $param,string $value);
 
     function getGroupByMult(array $condition);
 
     //有可能改成private
-    function isGroupExist(int $userId,string $name):bool;
+    function isGroupExistByName(int $ownerId,string $name):bool;
 
-    function createUserGroup(int $ownerId,array $data);
+    function isGroupExistById(int $id):bool;
+
+    function createUserGroup(User $owner,array $data):bool;
 
     //显示用户组的信息面板
     function getGroupIndex(int $groupId,User $user);
@@ -32,9 +36,6 @@ interface UserGroupServiceInterface
     /*
     *用户关系部分
     */
-
-    //判断一个用户是否在用户组内，注意要包括owner
-    function isUserInGroup(int $userId,int $groupId):bool;
 
     function isUserGroupStudent(int $userId,int $groupId):bool;
 
@@ -44,20 +45,20 @@ interface UserGroupServiceInterface
     function isUserGroupFull(int $groupId):bool;
 
     //验证失败抛出异常
-    function joinGroupByPassword(User $user,int $groupId,string $password);
+    function joinGroupByPassword(User $user,int $groupId,string $password):bool;
 
-    function joinGroupByInvite(User $user,int $groupId);
+    function joinGroupByInvite(User $user,int $groupId):bool;
 
-    function updateGroup(array $data,int $groupId);
+    function updateGroup(array $data,int $groupId):bool;
 
     //修改用户在小组中的身份注明
-    function updateUserInfo(int $userId,int $groupId,array $data);
+    function updateUserInfo(int $userId,int $groupId,array $data):bool;
 
-    function deleteUser(int $userId,int $groupId);
+    function deleteUser(int $userId,int $groupId):bool;
 
-    function quitGroup(int $userId,int $groupId);
+    function quitGroup(int $userId,int $groupId):bool;
 
-    function deleteGroup(int $groupId);
+    function deleteGroup(int $groupId):bool;
 
     function changeGroupOwner(int $groupId,int $newOwnerId);
 

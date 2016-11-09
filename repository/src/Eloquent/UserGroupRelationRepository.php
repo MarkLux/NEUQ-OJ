@@ -16,5 +16,8 @@ class UserGroupRelationRepository extends AbstractRepository
         return "NEUQOJ\Repository\Models\UserGroupRelation";
     }
 
-
+    function getMemberCountById(int $groupId):int
+    {
+        return $this->model->where('group_id',$groupId)->count();
+    }
 }
