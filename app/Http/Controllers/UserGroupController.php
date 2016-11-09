@@ -48,7 +48,7 @@ class UserGroupController extends Controller
         ];
 
         if(!$this->userGroupService->createUserGroup($request->user->id,$data))
-            throw new InnerError();
+            throw new InnerError('Fail to create user group');
 
 //        if($request->members!=null)
 //        {
@@ -107,7 +107,7 @@ class UserGroupController extends Controller
                 "code" => 0
             ]);
         else
-            throw new InnerError();
+            throw new InnerError('Fail to add uesr in group');
     }
 
     public function dismiss()

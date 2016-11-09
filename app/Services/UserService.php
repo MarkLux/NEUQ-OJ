@@ -41,7 +41,7 @@ class UserService
             return $this->userRepo->getBy($attribute,$id)->first();
     }
 
-    public function updateUser(array $data,int $id,string $attribute = 'd'):int
+    public function updateUser(array $data,int $id,string $attribute = 'id'):int
     {
         return $this->userRepo->update($data,$id,$attribute);
     }

@@ -11,6 +11,12 @@ namespace NEUQOJ\Exceptions;
 
 class InnerError extends BaseException
 {
+    public function __construct($data)
+    {
+        parent::__construct();
+
+        $this->data = $data;
+    }
+
     protected $code = 0000;
-    protected $data = "System Inner Error";
 }
