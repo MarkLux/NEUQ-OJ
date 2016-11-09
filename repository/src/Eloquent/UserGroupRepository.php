@@ -15,4 +15,9 @@ class UserGroupRepository extends AbstractRepository
     {
         return "NEUQOJ\Repository\Models\UserGroup";
     }
+
+    function insertWithId(array $data)
+    {
+        return $this->model->insertGetId($data);
+    }
 }

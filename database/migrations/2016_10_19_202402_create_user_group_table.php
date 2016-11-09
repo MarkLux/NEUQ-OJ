@@ -19,8 +19,8 @@ class CreateUserGroupTable extends Migration
             $table->boolean('is_closed');
             $table->string('name',100);
             $table->string('description',512);
-//            $table->integer('size');
             $table->integer('max_size');
+            $table->string('password',255)->nullable();
             $table->timestamps();
         });
     }

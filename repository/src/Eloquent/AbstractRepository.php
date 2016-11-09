@@ -25,25 +25,27 @@ abstract class AbstractRepository implements RepositoryInterface
 
     abstract function model();
 
-    function all(array $columns = ['*']):array
+    function all(array $columns = ['*'])
     {
         return $this->model->get($columns);
     }
 
-    function get(int $id, array $columns = ['*'],string $primary = 'id'):array
+    function get(int $id, array $columns = ['*'],string $primary = 'id')
     {
         return $this->model
             ->where($primary, $id)
             ->get($columns);
     }
 
-    function getBy(string $param,string $value,array $columns = ['*']):array {
+    function getBy(string $param,string $value,array $columns = ['*'])
+    {
         return $this->model
             ->where($param, $value)
             ->get($columns);
     }
 
-    function getByMult(array $params, array $columns = ['*']):array {
+    function getByMult(array $params, array $columns = ['*'])
+    {
         return $this->model
             ->where($params)
             ->get($columns);
@@ -57,7 +59,7 @@ abstract class AbstractRepository implements RepositoryInterface
             ->get($columns);
     }
 
-    function insert(array $data):bool
+    function insert(array $data)
     {
         if($this->model->timestamps){
             $current = new Carbon();
@@ -83,7 +85,7 @@ abstract class AbstractRepository implements RepositoryInterface
             ->insert($data);
     }
 
-    function update(array $data,int $id, string $attribute="id"):int
+    function update(array $data,int $id, string $attribute="id")
     {
         if($this->model->timestamps){
             $current = new Carbon();
@@ -138,13 +140,13 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
 
-    function delete(int $id):int
+    function delete(int $id)
     {
         return $this->model
             ->destory($id);
     }
 
-    function paginate(int $page = 1,int $size = 15,array $param = [],array $columns = ['*']):array
+    function paginate(int $page = 1,int $size = 15,array $param = [],array $columns = ['*'])
     {
         $qb = $this->model;
         if(!empty($size))

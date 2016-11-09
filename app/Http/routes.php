@@ -22,10 +22,9 @@ Route::post('/login','AuthController@login');
 Route::group(['middleware' => 'token'],function (){
     Route::get('/logout','AuthController@logout');
     Route::group(['prefix' => 'user-group'],function(){
-        Route::post('/create',[
-            'middleware' => 'privilege:create-group',
-            'uses'=>'UserGroupController@createNewGroup']);
-        Route::get('/{id}/index','UserGroupController@getIndex');
+        Route::post('/create','UserGroupController@createNewGroup');
+        Route::get('/{id}','UserGroupController@getIndex');
+        Route::get('/{id}/members','UserGroupController@getMembers');
         Route::post('/{id}/join-in','UserGroupController@joinGroup');
     });
 });

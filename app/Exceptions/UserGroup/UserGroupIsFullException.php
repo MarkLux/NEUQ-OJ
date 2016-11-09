@@ -6,8 +6,9 @@
  * Time: 下午2:09
  */
 
-namespace NEUQOJ\Exceptions;
+namespace NEUQOJ\Exceptions\UserGroup;
 
+use NEUQOJ\Exceptions\BaseException;
 
 class UserGroupIsFullException extends BaseException
 {

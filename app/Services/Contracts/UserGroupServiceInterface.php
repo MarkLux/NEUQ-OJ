@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services\Contracts;
 
 use NEUQOJ\Repository\Models\User;
+use NEUQOJ\Repository\Models\UserGroup;
 
 
 interface UserGroupServiceInterface
@@ -28,7 +29,7 @@ interface UserGroupServiceInterface
 
     function isGroupExistById(int $id):bool;
 
-    function createUserGroup(User $owner,array $data):bool;
+    function createUserGroup(User $owner,array $data):int;
 
     //显示用户组的信息面板
     function getGroupIndex(int $groupId,User $user);
@@ -45,9 +46,9 @@ interface UserGroupServiceInterface
     function isUserGroupFull(int $groupId):bool;
 
     //验证失败抛出异常
-    function joinGroupByPassword(User $user,int $groupId,string $password):bool;
+    function joinGroupByPassword(User $user,UserGroup $group,string $password):bool;
 
-    function joinGroupByInvite(User $user,int $groupId):bool;
+    function joinGroupWithoutPassword(User $user,UserGroup $group):bool;
 
     function updateGroup(array $data,int $groupId):bool;
 

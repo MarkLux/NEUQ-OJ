@@ -6,14 +6,8 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
-use NEUQOJ\Exceptions\InnerError;
-use NEUQOJ\Exceptions\NoPermissionException;
-use NEUQOJ\Exceptions\PasswordErrorException;
-use NEUQOJ\Exceptions\UserGroupExistedException;
-use NEUQOJ\Exceptions\UserGroupNotExistException;
-use NEUQOJ\Http\Requests;
+use NEUQOJ\Exceptions\UserGroup\UserGroupNotExistException;
 use NEUQOJ\Services\UserGroupService;
-use Illuminate\Support\Facades\Hash;
 
 class UserGroupController extends Controller
 {
@@ -34,7 +28,8 @@ class UserGroupController extends Controller
             'name' => 'required|max:100',
             'description' => 'max:512',
             'max_size' => 'required|integer|max:300',
-            'password' => 'min:6|max:20'//明文显示
+            'password' => 'min:6|max:20',//明文显示
+            'is_closed' => 'boolean'
         ]);
 
         if($validator->fails())
@@ -45,49 +40,28 @@ class UserGroupController extends Controller
             'description' => $request->description,
             'max_size' => $request->max_size,
             'password' => $request->password?bcrypt($request->password):null,
+            'is_closed' => $request->is_closed
         ];
 
-        if(!$this->userGroupService->createUserGroup($request->user->id,$data))
-            throw new InnerError('Fail to create user group');
+        $groupId = $this->userGroupService->createUserGroup($request->user,$data);
 
-//        if($request->members!=null)
-//        {
-//            //TODO 发送邀请给指定的用户，需要用到apply模块,未完成
-//        }
+        //TODO 创建时应该尝试对指定的多个用户发送邀请
 
-        $group = $this->userGroupService->getGroupBy($request->user->id,$request->name);
+
 
         return response()->json([
             "code" => 0,
             "data" => [
-                "group_id" => $group->id
+                "group_id" => $groupId
             ]
         ]);
 
     }
 
-    public function getGroupList()
-    {
-        //TODO 获取组列表并显示
-    }
 
-    public function getIndex(Request $request,$groupId)
-    {
-        $group = $this->userGroupService->getGroupById($groupId);
-
-        if($group == null)
-            throw new UserGroupNotExistException();
-
-        //先判断访问者与用户组的关系
-
-        if(!$this->userGroupService->isUserInGroup($request->user->id,$groupId)&&$group->owner_id!=$request->user->id)
-            throw new NoPermissionException();
-
-        //TODO 显示更多信息
-        $data = $this->userGroupService->getMembers($groupId);
-
-        return response()->json($data);
-    }
+    /**
+     * 加入用户组
+     */
 
     public function joinGroup(Request $request,$groupId)
     {
@@ -96,22 +70,53 @@ class UserGroupController extends Controller
         if($group == null)
             throw new UserGroupNotExistException();
 
-        if(!Hash::check($request->password,$group->password))
-            throw new PasswordErrorException();
 
-        if($this->userGroupService->isUserInGroup($request->user->id,$groupId))
-            throw new UserInGroupExcepstion();
+        if($group->password == null)
+            $this->userGroupService->joinGroupWithoutPassword($request->user,$group);
+        else
+        {
+            $validator = Validator::make($request->all(), [
+                'password' => 'required|max:20'
+            ]);
 
-        if($this->userGroupService->addUserTo($request->user,$groupId))
+            if ($validator->fails())
+                throw new FormValidatorException($validator->getMessageBag()->all());
+            $this->userGroupService->joinGroupByPassword($request->user,$group,$request->password);
+
             return response()->json([
                 "code" => 0
             ]);
-        else
-            throw new InnerError('Fail to add uesr in group');
+        }
     }
 
-    public function dismiss()
+    /**
+     * 分页的用户查询
+     */
+
+    public function getMembers(Request $request,$groupId)
     {
-        //TODO 解散一个用户组
+        if(!$this->userGroupService->isGroupExistById($groupId))
+            throw new UserGroupNotExistException();
+
+        $total_count = $this->userGroupService->getGroupMembersCount($groupId);
+
+        $validator = Validator::make($request->all(),[
+            'size' => 'integer|min:1|max:50',
+            'page' => 'integer|min:1|max:500'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBad()->all());
+
+        $size = $request->input('size',10);
+        $page = $request->input('page',1);
+
+        $data = $this->userGroupService->getGroupMembers($groupId,$page,$size);
+
+        return response()->json([
+            "code" => "0",
+            "data" => $data
+        ]);
     }
+
 }
