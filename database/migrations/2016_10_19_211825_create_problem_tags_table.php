@@ -12,7 +12,7 @@ class CreateProblemCategoriesTable extends Migration
      */
     public function up()
     {
-        Schema::create('problem_categories', function (Blueprint $table) {
+        Schema::create('problem_tags', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name',45);
             $table->timestamps();
@@ -26,6 +26,6 @@ class CreateProblemCategoriesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('problem_categories');
+        Schema::drop('problem_tags');
     }
 }

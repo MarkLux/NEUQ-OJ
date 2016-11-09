@@ -15,10 +15,12 @@ class CreateUserGroupTable extends Migration
         Schema::create('user_groups', function (Blueprint $table) {
             $table->increments('id');
             $table->bigInteger('owner_id');
+            $table->string('owner_name',100);
             $table->string('name',100);
             $table->string('description',512);
             $table->string('password');
             $table->integer('size');
+            $table->integer('max_size');
             $table->timestamps();
         });
     }

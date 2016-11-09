@@ -8,16 +8,16 @@
 
 namespace NEUQOJ\Services;
 
-use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\UsrPriRepository;
-use Predis\Cluster\Distributor\EmptyRingException;
+use NEUQOJ\Services\Contracts\UserServiceInterface;
 
 
 class UserService
 {
     private $userRepo;
+
 
     public function __construct(UserRepository $userRepository)
     {
@@ -26,68 +26,35 @@ class UserService
 
     public function isUserExist(string $attribute,string $param):bool
     {
-        $user = $this->userRepo
-            ->getBy($attribute,$param)
-            ->first();
-
+        $user = $this->userRepo->getBy($attribute,$param)->first();
         if($user == null)
             return false;
         else
             return true;
     }
 
-    public function getUser(int $id, string $attribute = "id"):array
+    public function getUser(int $id,string $attribute = 'id')
     {
-        if($attribute == "id")
-            return $this->userRepo
-                ->get($id)
-                ->first();
+        if($attribute == 'id')
+            return $this->userRepo->get($id)->first();
         else
-            return $this->userRepo
-                ->getBy($attribute,$id)
-                ->first();
+            return $this->userRepo->getBy($attribute,$id)->first();
     }
 
-    public function updateUser(array $data,int $id, string $attribute = "id"):int
+    public function updateUser(array $data,int $id,string $attribute = 'id'):int
     {
-        return $this->userRepo
-            ->update($data,$id,$attribute);
+        return $this->userRepo->update($data,$id,$attribute);
     }
 
     public function createUser(array $data):bool
     {
-        return $this->userRepo
-            ->insert($data);
+        return $this->userRepo->insert($data);
     }
 
-    public function lockUser(int $id):bool
+    public function activeUser($userId)
     {
-        $user = $this->userRepo
-            ->get($id)
-            ->first();
-
-        if($user==null) {
-            return false;
-        }else {
-            $this->userRepo
-                ->update(['status'=>-1],$user['id']);
-            return true;
-        }
+        $user = $this->userRepo->get($userId);
+        if($user!=null && $user->status != 1)
+            $this->userRepo->update(['status' => 1],$userId);
     }
-
-    public function unlockUser(int $id):bool
-    {
-        $user = $this->userRepo
-            ->get($id)
-            ->first();
-
-        if($user==null) {
-            return false;
-        }else {
-            $this->userRepo
-                ->update(['status'=>1],$user['id']);
-            return true;
-        }
-    }
-
 }

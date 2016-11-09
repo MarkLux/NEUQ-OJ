@@ -3,6 +3,7 @@
 namespace NEUQOJ\Http\Middleware;
 
 use Closure;
+use NEUQOJ\Common\Utils;
 use NEUQOJ\Repository\Eloquent\TokenRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Exceptions\NeedLoginException;
@@ -31,6 +32,8 @@ class TokenMiddleware
     public function handle($request, Closure $next)
     {
 
+        $time = Utils::createTimeStamp();
+
         if(!$request->hasHeader('token'))
             throw new NeedLoginException();
 
@@ -41,7 +44,7 @@ class TokenMiddleware
         if($token == null)
             throw new NeedLoginException();
 
-        if($token->expires_at < time())
+        if($token->expires_at < $time)
             throw new TokenExpireException();
         $user = $this->userRepository->get($token->user_id)->first();
 
