@@ -39,7 +39,7 @@ class ApplyService
         if($status)
             //私信(待做）
             return response()->json([
-                'code' => '1'
+                'code' => 'a1'
             ]);
         else
         {
