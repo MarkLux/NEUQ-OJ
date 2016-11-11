@@ -9,6 +9,8 @@
 namespace NEUQOJ\Services\Contracts;
 
 
+use NEUQOJ\Services\TokenService;
+
 interface UserServiceInterface
 {
     /*
@@ -23,9 +25,9 @@ interface UserServiceInterface
 
     function getUsers(array $data):array;
 
-    function updateUserById(int $userId,$data):bool;
+    function updateUserById(int $userId,array $data):bool;
 
-    function updateUser(array $condition,$data):array;
+    function updateUser(array $condition,array $data):bool;
 
     //可能会有更新多个用户的方法
 
@@ -38,9 +40,13 @@ interface UserServiceInterface
     function isUserExist(array $data):bool;
     //内部使用一次Where查询
 
-    function login(string $key,string $password);
+    function register(array $data):bool;
 
-    function logout(int $userId);
+    function login(array $data);
+
+    function logout(int $userId,TokenService $tokenService):bool;
 
     function getUserRole(int $userId);
+
+
 }

@@ -8,53 +8,221 @@
 
 namespace NEUQOJ\Services;
 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use NEUQOJ\Common\Utils;
+use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\PasswordErrorException;
+use NEUQOJ\Exceptions\UserExistedException;
+use NEUQOJ\Exceptions\UserNotExistException;
+use NEUQOJ\Http\Requests\Request;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\UsrPriRepository;
 use NEUQOJ\Services\Contracts\UserServiceInterface;
 
 
-class UserService
+class UserService implements UserServiceInterface
 {
     private $userRepo;
-
 
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepo = $userRepository;
     }
 
-    public function isUserExist(string $attribute,string $param):bool
+    public function isUserExist(array $data):bool
     {
-        $user = $this->userRepo->getBy($attribute,$param)->first();
+        // TODO: Implement isUserExist() method.
+        $user = $this->userRepo->getByMult($data)->first();
+
         if($user == null)
-            return false;
+            throw new UserNotExistException();
         else
             return true;
     }
 
-    public function getUser(int $id,string $attribute = 'id')
+    public function getUserById(int $userId)
     {
-        if($attribute == 'id')
-            return $this->userRepo->get($id)->first();
+        // TODO: Implement getUserById() method.
+        $user = $this->userRepo->get($userId)->first();
+        if($user == null)
+            return false;
         else
-            return $this->userRepo->getBy($attribute,$id)->first();
+            return $user;
+
     }
 
-    public function updateUser(array $data,int $id,string $attribute = 'id'):int
+    public function getUserBy(string $param, $value)
     {
-        return $this->userRepo->update($data,$id,$attribute);
+        // TODO: Implement getUserBy() method.
+        $user = $this->userRepo->getBy($param,$value)->first();
+        if($user == null)
+            return false;
+        else
+            return $user;
+    }
+
+    public function getUserByMult(array $condition)
+    {
+        // TODO: Implement getUserByMult() method.
+        $user = $this->userRepo->getByMult($condition)->first();
+        if($user == null)
+            return false;
+        else
+            return $user;
+    }
+
+    public function getUsers(array $data):array
+    {
+        // TODO: Implement getUsers() method.
+        $users = $this->userRepo->getByMult($data);
+
+        if($users == null)
+            throw new UserNotExistException();
+        else
+            return $users;
+    }
+
+    public function updateUserById(int $userId,array $data):bool
+    {
+        // TODO: Implement updateUserById() method.
+        if($this->userRepo->update($data,$userId))
+            return true;
+        else
+            return false;
+    }
+
+    public function updateUser(array $condition, array $data):bool
+    {
+        // TODO: Implement updateUser() method.
+        if($this->userRepo->updateWhere($condition,$data))
+            return true;
+        else
+            return false;
     }
 
     public function createUser(array $data):bool
     {
-        return $this->userRepo->insert($data);
+        // TODO: Implement createUser() method.
+        if($this->userRepo->insert($data))
+            return true;
+        else
+            return false;
     }
 
-    public function activeUser($userId)
+    public function lockUser(int $userId):bool
     {
-        $user = $this->userRepo->get($userId);
-        if($user!=null && $user->status != 1)
-            $this->userRepo->update(['status' => 1],$userId);
+       // TODO: Implement lockUser() method.
+        $user = $this->userRepo->get($userId)->first();
+
+        if($user == null)
+            throw new UserNotExistException();
+
+        $data = [
+            'status' => -1
+        ];
+        $this->userRepo->update($data,$user['id']);
+
+        return true;
     }
+
+    public function unlockUser(int $userId):bool
+    {
+        // TODO: Implement unlockUser() method.
+        $user = $this->userRepo->get($userId)->first();
+
+        if($user == null)
+            throw new UserNotExistException();
+
+        $data = [
+            'status' => 0
+        ];
+        $this->userRepo->update($data,$user['id']);
+
+        return true;
+    }
+
+    public function register(array $data):bool
+    {
+        // TODO: Implement register() method.
+        $validator = Validator::make($data,[
+            'name' => 'required|max:100',
+            'email' => 'required|email|max:100',
+            'mobile' => 'required|max:45',
+            'password' => 'required|confirmed|min:6|max:20'
+        ]);
+
+        if($validator->fails()) {
+            $error = $validator->getMessageBag()->all();
+            throw new FormValidatorException($error);
+        }
+        //检查手机号
+        if(!Utils::IsMobile($data['mobile']))
+            throw new FormValidatorException(['Mobile Number Error']);
+
+        if($this->isUserExist(['mobile',$data['mobile']]) || $this->isUserExist(['email',$data['email']]))
+            throw new UserExistedException();
+
+        if($this->isUserExist(['name',$data['name']]))
+            throw new FormValidatorException(["User Name Has Been Registered"]);
+
+        $user = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'mobile' => $data['mobile'],
+            'password' => bcrypt($data['password']),
+            'school' => $data['school'] ? $data['school'] : "Unknown",
+        ];
+
+        $this->createUser($user);
+
+        return true;
+    }
+
+    public function login(array $data)
+    {
+        // TODO: Implement login() method.
+        $validator = Validator::make($data,[
+            'identifier' => 'required|max:100',
+            'password' => 'required|min:6'
+        ]);
+
+        if($validator->fails()) {
+            $error = $validator->getMessageBag->all();
+            throw new FormValidatorException($error);
+        }
+
+        //正则判断登录名类型
+        if(Utils::IsMobile($data['identifier'])) {
+            $user = $this->getUserBy('mobile',$data['identifier']);
+        } elseif(Utils::IsEmail($data['identifier'])) {
+            $user = $this->getUserBy('email',$data['identifier']);
+        } else {
+            throw new FormValidatorException(["Invalid Identifier Format"]);
+        }
+
+        if($user == null)
+            throw new UserNotExistException();
+
+        if(!Hash::check($data['password'],$user->password))
+            throw new PasswordErrorException();
+
+        return $user;
+    }
+
+    public function logout(int $userId,TokenService $tokenService):bool
+    {
+        // TODO: Implement logout() method.
+        $tokenService->destoryToken($userId);
+
+        return true;
+    }
+
+    public function getUserRole(int $userId)
+    {
+        // TODO: Implement getUserRole() method.
+    }
+
+
 }

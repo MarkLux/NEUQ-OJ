@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProblemCategoriesTable extends Migration
+class CreateProblemTagsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -28,4 +28,4 @@ class CreateProblemCategoriesTable extends Migration
     {
         Schema::drop('problem_tags');
     }
-}
+}t
