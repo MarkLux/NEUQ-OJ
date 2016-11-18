@@ -17,7 +17,7 @@ class RolePrivilegeRepository extends AbstractRepository
     }
     function deleteBy($roleId)
     {
-        return $this->model->where('roleId')->destory();
+        return $this->model->where('roleId',$roleId)->destory();
     }
 
 }
