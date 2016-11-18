@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="950ff1d4-a9b5-45ed-affb-c9256db818e9" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/repository/src/Eloquent/RolePriRepository.php" afterPath="$PROJECT_DIR$/repository/src/Eloquent/RolePriRepository.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/repository/src/Eloquent/UserRoleRepository.php" afterPath="$PROJECT_DIR$/repository/src/Eloquent/UserRoleRepository.php" />
     </list>
     <ignored path="MinggeOJ.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -496,7 +494,7 @@
       <workItem from="1479309050485" duration="2607000" />
       <workItem from="1479499654648" duration="8515000" />
       <workItem from="1479508536077" duration="619000" />
-      <workItem from="1479509320257" duration="267000" />
+      <workItem from="1479509320257" duration="292000" />
     </task>
     <task id="LOCAL-00001" summary="保存（角色服务）">
       <created>1479508282148</created>
@@ -505,11 +503,18 @@
       <option name="project" value="LOCAL" />
       <updated>1479508282148</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="保存（角色服务）">
+      <created>1479509607647</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1479509607647</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="53123000" />
+    <option name="totallyTimeSpent" value="53148000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
