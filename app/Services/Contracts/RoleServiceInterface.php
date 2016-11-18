@@ -18,9 +18,13 @@ interface RoleServiceInterface
 
     function giveRoleTo(int $userId,string $role);
 
-    function getRole(string $name):Role;
+   // function getRole(string $name):Role;
 
     function deleteRole($roleId);
 
     function updateRole(array $condition,array $data);
+
+    function getRoleDetailById($roleId);
+
+    function getRoleDetailByName($name);
 }
