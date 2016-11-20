@@ -13,8 +13,7 @@ class UserController extends Controller
 {
     public function register(Request $request,UserService $userService)
     {
-        $data = $request->all();
-        if(!$userService->register($data))
+        if(!$userService->register($request->all()))
             throw new RegisterErrorException();
         return response()->json([
             'code' => '0',

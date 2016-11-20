@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProblemTagRelationsTable extends Migration
+class CreateProblemCategoryRelationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,11 +12,11 @@ class CreateProblemTagRelationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('problem_tag_relations', function (Blueprint $table) {
+        Schema::create('problem_category_relations', function (Blueprint $table) {
             $table->bigInteger('problem_id');
-            $table->integer('tag_id');
+            $table->integer('category_id');
             $table->string('problem_title',100);
-            $table->string('tag_title',45);
+            $table->string('category_title',45);
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ class CreateProblemTagRelationsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('problem_tag_relations');
+        Schema::drop('problem_category_relations');
     }
 }
