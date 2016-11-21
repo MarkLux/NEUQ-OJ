@@ -60,24 +60,18 @@ class UserGroupService implements UserGroupServiceInterface
      * 搜索
      */
 
-    public function searchGroupsCount(array $condition):int
+    public function searchGroupsCount(string $keyword):int
     {
-        // TODO: Implement searchGroupsCount() method.
+        $pattern = '%'.$keyword.'%';//在这里定义模式串
+        //未支持嵌套
+        return $this->userGroupRepo->getWhereLikeCount($pattern);
     }
 
-    public function searchGroupsBy(array $condition, string $orderBy, int $start, int $size):array
+    public function searchGroupsBy(string $keyword,int $page =1, int $size =15)
     {
-        // TODO: Implement searchGroupsBy() method.
-    }
+        $pattern = '%'.$keyword.'%';
 
-    public function searchGroupsByNameLikeCount(string $likeName):int
-    {
-        // TODO: Implement searchGroupsByNameLikeCount() method.
-    }
-
-    public function searchGroupsByNameLike(string $likeName, string $orderBy, int $start, int $size):array
-    {
-        // TODO: Implement searchGroupsByNameLike() method.
+        return $this->userGroupRepo->getWhereLike($pattern,$page,$size);
     }
 
     /**
@@ -106,14 +100,17 @@ class UserGroupService implements UserGroupServiceInterface
 
     public function isUserGroupFull(int $groupId):bool
     {
-        //直接用存在表中的字段来判断，快捷
-        $group = $this->userGroupRepo->get($groupId);
+        $group = $this->getGroupById($groupId);
+
         if($group == null)
             throw new UserGroupNotExistException();
 
-        if($group->size >= $group->max_size)
+        $size = $this->relationRepo->getMemberCountById($groupId);
+
+        if($size >= $group->max_size)
             return true;
-        return false;
+        else
+            return false;
     }
 
     public function isUserGroupStudent(int $userId, int $groupId):bool
@@ -144,12 +141,7 @@ class UserGroupService implements UserGroupServiceInterface
     //创建
     public function createUserGroup(User $owner,array $data):int
     {
-        $userGroup = $this->userGroupRepo->getByMult([
-            'owner_id' => $owner->id,
-            'name' => $data['name']
-        ])->first();
-
-        if($userGroup!=null)
+        if($this->isGroupExistByName($data['name']))
             throw new UserGroupExistedException();
 
         $data['owner_id'] = $owner->id;

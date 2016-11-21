@@ -64,15 +64,10 @@ interface UserGroupServiceInterface
     function changeGroupOwner(int $groupId,int $newOwnerId);
 
     //查找用户组部分，根据实际情况增删
-    function searchGroupsCount(array $condition):int;
+    function searchGroupsCount(string $keyword):int;
 
-    function searchGroupsBy(array $condition,string $orderBy,int $start,int $size):array;
+    function searchGroupsBy(string $keyword,int $page = 1,int $size = 15);
 
-    //还需要模糊查询
-
-    function searchGroupsByNameLikeCount(string $likeName):int;
-
-    function searchGroupsByNameLike(string $likeName,string $orderBy,int $start,int $size):array;
 
     /*
     *公告板
@@ -82,7 +77,7 @@ interface UserGroupServiceInterface
 
     function getGroupNoticesCount(int $groupId):int;
 
-    function getGroupNotices(int $groupId,int $start,int $size):array;
+    function getGroupNotices(int $groupId,int $page,int $size):array;
 
     /*
     *作业
@@ -90,7 +85,7 @@ interface UserGroupServiceInterface
 
     function getGroupHomeworksCount(int $groupId):int;
 
-    function getGroupHomeworks(int $groupId,int $start,int $size):array;
+    function getGroupHomeworks(int $groupId,int $page,int $size):array;
 
     /*
     *考试
@@ -98,13 +93,13 @@ interface UserGroupServiceInterface
 
     function getGroupExamsCount(int $groupId):int;
 
-    function getGroupExams(int $groupId,int $start,int $size):array;
+    function getGroupExams(int $groupId,int $page,int $size):array;
 
     /*
     *组成员部分
     */
 
-    function getGroupMembers(int $groupId,int $start,int $size):array;
+    function getGroupMembers(int $groupId,int $page,int $size):array;
 
     function getGroupMembersCount(int $groupId):int;
 }

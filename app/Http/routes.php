@@ -26,5 +26,6 @@ Route::group(['middleware' => 'token'],function (){
         Route::get('/{id}','UserGroupController@getIndex');
         Route::get('/{id}/members','UserGroupController@getMembers');
         Route::post('/{id}/join-in','UserGroupController@joinGroup');
+        Route::get('/search/{keyword}','UserGroupController@searchGroups');
     });
 });

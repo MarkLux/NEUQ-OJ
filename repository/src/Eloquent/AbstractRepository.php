@@ -51,7 +51,7 @@ abstract class AbstractRepository implements RepositoryInterface
             ->get($columns);
     }
 
-
+    //在多个候选列表中的匹配
     function getIn($param,array $data,array $columns = ['*'])
     {
         return $this->model
