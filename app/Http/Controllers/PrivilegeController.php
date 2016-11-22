@@ -14,10 +14,7 @@ class PrivilegeController extends Controller
     {
 
     }
-/*
- * 提交教师申请
- */
-//
+
 
 
 }

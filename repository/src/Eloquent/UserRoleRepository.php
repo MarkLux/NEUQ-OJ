@@ -12,8 +12,10 @@ namespace NEUQOJ\Repository\Eloquent;
 class UserRoleRelation extends AbstractRepository
 {
     function model(){
+
         return "NEUQOJ\Repository\Models\UserRoleRelation";
     }
+
     function deleteBy($roleId)
     {
         return $this->model->where('roleId',$roleId)->destory();
