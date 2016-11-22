@@ -55,11 +55,9 @@ interface UserGroupServiceInterface
     //修改用户在小组中的身份注明
     function updateUserInfo(int $userId,int $groupId,array $data):bool;
 
-    function deleteUser(int $userId,int $groupId):bool;
+    function deleteUserFromGroup(int $userId,int $groupId):bool;
 
-    function quitGroup(int $userId,int $groupId):bool;
-
-    function deleteGroup(int $groupId):bool;
+    function deleteGroup(int $groupId);
 
     function changeGroupOwner(int $groupId,int $newOwnerId);
 
@@ -99,7 +97,7 @@ interface UserGroupServiceInterface
     *组成员部分
     */
 
-    function getGroupMembers(int $groupId,int $page,int $size):array;
+    function getGroupMembers(int $groupId,int $page,int $size);
 
     function getGroupMembersCount(int $groupId):int;
 }

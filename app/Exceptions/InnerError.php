@@ -18,5 +18,5 @@ class InnerError extends BaseException
         $this->data = $data;
     }
 
-    protected $code = 0000;
+    protected $code = 500;
 }

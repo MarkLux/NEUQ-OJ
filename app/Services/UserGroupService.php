@@ -22,6 +22,7 @@ use NEUQOJ\Repository\Eloquent\UserGroupRelationRepository;
 use NEUQOJ\Repository\Models\UserGroup;
 use NEUQOJ\Services\Contracts\UserGroupServiceInterface;
 use NEUQOJ\Repository\Models\User;
+use NEUQOJ\Exceptions\InnerError;
 
 
 class UserGroupService implements UserGroupServiceInterface
@@ -129,6 +130,9 @@ class UserGroupService implements UserGroupServiceInterface
     {
         $group = $this->userGroupRepo->get($groupId)->first();
 
+        if($group == null)
+            throw new UserGroupNotExistException();
+
         if($group->owner_id == $userId)
             return true;
         return false;
@@ -151,7 +155,7 @@ class UserGroupService implements UserGroupServiceInterface
     }
 
     //删除
-    public function deleteGroup(int $groupId):bool
+    public function deleteGroup(int $groupId)
     {
         // TODO: Implement deleteGroup() method.
     }
@@ -251,21 +255,36 @@ class UserGroupService implements UserGroupServiceInterface
         return $this->relationRepo->getMemberCountById($groupId);
     }
 
-    public function getGroupMembers(int $groupId, int $page, int $size):array
+    public function getGroupMembers(int $groupId, int $page, int $size)
     {
         //TODO 可能需要join一些信息
 
-        return $this->relationRepo->paginate($page,$size,['group_id' => $groupId])->toArray();
+        return $this->relationRepo->paginate($page,$size,['group_id' => $groupId]);
     }
 
-    public function quitGroup(int $userId, int $groupId):bool
-    {
-        // TODO: Implement quitGroup() method.
-    }
+    /*
+     *从某个组中删除用户（删除关系）
+     *  */
 
-    public function deleteUser(int $userId, int $groupId):bool
+    public function deleteUserFromGroup(int $userId, int $groupId):bool
     {
-        // TODO: Implement deleteUser() method.
+        //检查：用户组的所有者是不能退出用户组的（关系表中也没这个关系）
+
+        if($this->isUserGroupOwner($userId,$groupId))
+            throw new InnerError("Owner can't quit the group");
+
+        $param = [
+            'user_id' => $userId,
+            'group_id' => $groupId
+        ];
+
+        //检查用户
+        $relation = $this->relationRepo->getByMult($param)->first();
+
+        if($relation == null)
+            throw new UserNotInGroupException();
+
+        return $this->relationRepo->deleteWhere($param) == 1;
     }
 
     /**
