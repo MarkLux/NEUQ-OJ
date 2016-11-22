@@ -9,11 +9,11 @@
 namespace NEUQOJ\Repository\Eloquent;
 
 
-class RolePrivilegeRepository extends AbstractRepository
+class RolePriRepository extends AbstractRepository
 {
     function model()
     {
-        return "NEUQOJ\Repository\Models\RolePrivilegeRepository";
+        return "NEUQOJ\Repository\Models\RolePrivilegeRelation";
     }
     function deleteBy($roleId)
     {

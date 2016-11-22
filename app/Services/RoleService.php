@@ -9,22 +9,24 @@
 namespace NEUQOJ\Services;
 
 
-use NEUQOJ\Repository\Models\Role;
-use NEUQOJ\Repository\Models\RolePrivilegeRelation;
-use NEUQOJ\Repository\Models\UserRoleRelation;
+use NEUQOJ\Repository\Eloquent\RolePriRepository;
+use NEUQOJ\Repository\Eloquent\RoleRepository;
+use NEUQOJ\Repository\Eloquent\UserRoleRepository;
 use NEUQOJ\Services\Contracts\RoleServiceInterface;
-use NEUQOJ\user_role_relations;
+
 
 class RoleService implements RoleServiceInterface
 {
     private $RoleRepo;
     private $UserRoleRepo;
     private $RolePrRepo;
-    public function __construct(Role $RoleRepo,UserRoleRelation $userRoleRelation,RolePrivilegeRelation $rolePrivilegeRelation)
+    private $PriSer;
+    public function __construct(PrivilegeService $privilegeService,RoleRepository $RoleRepo,UserRoleRepository $userRoleRelation,RolePriRepository $rolePrivilegeRelation)
     {
         $this->RoleRepo = $RoleRepo;
         $this->UserRoleRepo = $userRoleRelation;
         $this->RolePrRepo = $rolePrivilegeRelation;
+        $this->PriSer = $privilegeService;
     }
 
     function hasRole(int $userId,string $role):bool
@@ -46,20 +48,33 @@ class RoleService implements RoleServiceInterface
          * 将角色名和描述 插入 Roles表
          */
         $role = [
-            'role'=>$data['role'],
+            'name'=>$data['role'],
             'description'=>$data['description'],
         ];
         if(!($this->RoleRepo->insert($role)))
             return false;
+
         /*
-         * 遍历权限数组 循环将角色 权限插入
+         * 获取role_id ,privilege_id
          */
-        foreach ($data['privilege'] as $item)
-        $rolePrRelation = [
-            'role'=>$data['role'],
-            'privilege'=>$item,
-        ];
-        return $this->RolePrRepo->insert($rolePrRelation);
+        $arr = $this->getRoleDetailByName($data['role']);
+        $roleId = $arr->id;
+
+        /*
+             * 遍历权限数组 循环将角色 权限插入
+              */
+        foreach ($data['privilege'] as $item){
+            $priId = $this->PriSer->getPrivilegeDetailByName($item)->id;
+            $rolePrRelation = array(
+              'role_id' => $roleId,
+                'privilege_id'=>$priId,
+                'role'=>$data['role'],
+            );
+            if(!($this->RolePrRepo->insert($rolePrRelation)))
+                return false;
+        }
+
+        return true;
 
     }
     /*
@@ -77,11 +92,15 @@ class RoleService implements RoleServiceInterface
       return $this->UserRoleRepo->insert($data);
     }
 
-//    function getRole(string $name):Role
-//    {
-//       return $this->UserRoleRepo->get($name)->first();
-//    }
+    function roleExisted(string $role):bool
+    {
+        $bool = $this->getRoleDetailByName($role);
+        if($bool == NUll)
+            return false;
+        else
+            return true;
 
+    }
     /*
      * 删除角色 roles表 user_role_relations表 role_privilege_relations表
      */

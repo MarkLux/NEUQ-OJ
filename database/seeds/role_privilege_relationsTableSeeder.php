@@ -16,18 +16,21 @@ class role_privilege_relationsTableSeeder extends Seeder
                 array(
                     'role_id'=>1,
                     'privilege_id'=>2,
+                    'role'=>'teacher',
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
                 array(
                     'role_id'=>1,
                     'privilege_id'=>3,
+                    'role'=>'teacher',
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
                 array(
                     'role_id'=>2,
                     'privilege_id'=>1,
+                    'role'=>'admin',
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
@@ -35,24 +38,28 @@ class role_privilege_relationsTableSeeder extends Seeder
                 (
                     'role_id'=>2,
                     'privilege_id'=>2,
+                    'role'=>'admin',
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
                 array(
                     'role_id'=>2,
                     'privilege_id'=>3,
+                    'role'=>'admin',
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
                 array(
                     'role_id'=>2,
                     'privilege_id'=>4,
+                    'role'=>'admin',
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
                 array(
                     'role_id'=>2,
                     'privilege_id'=>5,
+                    'role'=>'admin',
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 )

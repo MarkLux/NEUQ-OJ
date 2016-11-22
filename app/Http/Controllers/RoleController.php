@@ -9,14 +9,40 @@
 namespace NEUQOJ\Http\Controllers;
 
 
-use NEUQOJ\Http\Requests\Request;
+use Illuminate\Http\Request;
+use League\Flysystem\Exception;
+use NEUQOJ\Exceptions\RoleExistedException;
 use NEUQOJ\Services\RoleService;
 
 class RoleController extends Controller
 {
 
-    public function createRole(Request $request,RoleService $roleService)
+    public function createRole(RoleService $roleService,Request $request)
     {
-        return $roleService->createRole($request);
+        $validator = Validator::make($request->all(), [
+            'role' => 'required|max:30',
+            'privilege'=>'required',
+            'description'=>'required|max:100'
+        ]);
+
+
+        if($validator->fails())
+        {
+            $data = $validator->getMessageBag()->all();
+            throw new FormValidatorException($data);
+        }
+
+        if($roleService->roleExisted($request->get('role')))
+            throw new RoleExistedException();
+
+        $data = array(
+            'role'=>$request->get('role'),
+            'privilege'=>$request->get('privilege'),
+            'description'=>$request->get('description'),
+        );
+        if($roleService->createRole($data))
+            return response()->json([
+                'code' => '0'
+            ]);
     }
 }

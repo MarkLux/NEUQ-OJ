@@ -18,7 +18,7 @@ interface RoleServiceInterface
 
     function giveRoleTo(int $userId,string $role);
 
-   // function getRole(string $name):Role;
+    function roleExisted(string $role):bool;
 
     function deleteRole($roleId);
 

@@ -9,7 +9,7 @@
 namespace NEUQOJ\Repository\Eloquent;
 
 
-class UserRoleRelation extends AbstractRepository
+class UserRoleRepository extends AbstractRepository
 {
     function model(){
 

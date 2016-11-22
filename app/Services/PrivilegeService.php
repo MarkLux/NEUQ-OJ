@@ -8,6 +8,7 @@
 
 namespace NEUQOJ\Services;
 
+use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 class PrivilegeService
 {
@@ -16,10 +17,15 @@ class PrivilegeService
     const ADMIN = 'admin';
     const RoleTea = 1;
     const RoleAdmin = 2;
-    private $usrRe;
-    public function __construct()
+    private $priRepo;
+    public function __construct(PrivilegeRepository $privilegeRepository)
     {
-//       $this->usrRe = $userRepository;
+        $this->priRepo = $privilegeRepository;
+    }
+
+    public function getPrivilegeDetailByName(string $name)
+    {
+        return $this->priRepo->getBy('name',$name)->first();
     }
     /*
      * 确认做出请求的用户的角色
@@ -29,23 +35,23 @@ class PrivilegeService
      *
      */
 
-    public function confirmRole($id,UserRepository $userRepository)
-    {
-
-        $user = $userRepository->getBy('mobile',$id)->first();
-
-        $role = $user->role;
-        //dd($role);dd($user);
-        if($user->role)
-        {
-            if($role == 1)
-                return self::TEACHER;
-            if ($role == 2)
-                return self::ADMIN;
-        }
-        else
-            return false;
-    }
+//    public function confirmRole($id,UserRepository $userRepository)
+//    {
+//
+//        $user = $userRepository->getBy('mobile',$id)->first();
+//
+//        $role = $user->role;
+//        //dd($role);dd($user);
+//        if($user->role)
+//        {
+//            if($role == 1)
+//                return self::TEACHER;
+//            if ($role == 2)
+//                return self::ADMIN;
+//        }
+//        else
+//            return false;
+//    }
 
 
 }
