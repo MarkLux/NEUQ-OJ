@@ -89,7 +89,7 @@ class RoleService implements RoleServiceInterface
 
         $data = array(
             'user_id'=>$userId,
-            'role_id'=>$roleId
+            'role_id'=>$roleId,
         );
       return $this->UserRoleRepo->insert($data);
     }
