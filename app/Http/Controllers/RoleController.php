@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use League\Flysystem\Exception;
 use NEUQOJ\Exceptions\RoleExistedException;
 use NEUQOJ\Services\RoleService;
-
+use Validator;
 class RoleController extends Controller
 {
 
@@ -41,6 +41,14 @@ class RoleController extends Controller
             'description'=>$request->get('description'),
         );
         if($roleService->createRole($data))
+            return response()->json([
+                'code' => '0'
+            ]);
+    }
+
+    public function deleteRole(Request $request,RoleService $roleService)
+    {
+        if($roleService->deleteRole($request->roleId))
             return response()->json([
                 'code' => '0'
             ]);
