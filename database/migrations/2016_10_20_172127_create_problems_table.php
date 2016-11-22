@@ -28,7 +28,6 @@ class CreateProblemsTable extends Migration
             $table->integer('memory');
             $table->integer('submit');
             $table->integer('solved');
-            $table->boolean('is_public');
             $table->timestamps();
         });
     }

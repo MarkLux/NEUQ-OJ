@@ -30,22 +30,32 @@ abstract class AbstractRepository implements RepositoryInterface
         return $this->model->get($columns);
     }
 
-    function get($id, array $columns = ['*'], $primary = 'id')
+    function get(int $id, array $columns = ['*'],string $primary = 'id')
     {
         return $this->model
             ->where($primary, $id)
             ->get($columns);
     }
 
-    function getBy($param, $value,array $columns = ['*']){
+    function getBy(string $param,string $value,array $columns = ['*'])
+    {
         return $this->model
             ->where($param, $value)
             ->get($columns);
     }
 
-    function getByMult(array $params, array $columns = ['*']){
+    function getByMult(array $params, array $columns = ['*'])
+    {
         return $this->model
             ->where($params)
+            ->get($columns);
+    }
+
+
+    function getIn($param,array $data,array $columns = ['*'])
+    {
+        return $this->model
+            ->whereIn($param,$data)
             ->get($columns);
     }
 
@@ -75,7 +85,7 @@ abstract class AbstractRepository implements RepositoryInterface
             ->insert($data);
     }
 
-    function update(array $data, $id, $attribute="id")
+    function update(array $data,int $id, string $attribute="id")
     {
         if($this->model->timestamps){
             $current = new Carbon();
@@ -100,13 +110,43 @@ abstract class AbstractRepository implements RepositoryInterface
             ->update($data);
     }
 
-    function delete($id)
+
+    /**
+     * 多条件限定查找
+     */
+    function updateWhere(array $condition,array $data)
+    {
+        if($this->model->timestamps){
+            $current = new Carbon();
+
+            if(! is_array(reset($data))){
+                $data = array_merge($data,
+                    [
+                        'updated_at' => $current,
+                    ]);
+            }else{
+                foreach ($data as  $key => $value) {
+                    $data[$key] = array_merge($value,
+                        [
+                            'updated_at' => $current,
+                        ]);
+                }
+            }
+
+        }
+        return $this->model
+            ->where($condition)
+            ->update($data);
+    }
+
+
+    function delete(int $id)
     {
         return $this->model
             ->destory($id);
     }
 
-    function paginate($page = 1, $size = 15, $param = [], $columns = ['*'])
+    function paginate(int $page = 1,int $size = 15,array $param = [],array $columns = ['*'])
     {
         $qb = $this->model;
         if(!empty($size))
@@ -118,7 +158,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
     }
 
-    private function freshTimestamp()
+    private function freshTimestamp():Carbon
     {
         return new Carbon;
     }
