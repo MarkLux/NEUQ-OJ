@@ -84,7 +84,9 @@ class RoleService implements RoleServiceInterface
     function giveRoleTo(int $userId,string $role)
     {
         $roleData = $this->getRoleDetailByName($role);
-        $roleId = $roleData->role_id;
+
+        $roleId = $roleData->id;
+
         $data = array(
             'user_id'=>$userId,
             'role_id'=>$roleId

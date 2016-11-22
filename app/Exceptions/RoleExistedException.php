@@ -11,7 +11,7 @@ namespace NEUQOJ\Exceptions;
 
 class RoleExistedException extends BaseException
 {
-    protected $code = 2001;
+    protected $code = 3001;
 
     protected $data = "Role Existed";
 }
