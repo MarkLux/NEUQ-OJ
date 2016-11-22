@@ -106,7 +106,7 @@ class UserGroupController extends Controller
         ]);
 
         if($validator->fails())
-            throw new FormValidatorException($validator->getMessageBad()->all());
+            throw new FormValidatorException($validator->getMessageBag()->all());
 
         $size = $request->input('size',10);
         $page = $request->input('page',1);
@@ -114,8 +114,37 @@ class UserGroupController extends Controller
         $data = $this->userGroupService->getGroupMembers($groupId,$page,$size);
 
         return response()->json([
-            "code" => "0",
-            "data" => $data
+            "code" => 0,
+            "data" => $data,
+            "page_count" => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+        ]);
+    }
+
+    public function searchGroups(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'size' => 'integer|min:1|max:50',
+            'page' => 'integer|min:1|max:500',
+            'keyword' => 'required|max:30'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $size = $request->input('size',10);
+        $page = $request->input('page',1);
+
+        $total_count = $this->userGroupService->searchGroupsCount($request->keyword);
+
+        if($total_count > 0)
+            $data = $this->userGroupService->searchGroupsBy($request->keyword,$page,$size);
+        else
+            $data = [];
+
+        return response()->json([
+            "code" => 0,
+            "data" => $data,
+            "page_count" => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
         ]);
     }
 

@@ -11,11 +11,17 @@
 |
 */
 
+
+include 'Routes/UserGroup.php';
+
+include 'Routes/Auth.php';
+
+include 'Routes/Test.php';
+
 Route::get('/', function () {
     return 'here is the main page!!';
 });
 
-Route::post('/register','AuthController@register');
 
 Route::post('/login','AuthController@login');
 
