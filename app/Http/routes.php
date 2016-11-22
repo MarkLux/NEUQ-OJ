@@ -11,23 +11,14 @@
 |
 */
 
+
+include 'Routes/UserGroup.php';
+
+include 'Routes/Auth.php';
+
+include 'Routes/Test.php';
+
 Route::get('/', function () {
     return 'here is the main page!!';
 });
 
-Route::post('/register','AuthController@register');
-
-Route::post('/login','AuthController@login');
-
-Route::get('/user-group/search','UserGroupController@searchGroups');
-
-Route::group(['middleware' => 'token'],function (){
-    Route::get('/logout','AuthController@logout');
-    Route::group(['prefix' => 'user-group'],function(){
-        Route::post('/create','UserGroupController@createNewGroup');
-        Route::get('/{id}','UserGroupController@getIndex');
-        Route::get('/{id}/members','UserGroupController@getMembers');
-        Route::post('/{id}/join-in','UserGroupController@joinGroup');
-
-    });
-});
