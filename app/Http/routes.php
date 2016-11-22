@@ -30,5 +30,6 @@ Route::group(['middleware' => 'token'],function (){
     Route::post('/applyTeacher','PrivilegeController@applyTeacher');
     Route::post('/getApply','ApplyController@getApply');
     Route::post('/confirmRoleApply','ApplyController@confirmRoleApply');
+    Route::post('/createRole','RoleController@createRole');
 });
 Route::post('/testRegister','TestController@register');

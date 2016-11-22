@@ -9,14 +9,14 @@
 namespace NEUQOJ\Http\Controllers;
 
 
+use NEUQOJ\Http\Requests\Request;
+use NEUQOJ\Services\RoleService;
+
 class RoleController extends Controller
 {
-    public function showAll()
-    {
 
-    }
-    public function createRole()
+    public function createRole(Request $request,RoleService $roleService)
     {
-
+        return $roleService->createRole($request);
     }
 }
