@@ -19,6 +19,8 @@ Route::post('/register','AuthController@register');
 
 Route::post('/login','AuthController@login');
 
+Route::get('/user-group/search','UserGroupController@searchGroups');
+
 Route::group(['middleware' => 'token'],function (){
     Route::get('/logout','AuthController@logout');
     Route::group(['prefix' => 'user-group'],function(){
@@ -26,6 +28,6 @@ Route::group(['middleware' => 'token'],function (){
         Route::get('/{id}','UserGroupController@getIndex');
         Route::get('/{id}/members','UserGroupController@getMembers');
         Route::post('/{id}/join-in','UserGroupController@joinGroup');
-        Route::get('/search/{keyword}','UserGroupController@searchGroups');
+
     });
 });

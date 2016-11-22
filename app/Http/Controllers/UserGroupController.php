@@ -120,12 +120,12 @@ class UserGroupController extends Controller
         ]);
     }
 
-    public function searchGroups(Request $request,$keyword)
+    public function searchGroups(Request $request)
     {
         $validator = Validator::make($request->all(),[
             'size' => 'integer|min:1|max:50',
-            'page' => 'integer|min:1|max:500'
-//            'keyword' => 'required|max:30'
+            'page' => 'integer|min:1|max:500',
+            'keyword' => 'required|max:30'
         ]);
 
         if($validator->fails())
@@ -134,10 +134,10 @@ class UserGroupController extends Controller
         $size = $request->input('size',10);
         $page = $request->input('page',1);
 
-        $total_count = $this->userGroupService->searchGroupsCount($keyword);
+        $total_count = $this->userGroupService->searchGroupsCount($request->keyword);
 
         if($total_count > 0)
-            $data = $this->userGroupService->searchGroupsBy($keyword,$page,$size);
+            $data = $this->userGroupService->searchGroupsBy($request->keyword,$page,$size);
         else
             $data = [];
 
