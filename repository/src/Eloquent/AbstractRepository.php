@@ -4,6 +4,7 @@ use Carbon\Carbon;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use NEUQOJ\Repository\Contracts\RepositoryInterface;
 use NEUQOJ\Repository\Models\News;
 
@@ -146,16 +147,25 @@ abstract class AbstractRepository implements RepositoryInterface
             ->destory($id);
     }
 
+    function deleteWhere(array $param = [])
+    {
+        return $this->model
+            ->where($param)->delete();
+    }
+
     function paginate(int $page = 1,int $size = 15,array $param = [],array $columns = ['*'])
     {
-        $qb = $this->model;
-        if(!empty($size))
-            $qb->where($param);
-        return $qb
-            ->skip($size * --$page)
-            ->take($size)
-            ->get($columns);
-
+        if(!empty($param))
+            return $this->model
+                ->where($param)
+                ->skip($size * --$page)
+                ->take($size)
+                ->get($columns);
+        else
+            return $this->model
+                ->skip($size * --$page)
+                ->take($size)
+                ->get($columns);
     }
 
     private function freshTimestamp():Carbon

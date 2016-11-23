@@ -6,8 +6,11 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\InnerError;
+use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserGroup\UserGroupNotExistException;
 use NEUQOJ\Services\UserGroupService;
+use Illuminate\Support\Facades\Hash;
 
 class UserGroupController extends Controller
 {
@@ -57,8 +60,6 @@ class UserGroupController extends Controller
         ]);
 
     }
-
-
     /**
      * 加入用户组
      */
@@ -95,8 +96,11 @@ class UserGroupController extends Controller
 
     public function getMembers(Request $request,$groupId)
     {
+        $groupId = intval($groupId);
+
         if(!$this->userGroupService->isGroupExistById($groupId))
             throw new UserGroupNotExistException();
+
 
         $total_count = $this->userGroupService->getGroupMembersCount($groupId);
 
@@ -111,7 +115,11 @@ class UserGroupController extends Controller
         $size = $request->input('size',10);
         $page = $request->input('page',1);
 
-        $data = $this->userGroupService->getGroupMembers($groupId,$page,$size);
+
+        if(!empty($total_count))
+            $data = $this->userGroupService->getGroupMembers($groupId,$page,$size);
+        else
+            $data = null;
 
         return response()->json([
             "code" => 0,
@@ -119,7 +127,9 @@ class UserGroupController extends Controller
             "page_count" => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
         ]);
     }
-
+    /**
+     *模糊搜索
+     */
     public function searchGroups(Request $request)
     {
         $validator = Validator::make($request->all(),[
@@ -145,6 +155,27 @@ class UserGroupController extends Controller
             "code" => 0,
             "data" => $data,
             "page_count" => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+        ]);
+    }
+
+    public function quitGroup(Request $request,$groupId)
+    {
+        //验证逻辑：用户应该在退出用户组之前先输入他的密码来验证
+        $validator = Validator::make($request->all(),[
+            'password' => 'required|min:6|max:255'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        if(!Hash::check($request->password,$request->user->password))
+            throw new PasswordErrorException();
+
+        if(!$this->userGroupService->deleteUserFromGroup($request->user->id,$groupId))
+            throw new InnerError("fail to delete user from group");
+
+        return response()->json([
+            "code" => 0
         ]);
     }
 
