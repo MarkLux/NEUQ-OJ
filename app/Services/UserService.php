@@ -33,12 +33,12 @@ class UserService
             return true;
     }
 
-    public function getUser(int $id,string $attribute = 'id')
+    public function getUser($value,string $attribute = 'id')
     {
         if($attribute == 'id')
-            return $this->userRepo->get($id)->first();
+            return $this->userRepo->get($value)->first();
         else
-            return $this->userRepo->getBy($attribute,$id)->first();
+            return $this->userRepo->getBy($attribute,$value)->first();
     }
 
     public function updateUser(array $data,int $id,string $attribute = 'id'):int

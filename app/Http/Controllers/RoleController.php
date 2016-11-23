@@ -11,6 +11,7 @@ namespace NEUQOJ\Http\Controllers;
 
 use Illuminate\Http\Request;
 use League\Flysystem\Exception;
+use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\PrivilegeNotExistException;
 use NEUQOJ\Exceptions\RoleExistedException;
 use NEUQOJ\Exceptions\RoleNotExistException;
@@ -113,7 +114,6 @@ class RoleController extends Controller
 
     public function updateRole(Request $request,RoleService $roleService)
     {
-
-        $roleService->updateRole();
+        //
     }
 }

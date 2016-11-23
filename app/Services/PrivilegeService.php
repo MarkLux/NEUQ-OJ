@@ -53,7 +53,7 @@ class PrivilegeService
                 'user_id'=>$userId,
                 'privilege_id'=>$item['privilege_id']
             );
-           if(!($this->UserPriRepo->insert($content)))
+           if(!($this->userPriRepo->insert($content)))
                return false;
 
         }
