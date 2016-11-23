@@ -58,6 +58,7 @@ class RoleController extends Controller
 
     public function deleteRole(Request $request,RoleService $roleService)
     {
+
         $roleId = $request->roleId;
         if($roleService->deleteRole($roleId))
             return response()->json([

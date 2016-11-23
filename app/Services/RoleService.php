@@ -116,9 +116,12 @@ class RoleService implements RoleServiceInterface
      * 删除角色 roles表 user_role_relations表 role_privilege_relations表
      */
     function deleteRole($roleId){
-        $s1 =  $this->RoleRepo->delete($roleId);
-        $s2 = $this->UserRoleRepo->deleteBy($roleId);
-        $s3 = $this->RolePrRepo->deleteBy($roleId);
+        $arr = array(
+            'role_id'=>$roleId
+        );
+        $s1 =  $this->RoleRepo->deleteWhere($arr);
+        $s2 = $this->UserRoleRepo->deleteWhere($arr);
+        $s3 = $this->RolePrRepo->deleteWhere($arr);
         if($s1&&$s2&&$s3)
             return true;
     }
