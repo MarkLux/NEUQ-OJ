@@ -128,9 +128,13 @@ class RoleService implements RoleServiceInterface
 
     function updateRole(array $condition,array $data)
     {
-
+        $this->RoleRepo->updateWhere($condition,$data);
     }
 
+    function updateRolePri(array $condition,array $data)
+    {
+        $this->RolePrRepo->updateWhere($condition,$data);
+    }
     function getRoleDetailById($roleId)
     {
         return $this->RoleRepo->get($roleId)->first();
