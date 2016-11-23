@@ -14,11 +14,17 @@ use League\Flysystem\Exception;
 use NEUQOJ\Exceptions\RoleExistedException;
 use NEUQOJ\Exceptions\RoleNotExistException;
 use NEUQOJ\Exceptions\UserNotExistException;
+use NEUQOJ\Services\PrivilegeService;
 use NEUQOJ\Services\RoleService;
 use NEUQOJ\Services\UserService;
 use Validator;
 class RoleController extends Controller
 {
+
+    public function test(PrivilegeService $privilegeService)
+    {
+        return $privilegeService->getRolePrivilege(1);
+    }
 
     public function createRole(RoleService $roleService,Request $request)
     {
@@ -79,8 +85,8 @@ class RoleController extends Controller
             throw new RoleNotExistException();
 
 
-        if(!($userService->isUserExist('mobile', $request->mobile)))
-            throw new UserNotExistException();
+//        if(!($userService->isUserExist('mobile', $request->mobile)))
+//            throw new UserNotExistException();
 
          if($roleService->giveRoleTo($request->user_id,$role))
          {

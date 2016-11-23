@@ -9,49 +9,47 @@
 namespace NEUQOJ\Services;
 
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
+use NEUQOJ\Repository\Eloquent\RolePriRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 class PrivilegeService
 {
 
-    const TEACHER ='teacher';
-    const ADMIN = 'admin';
-    const RoleTea = 1;
-    const RoleAdmin = 2;
+
     private $priRepo;
-    public function __construct(PrivilegeRepository $privilegeRepository)
+    private $rolePriRepo;
+    public function __construct(PrivilegeRepository $privilegeRepository,RolePriRepository $rolePriRepository)
     {
         $this->priRepo = $privilegeRepository;
+        $this->rolePriRepo = $rolePriRepository;
     }
 
     public function getPrivilegeDetailByName(string $name)
     {
         return $this->priRepo->getBy('name',$name)->first();
     }
+
+    public function getRolePrivilege($roleId)
+    {
+        return $this->rolePriRepo->getBy('role_id',$roleId);
+    }
+
     /*
-     * 确认做出请求的用户的角色
-     * 获取用户id
-     * 数据库查询role字段
-     * 为空定位学生 ，1 为教师 2 为管理员
-     *
+     * 赋予对应用户　对应权限
      */
+    public function givePrivilegeTo($userId,$roleId)
+    {
+        $arr = $this->getRolePrivilege($roleId);
+        foreach ($arr as $item)
+        {
+            $content = array(
+                'user_id'=>$userId,
+                'privilege_id'=>$item['privilege_id']
+            );
+           if(!($this->UserPriRepo->insert($content)))
+               return false;
 
-//    public function confirmRole($id,UserRepository $userRepository)
-//    {
-//
-//        $user = $userRepository->getBy('mobile',$id)->first();
-//
-//        $role = $user->role;
-//        //dd($role);dd($user);
-//        if($user->role)
-//        {
-//            if($role == 1)
-//                return self::TEACHER;
-//            if ($role == 2)
-//                return self::ADMIN;
-//        }
-//        else
-//            return false;
-//    }
-
+        }
+        return true;
+    }
 
 }

@@ -21,6 +21,7 @@ class RoleService implements RoleServiceInterface
     private $UserRoleRepo;
     private $RolePrRepo;
     private $PriSer;
+
     public function __construct(PrivilegeService $privilegeService,RoleRepository $RoleRepo,UserRoleRepository $userRoleRelation,RolePriRepository $rolePrivilegeRelation)
     {
         $this->RoleRepo = $RoleRepo;
@@ -80,6 +81,7 @@ class RoleService implements RoleServiceInterface
     /*
      * 找到role 对应role_id
      * 将user_id role_id 插入user_role_relations表
+     * 再　填充　user_pri_re
      */
     function giveRoleTo(int $userId,string $role)
     {
@@ -91,7 +93,14 @@ class RoleService implements RoleServiceInterface
             'user_id'=>$userId,
             'role_id'=>$roleId,
         );
-      return $this->UserRoleRepo->insert($data);
+       if(!($this->UserRoleRepo->insert($data)))
+        return false;
+
+
+        if(!($this->PriSer->givePrivilegeTo($userId,$roleId)))
+            return false;
+
+        return true;
     }
 
     function roleExisted(string $role):bool
