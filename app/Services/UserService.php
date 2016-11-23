@@ -11,7 +11,10 @@ namespace NEUQOJ\Services;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Common\Utils;
+use NEUQOJ\Exceptions\EmailExistException;
 use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\MobileExistException;
+use NEUQOJ\Exceptions\NameExistException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserExistedException;
 use NEUQOJ\Exceptions\UserNotExistException;
@@ -19,6 +22,7 @@ use NEUQOJ\Http\Requests\Request;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\UsrPriRepository;
+use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Services\Contracts\UserServiceInterface;
 
 
@@ -37,7 +41,7 @@ class UserService implements UserServiceInterface
         $user = $this->userRepo->getByMult($data)->first();
 
         if($user == null)
-            throw new UserNotExistException();
+            return false;
         else
             return true;
     }
@@ -47,7 +51,7 @@ class UserService implements UserServiceInterface
         // TODO: Implement getUserById() method.
         $user = $this->userRepo->get($userId)->first();
         if($user == null)
-            return false;
+            throw new UserNotExistException();
         else
             return $user;
 
@@ -58,7 +62,7 @@ class UserService implements UserServiceInterface
         // TODO: Implement getUserBy() method.
         $user = $this->userRepo->getBy($param,$value)->first();
         if($user == null)
-            return false;
+            throw new UserNotExistException();
         else
             return $user;
     }
@@ -68,12 +72,12 @@ class UserService implements UserServiceInterface
         // TODO: Implement getUserByMult() method.
         $user = $this->userRepo->getByMult($condition)->first();
         if($user == null)
-            return false;
+            throw new UserNotExistException();
         else
             return $user;
     }
 
-    public function getUsers(array $data):array
+    public function getUsers(array $data)
     {
         // TODO: Implement getUsers() method.
         $users = $this->userRepo->getByMult($data);
@@ -146,26 +150,20 @@ class UserService implements UserServiceInterface
     public function register(array $data):bool
     {
         // TODO: Implement register() method.
-        $validator = Validator::make($data,[
-            'name' => 'required|max:100',
-            'email' => 'required|email|max:100',
-            'mobile' => 'required|max:45',
-            'password' => 'required|confirmed|min:6|max:20'
-        ]);
 
-        if($validator->fails()) {
-            $error = $validator->getMessageBag()->all();
-            throw new FormValidatorException($error);
-        }
         //检查手机号
         if(!Utils::IsMobile($data['mobile']))
             throw new FormValidatorException(['Mobile Number Error']);
 
-        if($this->isUserExist(['mobile',$data['mobile']]) || $this->isUserExist(['email',$data['email']]))
-            throw new UserExistedException();
+        if($this->isUserExist(['mobile' => $data['mobile']]))
+            throw new MobileExistException();
 
-        if($this->isUserExist(['name',$data['name']]))
-            throw new FormValidatorException(["User Name Has Been Registered"]);
+        if($this->isUserExist(['email' => $data['email']]))
+            throw new EmailExistException();
+
+        if($this->isUserExist(['name'=>$data['name']]))
+            throw new NameExistException();
+
 
         $user = [
             'name' => $data['name'],
@@ -183,16 +181,6 @@ class UserService implements UserServiceInterface
     public function login(array $data)
     {
         // TODO: Implement login() method.
-        $validator = Validator::make($data,[
-            'identifier' => 'required|max:100',
-            'password' => 'required|min:6'
-        ]);
-
-        if($validator->fails()) {
-            $error = $validator->getMessageBag->all();
-            throw new FormValidatorException($error);
-        }
-
         //正则判断登录名类型
         if(Utils::IsMobile($data['identifier'])) {
             $user = $this->getUserBy('mobile',$data['identifier']);
@@ -211,18 +199,8 @@ class UserService implements UserServiceInterface
         return $user;
     }
 
-    public function logout(int $userId,TokenService $tokenService):bool
-    {
-        // TODO: Implement logout() method.
-        $tokenService->destoryToken($userId);
-
-        return true;
-    }
-
     public function getUserRole(int $userId)
     {
         // TODO: Implement getUserRole() method.
     }
-
-
 }

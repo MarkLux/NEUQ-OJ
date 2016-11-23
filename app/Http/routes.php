@@ -11,25 +11,9 @@
 |
 */
 
+include 'Routes/User.php';
+
 Route::get('/', function () {
     return 'here is the main page!!';
 });
 
-Route::post('/register','UserController@register');
-
-Route::post('/login','AuthController@login');
-
-Route::group(['middleware' => 'token'],function (){
-    Route::get('/logout','AuthController@logout');
-    Route::group(['prefix' => 'user-group'],function(){
-        Route::post('/create',[
-            'middleware' => 'privilege:create-group',
-            'uses'=>'UserGroupController@createNewGroup']);
-        Route::get('/{id}/index','UserGroupController@getIndex');
-        Route::post('/{id}/join-in','UserGroupController@joinGroup');
-    });
-
-    Route::get('/test',['middleware' => 'privilege:check,create-post',function (){
-        echo "You Have The Right!";
-    }]);
-});

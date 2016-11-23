@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services\Contracts;
 
 
+use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Services\TokenService;
 
 interface UserServiceInterface
@@ -23,7 +24,7 @@ interface UserServiceInterface
     function getUserByMult(array $condition);
     //使用where方法
 
-    function getUsers(array $data):array;
+    function getUsers(array $data);
 
     function updateUserById(int $userId,array $data):bool;
 
@@ -43,8 +44,6 @@ interface UserServiceInterface
     function register(array $data):bool;
 
     function login(array $data);
-
-    function logout(int $userId,TokenService $tokenService):bool;
 
     function getUserRole(int $userId);
 

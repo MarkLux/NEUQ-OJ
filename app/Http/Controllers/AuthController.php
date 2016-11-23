@@ -47,10 +47,10 @@ class AuthController extends Controller
         }
 
         //手机和邮箱都应该检查
-        if($userService->isUserExist('mobile', $request->mobile) || $userService->isUserExist('email', $request->email))
+        if($userService->isUserExist(['mobile', $request->mobile]) || $userService->isUserExist(['email', $request->email]))
             throw new UserExistedException();
         //检查用户名有没有被注册
-        if($userService->isUserExist('name',$request->name))
+        if($userService->isUserExist(['name',$request->name]))
             throw new FormValidatorException(["User Name Has Been Registered"]);
 
         $user = [
