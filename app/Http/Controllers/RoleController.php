@@ -11,6 +11,7 @@ namespace NEUQOJ\Http\Controllers;
 
 use Illuminate\Http\Request;
 use League\Flysystem\Exception;
+use NEUQOJ\Exceptions\PrivilegeNotExistException;
 use NEUQOJ\Exceptions\RoleExistedException;
 use NEUQOJ\Exceptions\RoleNotExistException;
 use NEUQOJ\Exceptions\UserNotExistException;
@@ -67,9 +68,12 @@ class RoleController extends Controller
     /*
      * 申请得过中间件　相应角色才可以操作
      */
-    public function giveRoleTo(Request $request,RoleService $roleService,UserService $userService)
+    public function giveRoleTo(Request $request,RoleService $roleService,PrivilegeService $privilegeService)
     {
+
+
         $validator = Validator::make($request->all(), [
+            'user'=>'required',
             'user_id' => 'required',
             'role'=>'required',
         ]);
@@ -79,14 +83,21 @@ class RoleController extends Controller
             $data = $validator->getMessageBag()->all();
             throw new FormValidatorException($data);
         }
+
+        /*
+         * 判断给予人是否有对应的权限
+         */
+        if(!($privilegeService->hasNeededPrivilege('admin',$request->user->id)))
+            throw new PrivilegeNotExistException();
+
         $role = $request->role;
 
+        /*
+         * 判断给予的角色是否存在
+         */
         if(!($roleService->roleExisted($role)))
             throw new RoleNotExistException();
 
-
-//        if(!($userService->isUserExist('mobile', $request->mobile)))
-//            throw new UserNotExistException();
 
          if($roleService->giveRoleTo($request->user_id,$role))
          {
@@ -97,5 +108,11 @@ class RoleController extends Controller
              );
          }
 
+    }
+
+    public function updateRole(Request $request,RoleService $roleService)
+    {
+
+        $roleService->updateRole();
     }
 }
