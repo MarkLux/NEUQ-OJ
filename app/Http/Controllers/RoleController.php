@@ -23,17 +23,21 @@ use Validator;
 class RoleController extends Controller
 {
 
-    public function test(PrivilegeService $privilegeService)
+    public function test(Request $request)
     {
-        return $privilegeService->getRolePrivilege(1);
+       dd($request->user['id']);
     }
 
-    public function createRole(RoleService $roleService,Request $request)
+    public function createRole(RoleService $roleService,Request $request,PrivilegeService $privilegeService)
     {
+        /*
+         * 表单验证
+         */
         $validator = Validator::make($request->all(), [
             'role' => 'required|max:30',
             'privilege'=>'required',
-            'description'=>'required|max:100'
+            'description'=>'required|max:100',
+            'user'=>'required'
         ]);
 
 
@@ -43,8 +47,19 @@ class RoleController extends Controller
             throw new FormValidatorException($data);
         }
 
+        /*
+         * 判断要增加的角色是否存在
+         */
         if($roleService->roleExisted($request->get('role')))
             throw new RoleExistedException();
+
+        /*
+         * 判断操作者是否具有对应权限
+         */
+        //dd($request->user['id']);
+        if(!($privilegeService->hasNeededPrivilege('operate-role',$request->user['id'])))
+            throw new PrivilegeNotExistException();
+
 
         $data = array(
             'role'=>$request->get('role'),
@@ -57,8 +72,33 @@ class RoleController extends Controller
             ]);
     }
 
-    public function deleteRole(Request $request,RoleService $roleService)
+    public function deleteRole(Request $request,RoleService $roleService,PrivilegeService $privilegeService)
     {
+        /*
+         * 表单验证
+         */
+        $validator = Validator::make($request->all(), [
+            'role' => 'required|max:30',
+            'user'=>'required'
+        ]);
+
+        if($validator->fails())
+        {
+            $data = $validator->getMessageBag()->all();
+            throw new FormValidatorException($data);
+        }
+
+        /*
+         * 判断要删除的角色是否存在
+         */
+        if(!($roleService->roleExisted($request->get('role'))))
+            throw new RoleNotExistException();
+
+        /*
+        * 判断操作者是否具有对应权限
+        */
+        if(!($privilegeService->hasNeededPrivilege('operate-role',$request->user['id'])))
+            throw new PrivilegeNotExistException();
 
         $roleId = $request->roleId;
         if($roleService->deleteRole($roleId))
@@ -86,11 +126,6 @@ class RoleController extends Controller
             throw new FormValidatorException($data);
         }
 
-        /*
-         * 判断给予人是否有对应的权限
-         */
-        if(!($privilegeService->hasNeededPrivilege('admin',$request->user->id)))
-            throw new PrivilegeNotExistException();
 
         $role = $request->role;
 
@@ -99,6 +134,12 @@ class RoleController extends Controller
          */
         if(!($roleService->roleExisted($role)))
             throw new RoleNotExistException();
+
+        /*
+         * 判断给予人是否有对应的权限
+         */
+        if(!($privilegeService->hasNeededPrivilege('operate-role',$request->user['id'])))
+            throw new PrivilegeNotExistException();
 
 
          if($roleService->giveRoleTo($request->user_id,$role))

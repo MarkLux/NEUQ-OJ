@@ -65,6 +65,13 @@ class RoleService implements RoleServiceInterface
              * 遍历权限数组 循环将角色 权限插入
               */
         foreach ($data['privilege'] as $item){
+
+//            $privilege = array(
+//                'privilege'=>$item['pri'],
+//                'description'=>$item['description']
+//            );
+
+            if(!($this->PriSer->insert))
             $priId = $this->PriSer->getPrivilegeDetailByName($item)->id;
             $rolePrRelation = array(
               'role_id' => $roleId,

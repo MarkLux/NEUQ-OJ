@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Seeder;
 
-class PrivilegeTableSeeder extends Seeder
+class PrivilegeTableSeeder extends DatabaseSeeder
 {
     /**
      * Run the database seeds.
@@ -32,17 +32,12 @@ class PrivilegeTableSeeder extends Seeder
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
                 array(
-                    'name'=>'operate-teacher-apply',
-                    'description'=>'对教师申请的操作：admin（含）以上',
+                    'name'=>'operate-role',
+                    'description'=>'对角色的操作：admin（含）以上',
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString(),
                 ),
-                array(
-                    'name'=>'operate-admin-apply',
-                    'description'=>'对管理员申请的操作：superAdmin',
-                    'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
-                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
-                )
+
             )
         );
     }

@@ -65,14 +65,20 @@ class PrivilegeService
      */
     public function hasNeededPrivilege(string $privilegeNeeded,$user_id)
     {
+
         $arr = $this->getPrivilegeDetailByName($privilegeNeeded);
 
-        $pri_id = $arr->privilege_id;
+        if(!$arr)
+            throw new PrivilegeNotExistException();
+
+
+        $pri_id = $arr->id;
 
         $data = array(
             'user_id'=>$user_id,
             'privilege_id'=>$pri_id,
         );
+
         if(!($this->userPriRepo->getByMult($data)))
             return false;
         else

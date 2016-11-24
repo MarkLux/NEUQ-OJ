@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Seeder;
 
-class user_privilege_relationsTableSeeder extends Seeder
+class user_privilege_relationsTableSeeder extends DatabaseSeeder
 {
     /**
      * Run the database seeds.
@@ -37,12 +37,7 @@ class user_privilege_relationsTableSeeder extends Seeder
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ),
-                array(
-                    'user_id'=>1,
-                    'privilege_id'=>5,
-                    'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
-                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
-                ),
+
                 array(
                     'user_id'=>2,
                     'privilege_id'=>1,
