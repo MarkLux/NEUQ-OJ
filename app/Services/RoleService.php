@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\RolePriRepository;
 use NEUQOJ\Repository\Eloquent\RoleRepository;
 use NEUQOJ\Repository\Eloquent\UserRoleRepository;
@@ -21,13 +22,15 @@ class RoleService implements RoleServiceInterface
     private $UserRoleRepo;
     private $RolePrRepo;
     private $PriSer;
+    private $PriRepo;
 
-    public function __construct(PrivilegeService $privilegeService,RoleRepository $RoleRepo,UserRoleRepository $userRoleRelation,RolePriRepository $rolePrivilegeRelation)
+    public function __construct(PrivilegeRepository $privilegeRepository,PrivilegeService $privilegeService,RoleRepository $RoleRepo,UserRoleRepository $userRoleRelation,RolePriRepository $rolePrivilegeRelation)
     {
         $this->RoleRepo = $RoleRepo;
         $this->UserRoleRepo = $userRoleRelation;
         $this->RolePrRepo = $rolePrivilegeRelation;
         $this->PriSer = $privilegeService;
+        $this->PriRepo = $privilegeRepository;
     }
 
     function hasRole(int $userId,string $role):bool
@@ -66,13 +69,15 @@ class RoleService implements RoleServiceInterface
               */
         foreach ($data['privilege'] as $item){
 
-//            $privilege = array(
-//                'privilege'=>$item['pri'],
-//                'description'=>$item['description']
-//            );
+            $privilege = array(
+                'name'=>$item['pri'],
+                'description'=>$item['description']
+            );
 
-            if(!($this->PriSer->insert))
-            $priId = $this->PriSer->getPrivilegeDetailByName($item)->id;
+            if(!($this->PriRepo->insert($privilege)))
+                return false;
+
+            $priId = $this->PriSer->getPrivilegeDetailByName($item['pri'])->id;
             $rolePrRelation = array(
               'role_id' => $roleId,
                 'privilege_id'=>$priId,
@@ -110,14 +115,9 @@ class RoleService implements RoleServiceInterface
         return true;
     }
 
-    function roleExisted(string $role):bool
+    function roleExisted(string $role)
     {
-        $bool = $this->getRoleDetailByName($role);
-        if($bool == NUll)
-            return false;
-        else
-            return true;
-
+         return $this->getRoleDetailByName($role);
     }
     /*
      * 删除角色 roles表 user_role_relations表 role_privilege_relations表
@@ -126,11 +126,17 @@ class RoleService implements RoleServiceInterface
         $arr = array(
             'role_id'=>$roleId
         );
-        $s1 =  $this->RoleRepo->deleteWhere($arr);
-        $s2 = $this->UserRoleRepo->deleteWhere($arr);
-        $s3 = $this->RolePrRepo->deleteWhere($arr);
-        if($s1&&$s2&&$s3)
-            return true;
+        $arrRole = array(
+            'id'=>$roleId
+        );
+        if(!($this->RoleRepo->deleteWhere($arrRole)))
+            return false;
+        if(!($this->UserRoleRepo->deleteWhere($arr)))
+            return false;
+        if(!($this->RolePrRepo->deleteWhere($arr)))
+            return false;
+
+        return true;
     }
 
     function updateRole(array $condition,array $data)

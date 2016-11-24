@@ -91,7 +91,8 @@ class RoleController extends Controller
         /*
          * 判断要删除的角色是否存在
          */
-        if(!($roleService->roleExisted($request->get('role'))))
+
+        if(!($roleId = $roleService->roleExisted($request->get('role'))->id))
             throw new RoleNotExistException();
 
         /*
@@ -100,7 +101,7 @@ class RoleController extends Controller
         if(!($privilegeService->hasNeededPrivilege('operate-role',$request->user['id'])))
             throw new PrivilegeNotExistException();
 
-        $roleId = $request->roleId;
+
         if($roleService->deleteRole($roleId))
             return response()->json([
                 'code' => '0'
