@@ -16,6 +16,9 @@ Route::group(['middleware' => 'token'],function (){
         Route::get('/{id}/members','UserGroup\UserGroupController@getMembers');
         Route::post('/{id}/join-in','UserGroup\UserGroupController@joinGroup');
         Route::post('/{id}/quit','UserGroup\UserGroupController@quitGroup');
+        Route::post('{id}/change-owner','UserGroup\UserGroupController@changeOwner');
+        Route::post('{id}/close','UserGroup\UserGroupController@closeGroup');
+        Route::post('{id}/open','UserGroup\UserGroupController@openGroup');
 
         Route::group(['prefix' => 'notices'],function(){
             Route::post('/create','UserGroup\NoticeController@addNotice');

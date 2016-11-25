@@ -17,6 +17,7 @@ use NEUQOJ\Exceptions\UserGroup\UserGroupExistedException;
 use NEUQOJ\Exceptions\UserGroup\UserGroupNotExistException;
 use NEUQOJ\Exceptions\UserGroup\UserInGroupException;
 use NEUQOJ\Exceptions\UserGroup\UserNotInGroupException;
+use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Repository\Eloquent\GroupNoticeRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
@@ -168,13 +169,31 @@ class UserGroupService implements UserGroupServiceInterface
     //删除
     public function deleteGroup(int $groupId)
     {
-        // TODO: Implement deleteGroup() method.
+        // TODO: 要考虑软删除和操作日志系统。
     }
 
     //易主
-    public function changeGroupOwner(int $groupId, int $newOwnerId)
+    public function changeGroupOwner(int $groupId, int $newOwnerId):bool
     {
-        // TODO: Implement changeGroupOwner() method.
+        if(!$this->userRepo->get($newOwnerId)->first() == null)
+            throw new UserNotExistException();
+
+        $data = ['owner_id' => $newOwnerId];
+        return $this->userGroupRepo->update($data,$groupId) == 1;
+    }
+
+    //关闭
+    public function closeGroup(int $groupId):bool
+    {
+        $data = ['is_closed' => 1];
+        return $this->userGroupRepo->update($data,$groupId) == 1;
+    }
+
+    //开放
+    public function openGroup(int $groupId):bool
+    {
+        $data = ['is_closed' => 0];
+        return $this->userGroupRepo->update($data,$groupId) == 1;
     }
 
     //加入

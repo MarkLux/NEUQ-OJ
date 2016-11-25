@@ -181,5 +181,90 @@ class UserGroupController extends Controller
         ]);
     }
 
+    public function changeOwner(Request $request,$groupId)
+    {
+        $groupId = intval($groupId);
 
+        $validator = Validator::make($request->all(),[
+            'password' => 'required|min:6|max:255',
+            'newOwnerId' => 'required|integer'
+        ]);
+
+        if(!$this->userGroupService->isGroupExistById($groupId))
+            throw new UserGroupNotExistException();
+        if(!$this->userGroupService->isUser)
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+        if(!$this->userGroupService->isUserGroupOwner($request->user->id,$groupId))
+            throw new NoPermissionException();
+
+        //检查密码
+        if(!Hash::check($request->password,$request->user->password))
+            throw new PasswordErrorException();
+
+        if(!$this->userGroupService->changeGroupOwner($request->user->id))
+            throw new InnerError("Fail to change owner");
+
+        return response()->json([
+            "code" => 0
+        ]);
+
+    }
+
+    public function closeGroup(Request $request,$groupId)
+    {
+        $groupId = intval($groupId);
+
+        $validator = Validator::make($request->all(),[
+            'password' => 'required|min:6|max:255'
+        ]);
+
+        if(!$this->userGroupService->isGroupExistById($groupId))
+            throw new UserGroupNotExistException();
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+        if(!$this->userGroupService->isUserGroupOwner($request->user->id,$groupId))
+            throw new NoPermissionException();
+
+        //检查密码
+        if(!Hash::check($request->password,$request->user->password))
+            throw new PasswordErrorException();
+
+        if(!$this->userGroupService->closeGroup($groupId))
+            throw new InnerError("Fail to close group");
+
+        return response()->json([
+            "code" => 0
+        ]);
+    }
+
+    public function openGroup(Request $request,$groupId)
+    {
+        $groupId = intval($groupId);
+
+        $validator = Validator::make($request->all(),[
+            'password' => 'required|min:6|max:255'
+        ]);
+
+        if(!$this->userGroupService->isGroupExistById($groupId))
+            throw new UserGroupNotExistException();
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+        if(!$this->userGroupService->isUserGroupOwner($request->user->id,$groupId))
+            throw new NoPermissionException();
+
+        //检查密码
+        if(!Hash::check($request->password,$request->user->password))
+            throw new PasswordErrorException();
+
+        if(!$this->userGroupService->closeGroup($groupId))
+            throw new InnerError("Fail to open group");
+
+        return response()->json([
+            "code" => 0
+        ]);
+    }
 }

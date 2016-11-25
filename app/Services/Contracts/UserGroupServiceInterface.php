@@ -59,7 +59,11 @@ interface UserGroupServiceInterface
 
     function deleteGroup(int $groupId);
 
-    function changeGroupOwner(int $groupId,int $newOwnerId);
+    function changeGroupOwner(int $groupId,int $newOwnerId):bool;
+
+    public function closeGroup(int $groupId):bool;
+
+    public function openGroup(int $groupId):bool;
 
     //查找用户组部分，根据实际情况增删
     function searchGroupsCount(string $keyword):int;
