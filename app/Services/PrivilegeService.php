@@ -53,7 +53,14 @@ class PrivilegeService
                 'user_id'=>$userId,
                 'privilege_id'=>$item['privilege_id']
             );
-           if(!($this->userPriRepo->insert($content)))
+
+            /*
+             * 给予的新角色含有原有的权限 就跳过这次插入
+             */
+            if($this->userPriRepo->get($content))
+                continue;
+
+            elseif(!($this->userPriRepo->insert($content)))
                return false;
 
         }
