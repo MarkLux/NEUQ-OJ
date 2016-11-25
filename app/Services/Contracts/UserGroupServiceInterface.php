@@ -71,11 +71,21 @@ interface UserGroupServiceInterface
     *公告板
     */
 
-    function addNotice(int $groupId,array $data);
+    function addNotice(int $groupId,array $data):bool;
 
     function getGroupNoticesCount(int $groupId):int;
 
-    function getGroupNotices(int $groupId,int $page,int $size):array;
+    function getGroupNotices(int $groupId,int $page,int $size);
+
+    function getSingleNotice(int $noticeId);
+
+    function deleteNotice(int $noticeId):bool;
+
+    function updateNotice(int $noticeId,array $data):bool;
+
+    function isNoticeBelongToGroup(int $noticeId,int $groupId):bool;
+
+    function isNoticeExist(int $noticeId):bool;
 
     /*
     *作业

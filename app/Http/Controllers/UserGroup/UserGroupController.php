@@ -1,16 +1,18 @@
 <?php
 
-namespace NEUQOJ\Http\Controllers;
+namespace NEUQOJ\Http\Controllers\UserGroup;
 
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
+use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserGroup\UserGroupNotExistException;
 use NEUQOJ\Services\UserGroupService;
 use Illuminate\Support\Facades\Hash;
+use NEUQOJ\Http\Controllers\Controller;
 
 class UserGroupController extends Controller
 {
@@ -28,7 +30,7 @@ class UserGroupController extends Controller
     {
         //表单检查
         $validator = Validator::make($request->all(),[
-            'name' => 'required|max:100',
+            'name' => 'required|max:100|string',
             'description' => 'max:512',
             'max_size' => 'required|integer|max:300',
             'password' => 'min:6|max:20',//明文显示
@@ -178,5 +180,6 @@ class UserGroupController extends Controller
             "code" => 0
         ]);
     }
+
 
 }

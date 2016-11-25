@@ -72,7 +72,6 @@ class AuthController extends Controller
     public function login(Request $request, TokenService $tokenService, UserService $userService, UserRepository $userRepository)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|max:100',
             'identifier' => 'required|max:100',
             'password' => 'required|min:6'
         ]);

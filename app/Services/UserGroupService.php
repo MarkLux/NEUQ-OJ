@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 use Illuminate\Support\Facades\Hash;
+use NEUQOJ\Exceptions\UserGroup\NoticeNotExistException;
 use NEUQOJ\Exceptions\UserGroup\UserGroupIsFullException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserGroup\UserGroupClosedException;
@@ -16,6 +17,7 @@ use NEUQOJ\Exceptions\UserGroup\UserGroupExistedException;
 use NEUQOJ\Exceptions\UserGroup\UserGroupNotExistException;
 use NEUQOJ\Exceptions\UserGroup\UserInGroupException;
 use NEUQOJ\Exceptions\UserGroup\UserNotInGroupException;
+use NEUQOJ\Repository\Eloquent\GroupNoticeRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRelationRepository;
@@ -23,6 +25,7 @@ use NEUQOJ\Repository\Models\UserGroup;
 use NEUQOJ\Services\Contracts\UserGroupServiceInterface;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Exceptions\InnerError;
+use NEUQOJ\Exceptions\NoPermissionException;
 
 
 class UserGroupService implements UserGroupServiceInterface
@@ -30,12 +33,15 @@ class UserGroupService implements UserGroupServiceInterface
     private $userRepo;
     private $userGroupRepo;
     private $relationRepo;
+    private $noticeRepo;
 
-    public function __construct(UserRepository $userRepository,UserGroupRelationRepository $relationRepository,UserGroupRepository $userGroupRepository)
+    public function __construct(UserRepository $userRepository,UserGroupRelationRepository $relationRepository,
+                                UserGroupRepository $userGroupRepository,GroupNoticeRepository $noticeRepository)
     {
         $this->userRepo = $userRepository;
         $this->userGroupRepo = $userGroupRepository;
         $this->relationRepo = $relationRepository;
+        $this->noticeRepo = $noticeRepository;
     }
 
     /**
@@ -126,6 +132,11 @@ class UserGroupService implements UserGroupServiceInterface
         return true;
     }
 
+    public function isUserInGroup(int $userId,int $groupId):bool
+    {
+        return ($this->isUserGroupStudent($userId,$groupId)||$this->isUserGroupOwner($userId,$groupId));
+    }
+
     public function isUserGroupOwner(int $userId, int $groupId):bool
     {
         $group = $this->userGroupRepo->get($groupId)->first();
@@ -145,7 +156,7 @@ class UserGroupService implements UserGroupServiceInterface
     //创建
     public function createUserGroup(User $owner,array $data):int
     {
-        if($this->isGroupExistByName($data['name']))
+        if($this->isGroupExistByName($owner->id,$data['name']))
             throw new UserGroupExistedException();
 
         $data['owner_id'] = $owner->id;
@@ -293,7 +304,7 @@ class UserGroupService implements UserGroupServiceInterface
 
     public function getGroupIndex(int $groupId, User $user)
     {
-        // TODO: Implement getGroupIndex() method.
+        // TODO: 需要参考页面原型去组织信息
     }
 
     /**
@@ -302,17 +313,50 @@ class UserGroupService implements UserGroupServiceInterface
 
     public function getGroupNoticesCount(int $groupId):int
     {
-        // TODO: Implement getGroupNoticesCount() method.
+        return $this->noticeRepo->getBy('group_id',$groupId)->count();
     }
 
-    public function getGroupNotices(int $groupId, int $start, int $size):array
+    public function getGroupNotices(int $groupId, int $page, int $size)
     {
-        // TODO: Implement getGroupNotices() method.
+        return $this->noticeRepo->paginate($page,$size,['group_id' => $groupId]);
     }
 
-    public function addNotice(int $groupId, array $data)
+    public function addNotice(int $groupId,array $data):bool
     {
-        // TODO: Implement addNotice() method.
+        $data['group_id'] = $groupId;
+
+        return $this->noticeRepo->insert($data) == 1;
+    }
+
+    public function deleteNotice(int $noticeId): bool
+    {
+        return $this->noticeRepo->deleteWhere(['id' => $noticeId]) == 1;
+    }
+
+    public function updateNotice(int $noticeId, array $data): bool
+    {
+        return $this->noticeRepo->update($data,$noticeId) == 1;
+    }
+
+    public function getSingleNotice(int $noticeId)
+    {
+       return  $this->noticeRepo->get($noticeId)->first();
+
+    }
+
+    public function isNoticeBelongToGroup(int $noticeId, int $groupId): bool
+    {
+        $notice = $this->getSingleNotice($noticeId);
+        if($notice == null)
+            throw new NoticeNotExistException();
+        if($notice->group_id != $groupId)
+            return false;
+        return true;
+    }
+
+    public function isNoticeExist(int $noticeId): bool
+    {
+        return $this->getSingleNotice($noticeId)!=null;
     }
 
     /**
