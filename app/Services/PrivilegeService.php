@@ -95,7 +95,8 @@ class PrivilegeService
     {
         if($this->userPriRepo->getBy('privilege_id',$privilegeId)->first())
             return true;
-        else return false;
+        else
+            return false;
     }
     public function deletePrivilege(array $data)
     {
