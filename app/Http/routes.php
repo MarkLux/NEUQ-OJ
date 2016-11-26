@@ -21,3 +21,4 @@ include 'Routes/User.php';
 Route::get('/', function () {
     return 'here is the main page!!';
 });
+
