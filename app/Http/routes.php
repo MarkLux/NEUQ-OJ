@@ -18,7 +18,8 @@ include 'Routes/Auth.php';
 
 include 'Routes/Test.php';
 
+include 'Routes/User.php';
+
 Route::get('/', function () {
     return 'here is the main page!!';
 });
-
