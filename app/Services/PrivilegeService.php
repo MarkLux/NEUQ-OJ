@@ -91,4 +91,14 @@ class PrivilegeService
         else
             return true;
     }
+    public function isPrivilegeBelong($privilegeId):bool
+    {
+        if($this->userPriRepo->getBy('privilege_id',$privilegeId)->first())
+            return true;
+        else return false;
+    }
+    public function deletePrivilege(array $data)
+    {
+        return $this->priRepo->deleteWhere($data);
+    }
 }

@@ -27,4 +27,6 @@ interface RoleServiceInterface
     function getRoleDetailById($roleId);
 
     function getRoleDetailByName($name);
+
+    function isRoleBelongTo($roleId);
 }

@@ -92,9 +92,9 @@ class RoleController extends Controller
          * 判断要删除的角色是否存在
          */
 
-        if(!($roleId = $roleService->roleExisted($request->get('role'))->id))
+        if(!($role = $roleService->roleExisted($request->get('role'))))
             throw new RoleNotExistException();
-
+            $roleId = $role->id;
         /*
         * 判断操作者是否具有对应权限
         */

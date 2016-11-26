@@ -123,19 +123,59 @@ class RoleService implements RoleServiceInterface
      * 删除角色 roles表 user_role_relations表 role_privilege_relations表
      */
     function deleteRole($roleId){
-        $arr = array(
-            'role_id'=>$roleId
-        );
-        $arrRole = array(
+        $PrivilegeData = $this->PriSer->getRolePrivilege($roleId);
+
+        $role = array(
             'id'=>$roleId
         );
-        if(!($this->RoleRepo->deleteWhere($arrRole)))
-            return false;
-        if(!($this->UserRoleRepo->deleteWhere($arr)))
-            return false;
-        if(!($this->RolePrRepo->deleteWhere($arr)))
+
+        $rolePr = array(
+            'role_id'=>$roleId
+        );
+
+
+        /*
+         * 哪个用户有这个角色 就删关系
+         */
+        if($this->isRoleBelongTo($roleId))
+            if(!($this->UserRoleRepo->deleteWhere($rolePr)))
+                return false;
+
+
+        if(!($this->RoleRepo->deleteWhere($role)))
+             return false;
+
+
+        if (!($this->RolePrRepo->deleteWhere($rolePr)))
             return false;
 
+
+
+        foreach ($PrivilegeData as $item)
+        {
+
+            $pri = array(
+                'id'=>$item->privilege_id
+            );
+
+            /*
+             * 查找对应权限对应的角色数组
+             */
+            $arr = $this->RolePrRepo->getBy('privilege_id',$item->privilege_id);
+
+
+            /*
+             * 对应的角色数组 元素 个数等于0 表示当前权限是这个角色独有的 删除角色后 用户对应权限也被剥夺 否则用户仍具有该权限
+             */
+
+            if(count($arr)==0) {
+                if (!($this->PriSer->deletePrivilege($pri)))
+                    return false;
+            }
+            else
+                continue;
+
+        }
         return true;
     }
 
@@ -156,5 +196,12 @@ class RoleService implements RoleServiceInterface
     function getRoleDetailByName($name)
     {
         return $this->RoleRepo->getBy('name',$name)->first();
+    }
+
+    function isRoleBelongTo($roleId):bool
+    {
+        if($this->UserRoleRepo->getBy('role_id',$roleId)->first())
+            return true;
+        else return false;
     }
 }
