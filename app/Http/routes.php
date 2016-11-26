@@ -14,8 +14,6 @@
 
 include 'Routes/UserGroup.php';
 
-include 'Routes/Auth.php';
-
 include 'Routes/Test.php';
 
 include 'Routes/User.php';
