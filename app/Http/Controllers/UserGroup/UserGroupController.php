@@ -50,10 +50,6 @@ class UserGroupController extends Controller
 
         $groupId = $this->userGroupService->createUserGroup($request->user,$data);
 
-        //TODO 创建时应该尝试对指定的多个用户发送邀请
-
-
-
         return response()->json([
             "code" => 0,
             "data" => [

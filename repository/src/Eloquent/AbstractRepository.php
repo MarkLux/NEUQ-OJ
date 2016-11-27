@@ -141,11 +141,11 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
 
-    function delete(int $id)
+    function delete(int $id):bool
     {
-        //警告：此方法有问题 应该废除
+        //正确的使用姿势
         return $this->model
-            ->get($id)->delete();
+            ->destory($id) == 1;
     }
 
     function deleteWhere(array $param = [])
