@@ -16,6 +16,7 @@ class CreateRolePrivilegeRelationsTable extends Migration
             $table->integer('role_id');
             $table->integer('privilege_id');
             $table->primary(['role_id','privilege_id']);
+            $table->string('role',50);
             $table->timestamps();
         });
     }

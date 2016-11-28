@@ -8,6 +8,9 @@
 
 namespace NEUQOJ\Services\Contracts;
 
+use NEUQOJ\Repository\Models\User;
+use NEUQOJ\Repository\Models\UserGroup;
+
 
 interface UserGroupServiceInterface
 {
@@ -17,14 +20,16 @@ interface UserGroupServiceInterface
 
     function getGroupById(int $id);
 
-    function getGroupBy(string $param,$value);
+    function getGroupBy(string $param,string $value);
 
     function getGroupByMult(array $condition);
 
     //有可能改成private
-    function isGroupExist(int $userId,string $name):bool;
+    function isGroupExistByName(int $ownerId,string $name):bool;
 
-    function createUserGroup(int $ownerId,array $data);
+    function isGroupExistById(int $id):bool;
+
+    function createUserGroup(User $owner,array $data):int;
 
     //显示用户组的信息面板
     function getGroupIndex(int $groupId,User $user);
@@ -32,9 +37,6 @@ interface UserGroupServiceInterface
     /*
     *用户关系部分
     */
-
-    //判断一个用户是否在用户组内，注意要包括owner
-    function isUserInGroup(int $userId,int $groupId):bool;
 
     function isUserGroupStudent(int $userId,int $groupId):bool;
 
@@ -44,43 +46,50 @@ interface UserGroupServiceInterface
     function isUserGroupFull(int $groupId):bool;
 
     //验证失败抛出异常
-    function joinGroupByPassword(User $user,int $groupId,string $password);
+    function joinGroupByPassword(User $user,UserGroup $group,string $password):bool;
 
-    function joinGroupByInvite(User $user,int $groupId);
+    function joinGroupWithoutPassword(User $user,UserGroup $group):bool;
 
-    function updateGroup(array $data,int $groupId);
+    function updateGroup(array $data,int $groupId):bool;
 
     //修改用户在小组中的身份注明
-    function updateUserInfo(int $userId,int $groupId,array $data);
+    function updateUserInfo(int $userId,int $groupId,array $data):bool;
 
-    function deleteUser(int $userId,int $groupId);
-
-    function quitGroup(int $userId,int $groupId);
+    function deleteUserFromGroup(int $userId,int $groupId):bool;
 
     function deleteGroup(int $groupId);
 
-    function changeGroupOwner(int $groupId,int $newOwnerId);
+    function changeGroupOwner(int $groupId,int $newOwnerId):bool;
+
+    public function closeGroup(int $groupId):bool;
+
+    public function openGroup(int $groupId):bool;
 
     //查找用户组部分，根据实际情况增删
-    function searchGroupsCount(array $condition):int;
+    function searchGroupsCount(string $keyword):int;
 
-    function searchGroupsBy(array $condition,string $orderBy,int $start,int $size):array;
+    function searchGroupsBy(string $keyword,int $page = 1,int $size = 15);
 
-    //还需要模糊查询
-
-    function searchGroupsByNameLikeCount(string $likeName):int;
-
-    function searchGroupsByNameLike(string $likeName,string $orderBy,int $start,int $size):array;
 
     /*
     *公告板
     */
 
-    function addNotice(int $groupId,array $data);
+    function addNotice(int $groupId,array $data):bool;
 
     function getGroupNoticesCount(int $groupId):int;
 
-    function getGroupNotices(int $groupId,int $start,int $size):array;
+    function getGroupNotices(int $groupId,int $page,int $size);
+
+    function getSingleNotice(int $noticeId);
+
+    function deleteNotice(int $noticeId):bool;
+
+    function updateNotice(int $noticeId,array $data):bool;
+
+    function isNoticeBelongToGroup(int $noticeId,int $groupId):bool;
+
+    function isNoticeExist(int $noticeId):bool;
 
     /*
     *作业
@@ -88,7 +97,7 @@ interface UserGroupServiceInterface
 
     function getGroupHomeworksCount(int $groupId):int;
 
-    function getGroupHomeworks(int $groupId,int $start,int $size):array;
+    function getGroupHomeworks(int $groupId,int $page,int $size):array;
 
     /*
     *考试
@@ -96,13 +105,13 @@ interface UserGroupServiceInterface
 
     function getGroupExamsCount(int $groupId):int;
 
-    function getGroupExams(int $groupId,int $start,int $size):array;
+    function getGroupExams(int $groupId,int $page,int $size):array;
 
     /*
     *组成员部分
     */
 
-    function getGroupMembers(int $groupId,int $start,int $size):array;
+    function getGroupMembers(int $groupId,int $page,int $size);
 
     function getGroupMembersCount(int $groupId):int;
 }

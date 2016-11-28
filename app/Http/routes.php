@@ -11,6 +11,11 @@
 |
 */
 
+
+include 'Routes/UserGroup.php';
+
+include 'Routes/Test.php';
+
 include 'Routes/User.php';
 
 Route::get('/', function () {

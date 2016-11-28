@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProblemTagsTable extends Migration
+class CreateUserRoleRelationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,9 +12,10 @@ class CreateProblemTagsTable extends Migration
      */
     public function up()
     {
-        Schema::create('problem_categories', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name',45);
+        Schema::create('user_role_relations', function (Blueprint $table) {
+            $table->bigInteger('user_id');
+            $table->integer('role_id');
+            $table->primary(['user_id','role_id']);
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ class CreateProblemTagsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('problem_categories');
+        Schema::drop('user_role_relations');
     }
 }

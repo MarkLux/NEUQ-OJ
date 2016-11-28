@@ -4,7 +4,7 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserGroup extends Model
+class UserRoleRelation extends Model
 {
-    protected $table = 'user_groups';
+    //
 }

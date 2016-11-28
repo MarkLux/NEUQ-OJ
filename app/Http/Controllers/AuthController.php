@@ -37,7 +37,6 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             $data = $validator->getMessageBag()->all();
-
             throw new FormValidatorException($data);
         }
 
@@ -72,10 +71,9 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request,TokenService $tokenService,UserService $userService,UserRepository $userRepository)
+    public function login(Request $request, TokenService $tokenService, UserService $userService, UserRepository $userRepository)
     {
-        $validator = Validator::make($request->all(),[
-            'name' => 'required|max:100',
+        $validator = Validator::make($request->all(), [
             'identifier' => 'required|max:100',
             'password' => 'required|min:6'
         ]);
