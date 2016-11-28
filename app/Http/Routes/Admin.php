@@ -11,9 +11,7 @@ Route::group(['middleware' => 'token'], function () {
         'middleware' => 'admin',
         'prefix' => 'admin',
     ], function () {
-
         Route::get('/lock/{id}', 'AdminController@lockUser');
         Route::get('/unlock/{id}', 'AdminController@unlockUser');
-
     });
 });

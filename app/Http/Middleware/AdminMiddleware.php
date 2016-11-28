@@ -3,6 +3,7 @@
 namespace NEUQOJ\Http\Middleware;
 
 use Closure;
+use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Services\RoleService;
 
 class AdminMiddleware
@@ -21,9 +22,12 @@ class AdminMiddleware
         $this->roleService = $roleService;
     }
 
-    public function handle($request, Closure $next, $id)
+    public function handle($request, Closure $next)
     {
-        if($this->roleService->hasRole($id,'admin'))
+        $user = $request->user;
+        if(!$this->roleService->hasRole($user['id'],'admin'))
+            throw new NoPermissionException();
+        else
             return $next($request);
     }
 }
