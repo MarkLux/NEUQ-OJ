@@ -4,7 +4,7 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProblemCategory extends Model
+class DeletionLog extends Model
 {
-    protected $table = 'problem_categories';
+    protected $table = 'deletion_logs';
 }

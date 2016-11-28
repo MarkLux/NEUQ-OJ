@@ -18,6 +18,8 @@ include 'Routes/Test.php';
 
 include 'Routes/User.php';
 
+include 'Routes/DeletionLog.php';
+
 include 'Routes/Admin.php';
 
 Route::get('/', function () {

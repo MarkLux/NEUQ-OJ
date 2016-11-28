@@ -27,6 +27,7 @@ use NEUQOJ\Services\Contracts\UserGroupServiceInterface;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
+use NEUQOJ\Services\DeletionService;
 
 
 class UserGroupService implements UserGroupServiceInterface
@@ -35,14 +36,18 @@ class UserGroupService implements UserGroupServiceInterface
     private $userGroupRepo;
     private $relationRepo;
     private $noticeRepo;
+    private $deletionService;
 
     public function __construct(UserRepository $userRepository,UserGroupRelationRepository $relationRepository,
-                                UserGroupRepository $userGroupRepository,GroupNoticeRepository $noticeRepository)
+                                UserGroupRepository $userGroupRepository,GroupNoticeRepository $noticeRepository,
+                                DeletionService $deletionService
+    )
     {
         $this->userRepo = $userRepository;
         $this->userGroupRepo = $userGroupRepository;
         $this->relationRepo = $relationRepository;
         $this->noticeRepo = $noticeRepository;
+        $this->deletionService = $deletionService;
     }
 
     /**
@@ -167,9 +172,36 @@ class UserGroupService implements UserGroupServiceInterface
     }
 
     //删除
-    public function deleteGroup(int $groupId)
+    public function deleteGroup(int $groupId):bool
     {
-        // TODO: 要考虑软删除和操作日志系统。
+        // 要删除很多关系 相关模型基本都设立了软删除功能
+        // 目前涉及到 组员 考试 作业 公告等一系列内容
+
+        //删除用户组的表
+        if(!$this->userGroupRepo->deleteWhere(['id' =>$groupId]))
+            return false;
+
+        //record deletion
+
+        $data = [
+            'table_name' => 'UserGroup',
+            'key' => $groupId,
+        ];
+
+        $this->deletionService->createDeletion(1,$data);
+
+        //删除用户关系
+        $this->relationRepo->deleteWhere(['group_id' => $groupId]);
+
+        //删除公告
+
+        $this->noticeRepo->deleteWhere(['group_id' => $groupId]);
+
+        return true;
+
+        //删除作业
+        //删除考试
+        //...
     }
 
     //易主
