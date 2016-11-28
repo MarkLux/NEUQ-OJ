@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateUserOperationsTable extends Migration
+class CreateUserDeletionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -15,9 +15,8 @@ class CreateUserOperationsTable extends Migration
         Schema::create('user_deletions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('gid');
-            $table->date('time');
-            $table->string('table_name',100);
-            $table->bigIncrements('user_id');
+            $table->timestamp('table_name',100);
+            $table->bigInteger('key');
             $table->timestamps();
         });
     }

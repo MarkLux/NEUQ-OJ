@@ -8,38 +8,16 @@
 
 namespace NEUQOJ\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use NEUQOJ\Exceptions\FormValidatorException;
-use NEUQOJ\Exceptions\PasswordErrorException;
-use NEUQOJ\Exceptions\UserExistedException;
-use NEUQOJ\Exceptions\UserNotExistException;
-use NEUQOJ\Http\Controllers\Controller;
-use NEUQOJ\Repository\Eloquent\TokenRepository;
-use NEUQOJ\Repository\Eloquent\UserRepository;
-use Validator;
+
+use NEUQOJ\Repository\Eloquent\UserDeletionRepository;
+use Illuminate\Container\Container;
 
 class TestController extends Controller
 {
-
-    public function register(Request $request,UserRepository $userRepository)
+    public function test(Container $app)
     {
-
-
-
-        $status_email = app('user')->hasUserEmail($request,$userRepository);
-        $status_mobile = app('user')->hasUserMobile($request,$userRepository);
-        if(($status_email||$status_mobile)==0)
-            throw new UserExistedException();
-
-        app('user')->ruleRegisterData($request);
-
-        app('user')->insert($request,$userRepository);
-
-        return response()->json([
-            'code' => '0'
-        ]);
+        $tableName = 'fu';
+        $class = " NEUQOJ\Repository\Eloquent\\".$tableName;
+        dd($class);
     }
-
-
 }

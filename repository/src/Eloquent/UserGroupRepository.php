@@ -8,8 +8,12 @@
 
 namespace NEUQOJ\Repository\Eloquent;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class UserGroupRepository extends AbstractRepository
+
+use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
+
+class UserGroupRepository extends AbstractRepository implements SoftDeletionInterface
 {
     function model()
     {
@@ -45,5 +49,22 @@ class UserGroupRepository extends AbstractRepository
                 ->take($size)
                 ->get($columns);
         }
+    }
+
+    function doDeletion(int $id): bool
+    {
+        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
+
+        if($item == null)
+            return false;
+        return $item->forceDelete();
+    }
+
+    function undoDeletion(int $id): bool
+    {
+        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
+        if($item == null)
+            return false;
+        return $item->restore();
     }
 }

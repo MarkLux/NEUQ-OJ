@@ -9,6 +9,9 @@
 namespace NEUQOJ\Services;
 
 
+use Carbon\Carbon;
+use Illuminate\Container\Container;
+use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
 use NEUQOJ\Repository\Eloquent\DeletionLogRepository;
 use NEUQOJ\Repository\Eloquent\UserDeletionRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRelationRepository;
@@ -33,34 +36,68 @@ class DeletionService implements DeletionServiceInterface
         $this->DeletionLogRepo = $deletionLogRepository;
     }
 
-    private function getRepo(string $tableName)
+    //根据传入字符返回实例
+    private function getRepo(string $tableName):SoftDeletionInterface
     {
+        $app = Container::getInstance();
+
         switch ($tableName)
         {
-            //how to fill this to adapt
+            case "UserGroup":
+                $repoName = 'UserGroupRepository';
+                break;
+            case "UserGroupRelation":
+                $repoName = 'UserGroupRelationRepository';
         }
+
+        //如果想保证不出错建议做一个switch
+        $class = "NEUQOJ\Repository\Eloquent\\".$repoName;
+        return $app->make($class);
     }
 
     public function createDeletion(int $gid, array $data): bool
     {
+        $current = new Carbon();
+
         $data['gid'] = $gid;
+
+        $data['time'] = $current;
 
         return $this->userDeletionRepo->insert($data) == 1;
     }
 
-    function confirmDeletion(int $opid): bool
+    function confirmDeletion(int $id): bool
     {
-        // TODO: Implement confirmOperation() method.
+        $deletion = $this->userDeletionRepo->get($id)->first();
+
+//        dd($deletion);
+
+        $repo = $this->getRepo($deletion->table_name);
+
+        if(!$repo->doDeletion($deletion->key))
+            return false;
+
+        //clear the single deletion
+        return $this->userDeletionRepo->deleteWhere(['id' => $id]);
+
     }
 
-    function undoDeletion(int $opid): bool
+    function undoDeletion(int $id): bool
     {
-        // TODO: Implement undoOperation() method.
+        $deletion = $this->userDeletionRepo->get($id)->first();
+
+        $repo = $this->getRepo($deletion->table_name);
+
+        if(!$repo->undoDeletion($deletion->key))
+            return false;
+
+        //clear the single deletion
+        return $this->userDeletionRepo->deleteWhere(['id' => $id]);
     }
 
     function getDeletion(int $opid)
     {
-        // TODO: Implement getOperation() method.
+        return $this->userDeletionRepo->get($opid)->first();
     }
 
     function getLogs(int $page, int $size)

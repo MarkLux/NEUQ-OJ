@@ -256,11 +256,41 @@ class UserGroupController extends Controller
         if(!Hash::check($request->password,$request->user->password))
             throw new PasswordErrorException();
 
-        if(!$this->userGroupService->closeGroup($groupId))
+        if(!$this->userGroupService->openGroup($groupId))
             throw new InnerError("Fail to open group");
 
         return response()->json([
             "code" => 0
         ]);
+    }
+
+    public function dismissGroup(Request $request,$groupId)
+    {
+        $groupId = intval($groupId);
+
+        $validator = Validator::make($request->all(),[
+            'password' => 'required|min:6|max:255'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        if(!$this->userGroupService->isGroupExistById($groupId))
+            throw new UserGroupNotExistException();
+
+        if(!$this->userGroupService->isUserGroupOwner($request->user->id,$groupId))
+            throw new NoPermissionException();
+
+        //检查密码
+        if(!Hash::check($request->password,$request->user->password))
+            throw new PasswordErrorException();
+
+        if(!$this->userGroupService->deleteGroup($groupId))
+            throw new InnerError("Fail to delete Group".$groupId);
+
+        return response()->json([
+            'code' => 0
+        ]);
+
     }
 }
