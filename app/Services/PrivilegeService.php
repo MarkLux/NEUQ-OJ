@@ -16,8 +16,6 @@ use NEUQOJ\Repository\Eloquent\UsrPriRepository;
 
 class PrivilegeService
 {
-
-
     private $priRepo;
     private $rolePriRepo;
     private $userPriRepo;
