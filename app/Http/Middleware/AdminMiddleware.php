@@ -23,7 +23,7 @@ class AdminMiddleware
 
     public function handle($request, Closure $next, $id)
     {
-        if($this->roleService->hasRole($id,'Administrator'))
+        if($this->roleService->hasRole($id,'admin'))
             return $next($request);
     }
 }

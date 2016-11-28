@@ -14,11 +14,11 @@ class user_role_relationsTableSeeder extends DatabaseSeeder
         DB::table('user_role_relations')->insert(
           array(
               array(
-              'user_id'=>1,
-              'role_id'=>2,
-              'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
-              'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
-          ),
+                  'user_id'=>1,
+                  'role_id'=>2,
+                  'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                  'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
+             ),
               array(
                   'user_id'=>2,
                   'role_id'=>2,
@@ -30,7 +30,8 @@ class user_role_relationsTableSeeder extends DatabaseSeeder
                   'role_id'=>1,
                   'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                   'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
-              )
+              ),
+
           )
         );
     }
