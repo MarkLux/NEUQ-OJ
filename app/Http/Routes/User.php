@@ -18,7 +18,5 @@ Route::group(['middleware' => 'token'], function() {
         Route::post('/getinfo', 'UserController@getUser');
         Route::post('/getinfos', 'UserController@getUsers');
         Route::post('/update', 'UserController@updateUser');
-        Route::get('/lock/{id}', 'UserController@lockUser');
-        Route::get('/unlock/{id}', 'UserController@unlockUser');
     });
 });

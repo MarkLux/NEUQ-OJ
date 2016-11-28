@@ -136,22 +136,6 @@ class UserController extends Controller
         }
     }
 
-    public function lockUser(UserService $userService,$id)
-    {
-        if($userService->lockUser($id))
-            return response()->json([
-                'code' => '0'
-            ]);
-    }
-
-    public function unlockUser(UserService $userService,$id)
-    {
-        if($userService->unlockUser($id))
-            return response()->json([
-                'code' => '0'
-            ]);
-    }
-
     public function logout(Request $request,TokenService $tokenService)
     {
         $tokenService->destoryToken($request->user->id);
