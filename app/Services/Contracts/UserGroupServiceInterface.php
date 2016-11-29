@@ -57,7 +57,7 @@ interface UserGroupServiceInterface
 
     function deleteUserFromGroup(int $userId,int $groupId):bool;
 
-    function deleteGroup(int $groupId);
+    function deleteGroup(User $user,int $groupId);
 
     function changeGroupOwner(int $groupId,int $newOwnerId):bool;
 

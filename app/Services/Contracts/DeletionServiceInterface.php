@@ -17,30 +17,38 @@ interface DeletionServiceInterface
     /**
      * 原子操作部分
      */
-    function createDeletion(int $gid,array $data):bool;
+    function createDeletion(array $data):bool;
 
-    function confirmDeletion(int $opid):bool;
+    public function createDeletions(array $data);
 
-    function undoDeletion(int $opid):bool;
+    function confirmDeletion(int $id):bool;
 
-    function getDeletion(int $opid);
+    function undoDeletion(int $id):bool;
+
+    function getDeletion(int $id);
+
+    function getLog(int $page,int $size);
+
+    function getDeletionCount():int;
 
     /**
-     * 组操作
-     */
+     *废弃
 
-    function createLogItem(array $data):bool;
+    function createLogItem(array $logItem,array $deletions):int;
 
     //分页获取所有log（根据时间倒序排序）
     function getLogs(int $page,int $size);
 
     //search
-    function getLogsByUser(string $name,int $page,int $size);
+    function getLogsByUser(int $userId,int $page,int $size);
 
     function getLogItemById(int $gid);
 
-    function confirmLogItem(int $gid);
+    function confirmLogItem(int $gid):bool;
 
-    function undoLogItem(int $gid);
+    function undoLogItem(int $gid):bool;
+     *
+     * */
+
 
 }

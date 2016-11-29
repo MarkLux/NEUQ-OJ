@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Repository\Contracts\RepositoryInterface;
+use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
 use NEUQOJ\Repository\Models\News;
 
 /**
@@ -153,6 +154,23 @@ abstract class AbstractRepository implements RepositoryInterface
         return $this->model
             ->where($param)->delete();
     }
+
+    /**
+     * 批量硬删除&撤销
+
+    function forceDeleteIn(string $param,array $data)
+    {
+        if($this instanceof SoftDeletionInterface)
+            return $this->model->whereIn($param,$data)->forceDelete();
+    }
+
+    function restoreIn(string $param,array $data)
+    {
+        if($this instanceof SoftDeletionInterface)
+            return $this->model->whereIn($param,$data)->restore();
+    }
+     *
+     * */
 
     function paginate(int $page = 1,int $size = 15,array $param = [],array $columns = ['*'])
     {

@@ -17,7 +17,6 @@ class CreateDeletionLogsTable extends Migration
             $table->bigInteger('user_id');
             $table->string('user_name',100);
             $table->string('type',100);
-            $table->timestamp('time');
             $table->timestamps();
         });
     }

@@ -172,7 +172,7 @@ class UserGroupService implements UserGroupServiceInterface
     }
 
     //删除
-    public function deleteGroup(int $groupId):bool
+    public function deleteGroup(User $user,int $groupId):bool
     {
         // 要删除很多关系 相关模型基本都设立了软删除功能
         // 目前涉及到 组员 考试 作业 公告等一系列内容
@@ -186,15 +186,34 @@ class UserGroupService implements UserGroupServiceInterface
         $data = [
             'table_name' => 'UserGroup',
             'key' => $groupId,
+            'user_id' => $user->id,
+            'user_name' => $user->name
         ];
 
-        $this->deletionService->createDeletion(1,$data);
+        $this->deletionService->createDeletion($data);
+
+        //reset
+        $data = [];
+
+        $relations = $this->relationRepo->getBy('group_id',$groupId,['id']);
+
+        foreach ($relations as $relation)
+        {
+            array_push($data,[
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'table_name' => 'UserGroupRelation',
+                'key' => $relation->id
+            ]);
+        }
+
+        $this->deletionService->createDeletions($data);
 
         //删除用户关系
         $this->relationRepo->deleteWhere(['group_id' => $groupId]);
 
         //删除公告
-
+        //公告不记录在日志里
         $this->noticeRepo->deleteWhere(['group_id' => $groupId]);
 
         return true;
