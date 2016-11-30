@@ -26,7 +26,6 @@ class rolesTableSeeder extends DatabaseSeeder
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 )
-
             )
         );
     }
