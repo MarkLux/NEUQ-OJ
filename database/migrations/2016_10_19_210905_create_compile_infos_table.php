@@ -15,7 +15,6 @@ class CreateCompileInfosTable extends Migration
         Schema::create('compile_infos', function (Blueprint $table) {
             $table->bigInteger('solution_id')->primary();
             $table->text('error')->nullable();
-            $table->timestamps();
         });
     }
 

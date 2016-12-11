@@ -26,8 +26,8 @@ class CreateProblemsTable extends Migration
             $table->string('source',100);
             $table->integer('time_limit');
             $table->integer('memory_limit');
+            $table->integer('accepted');
             $table->integer('submit');
-            $table->integer('solved');
             $table->boolean('is_public');
             $table->timestamps();
         });
