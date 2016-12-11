@@ -16,7 +16,7 @@ class CreateSourceCodesTable extends Migration
             $table->bigInteger('solution_id')->primary();
             $table->text('source');
             $table->boolean('private');
-            $table->string('password',45);
+            $table->string('password',255);
             $table->timestamps();
         });
     }

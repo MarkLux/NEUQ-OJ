@@ -13,7 +13,7 @@ class CreateProblemsTable extends Migration
     public function up()
     {
         Schema::create('problems', function (Blueprint $table) {
-            $table->bigInteger('id')->primary();
+            $table->bigIncrements('id');
             $table->string('title',100);
             $table->text('description');
             $table->integer('difficulty');
@@ -25,7 +25,7 @@ class CreateProblemsTable extends Migration
             $table->text('hint');
             $table->string('source',100);
             $table->integer('time_limit');
-            $table->integer('memory');
+            $table->integer('memory_limit');
             $table->integer('submit');
             $table->integer('solved');
             $table->boolean('is_public');
