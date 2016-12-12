@@ -38,17 +38,14 @@ class DeletionService implements DeletionServiceInterface
     {
         $app = Container::getInstance();
 
+        //不符合命名规则的在这里添加case
         switch ($tableName)
         {
-            case "UserGroup":
-                $repoName = 'UserGroupRepository';
-                break;
-            case "UserGroupRelation":
-                $repoName = 'UserGroupRelationRepository';
-                break;
+
+            default:
+                $repoName = $tableName."Repository";
         }
 
-        //如果想保证不出错建议做一个switch
         $class = "NEUQOJ\Repository\Eloquent\\".$repoName;
         return $app->make($class);
     }

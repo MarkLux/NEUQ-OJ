@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
+use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 
 class UserGroupRepository extends AbstractRepository implements SoftDeletionInterface
 {
@@ -51,20 +52,22 @@ class UserGroupRepository extends AbstractRepository implements SoftDeletionInte
         }
     }
 
-    function doDeletion(int $id): bool
-    {
-        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
+//    function doDeletion(int $id): bool
+//    {
+//        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
+//
+//        if($item == null)
+//            return false;
+//        return $item->forceDelete();
+//    }
+//
+//    function undoDeletion(int $id): bool
+//    {
+//        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
+//        if($item == null)
+//            return false;
+//        return $item->restore();
+//    }
 
-        if($item == null)
-            return false;
-        return $item->forceDelete();
-    }
-
-    function undoDeletion(int $id): bool
-    {
-        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
-        if($item == null)
-            return false;
-        return $item->restore();
-    }
+    use SoftDeletionTrait;
 }

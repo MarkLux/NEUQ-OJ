@@ -197,17 +197,20 @@ class UserGroupService implements UserGroupServiceInterface
 
         $relations = $this->relationRepo->getBy('group_id',$groupId,['id']);
 
-        foreach ($relations as $relation)
+        if($relations->count()!=0) //修正bug
         {
-            array_push($data,[
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'table_name' => 'UserGroupRelation',
-                'key' => $relation->id
-            ]);
-        }
+            foreach ($relations as $relation)
+            {
+                array_push($data,[
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'table_name' => 'UserGroupRelation',
+                    'key' => $relation->id
+                ]);
+            }
 
-        $this->deletionService->createDeletions($data);
+            $this->deletionService->createDeletions($data);
+        }
 
         //删除用户关系
         $this->relationRepo->deleteWhere(['group_id' => $groupId]);

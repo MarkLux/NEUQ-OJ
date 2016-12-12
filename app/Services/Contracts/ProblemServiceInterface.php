@@ -9,7 +9,7 @@
 namespace NEUQOJ\Services\Contracts;
 
 
-interface ProblemInterface
+interface ProblemServiceInterface
 {
     /*
       *单条查询
@@ -25,25 +25,22 @@ interface ProblemInterface
     *查找
     */
 
-    function searchProblemsCount(array $condition):int;
-
-    function searchProblemsBy(array $condition,string $orderBy,int $start,int $size):array;
-
     //宽泛检索
+    //提前制定好需要查找的字段
 
-    function searchProblemsLikeCount(string $likeName):int;
+    function searchProblemsCount(string $likeName):int;
 
-    function searchProblemsLike(string $likeName,int $start,int $size):array;
+    function searchProblems(string $likeName,int $start,int $size);
 
     //题解,每道题目暂时只给设立一个题解位置
 
     function getProblemKey(int $problemId);
 
     /*
-    *创建
+    *创建 要牵扯到文件系统
     */
 
-    function addProblem(array $data);
+    function addProblem(array $data):bool;
 
     function addProblemKey(int $problemId,array $data);
 
