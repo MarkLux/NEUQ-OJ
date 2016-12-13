@@ -8,7 +8,7 @@
 
 namespace NEUQOJ\Repository\Traits;
 
-trait InsertWithId{
+trait InsertWithIdTrait{
     function insertWithId(array $data)
     {
         return $this->model->insertGetId($data);

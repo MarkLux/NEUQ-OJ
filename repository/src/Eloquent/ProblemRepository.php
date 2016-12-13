@@ -10,7 +10,7 @@ namespace NEUQOJ\Repository\Eloquent;
 
 
 use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
-use NEUQOJ\Repository\Traits\InsertWithId;
+use NEUQOJ\Repository\Traits\InsertWithIdTrait;
 use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 use Illuminate\Support\Facades\File;
 
@@ -23,7 +23,7 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
 
     use SoftDeletionTrait;
 
-    use InsertWithId;
+    use InsertWithIdTrait;
 
     //覆盖方法
 
