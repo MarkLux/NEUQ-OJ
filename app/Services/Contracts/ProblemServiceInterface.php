@@ -8,12 +8,16 @@
 
 namespace NEUQOJ\Services\Contracts;
 
+use NEUQOJ\Repository\Models\User;
+
 
 interface ProblemServiceInterface
 {
     /*
-      *单条查询
+      *题目基础内容
       */
+
+    //获取
 
     function getProblemById(int $problemId);
 
@@ -21,10 +25,10 @@ interface ProblemServiceInterface
 
     function getProblemByMult(array $condition);
 
-    /*
-    *查找
-    */
+    //以文件形式输出测试输入输出等数据
+    function getRunDatas(int $problemId);
 
+    //查找
     //宽泛检索
     //提前制定好需要查找的字段
 
@@ -32,58 +36,42 @@ interface ProblemServiceInterface
 
     function searchProblems(string $likeName,int $start,int $size);
 
-    //题解,每道题目暂时只给设立一个题解位置
+    //创建
 
-    function getProblemKey(int $problemId);
+    function addProblem(array $problemData,array $testData):bool;
 
-    /*
-    *创建 要牵扯到文件系统
-    */
+   //修改
 
-    function addProblem(array $data):bool;
+    function updateProblem(int $problemId,array $problemData,array $testData):bool;
 
-    function addProblemKey(int $problemId,array $data);
+    //删除
 
-    /*
-    *修改
-    */
+    function deleteProblem(User $user,int $problemId):bool;
 
-    function updateProblem(int $problemId,array $data);
+    //判题
 
-    function updateProblemKey(int $problemId,array $data);
+    function submitProlem(int $problemId,array $data);
 
-    /*
-    *删除
-    */
-
-    function deleteProblem(int $problemId);
-
-    function deleteProblemKey(int $problemId);
+    function getProblemStatus(int $userId,int $problemId);
 
     /*
     *状态辅助函数
     */
+
+    function isProblemExist(int $problemId):bool;
 
     function isProblemHasKey(int $problemId):bool;
 
     function isUserAcProblem(int $userId,int $problemId):bool;
 
     /*
-    *判题核心联动部分
-    */
-
-    function submitProlem(int $problemId,array $data);
-
-    function getProblemStatus(int $problemId);
-
-    /*
-    *讨论版联动部分
+    *讨论版
     */
 
     function getProblemDiscussion(int $problemId);
 
     /*
-    *tag功能
+    *tag
     */
 
     function addTagToProblem(int $problemId,int $tagId);
@@ -98,4 +86,15 @@ interface ProblemServiceInterface
     function getTagId(string $tagname);
 
     function getTagName(int $tagId);
+
+    /**
+     * 题解problem_key
+     */
+
+    function addProblemKey(int $problemId,array $data);
+
+    function updateProblemKey(int $problemId,array $data);
+
+    function deleteProblemKey(int $problemId);
+
 }

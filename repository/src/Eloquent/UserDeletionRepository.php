@@ -16,6 +16,7 @@ class UserDeletionRepository extends AbstractRepository
         return "NEUQOJ\Repository\Models\UserDeletion";
     }
 
+    //覆盖父类方法
     function paginate(int $page = 1,int $size = 15,array $param = [],array $columns = ['*'])
     {
         if(!empty($param))
