@@ -47,6 +47,7 @@ class RoleController extends Controller
             throw new FormValidatorException($data);
         }
 
+        
         /*
          * 判断要增加的角色是否存在
          */

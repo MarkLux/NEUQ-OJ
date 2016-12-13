@@ -45,23 +45,21 @@ class PrivilegeService
     public function givePrivilegeTo($userId,$roleId)
     {
         $arr = $this->getRolePrivilege($roleId);
+        $content = [];
         foreach ($arr as $item)
         {
-            $content = array(
+            array_push($content,[
                 'user_id'=>$userId,
                 'privilege_id'=>$item['privilege_id']
-            );
-
-            /*
+             ]);
+        }
+        /*
              * 给予的新角色含有原有的权限 就跳过这次插入
              */
-            if($this->userPriRepo->get($content))
-                continue;
 
-            elseif(!($this->userPriRepo->insert($content)))
-               return false;
+        if(!($this->userPriRepo->insert($content)))
+            return false;
 
-        }
         return true;
     }
     /*
