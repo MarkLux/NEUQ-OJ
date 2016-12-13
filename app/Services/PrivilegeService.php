@@ -8,6 +8,7 @@
 
 namespace NEUQOJ\Services;
 
+use Illuminate\Support\Facades\DB;
 use NEUQOJ\Exceptions\PrivilegeNotExistException;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\RolePriRepository;
@@ -44,18 +45,31 @@ class PrivilegeService
      */
     public function givePrivilegeTo($userId,$roleId)
     {
+
+        $privilege = $this->userPriRepo->getBy('user_id',$userId);
+
         $arr = $this->getRolePrivilege($roleId);
-        $content = [];
+
+
         foreach ($arr as $item)
         {
+            foreach ($privilege as $pitem)
+            {
+
+                if($pitem['privilege_id'] == $item['privilege_id'])
+                    continue;
+
+            }
+            /*
+           * 给予的新角色含有原有的权限 就跳过这次插入
+           */
             array_push($content,[
                 'user_id'=>$userId,
                 'privilege_id'=>$item['privilege_id']
-             ]);
+            ]);
+
         }
-        /*
-             * 给予的新角色含有原有的权限 就跳过这次插入
-             */
+
 
         if(!($this->userPriRepo->insert($content)))
             return false;
