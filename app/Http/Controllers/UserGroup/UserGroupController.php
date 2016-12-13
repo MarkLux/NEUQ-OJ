@@ -285,8 +285,8 @@ class UserGroupController extends Controller
         if(!Hash::check($request->password,$request->user->password))
             throw new PasswordErrorException();
 
-        if(!$this->userGroupService->deleteGroup($groupId))
-            throw new InnerError("Fail to delete Group".$groupId);
+        if(!$this->userGroupService->deleteGroup($request->user,$groupId))
+            throw new InnerError("Fail to delete Group :".$groupId);
 
         return response()->json([
             'code' => 0

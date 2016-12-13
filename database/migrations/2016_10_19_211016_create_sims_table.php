@@ -13,7 +13,7 @@ class CreateSimsTable extends Migration
     public function up()
     {
         Schema::create('sims', function (Blueprint $table) {
-            $table->integer('s_id');
+            $table->increments('s_id');
             $table->integer('sim_s_id');
             $table->integer('sim');
             $table->timestamps();

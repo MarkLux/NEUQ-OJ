@@ -13,7 +13,7 @@ class CreateSolutionsTable extends Migration
     public function up()
     {
         Schema::create('solutions', function (Blueprint $table) {
-            $table->bigInteger('id');
+            $table->bigIncrements('id');
             $table->bigInteger('problem_id');
             $table->bigInteger('user_id');
             $table->Integer('time');
@@ -23,7 +23,7 @@ class CreateSolutionsTable extends Migration
             $table->string('ip',45);
             $table->bigInteger('problem_group_id');
             $table->integer('code_length');
-            $table->timestampTz('judge_time');
+            $table->timestamp('judgetime');//不要修改这个字段的命名
             $table->decimal('pass_rate');
             $table->integer('lint_error');
             $table->string('judger',45);

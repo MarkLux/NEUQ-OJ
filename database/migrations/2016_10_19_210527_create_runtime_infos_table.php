@@ -13,9 +13,8 @@ class CreateRuntimeInfosTable extends Migration
     public function up()
     {
         Schema::create('runtime_infos', function (Blueprint $table) {
-            $table->bigInteger('solution_id');
-            $table->text('error');
-            $table->timestamps();
+            $table->bigInteger('solution_id')->primary();
+            $table->text('error')->nullable();
         });
     }
 

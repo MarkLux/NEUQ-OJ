@@ -11,6 +11,7 @@ namespace NEUQOJ\Services;
 
 use Carbon\Carbon;
 use Illuminate\Container\Container;
+use Illuminate\Support\Facades\DB;
 use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
 use NEUQOJ\Repository\Eloquent\DeletionLogRepository;
 use NEUQOJ\Repository\Eloquent\UserDeletionRepository;
@@ -26,51 +27,50 @@ class DeletionService implements DeletionServiceInterface
     */
 
     private $userDeletionRepo;
-    private $DeletionLogRepo;
 
-    public function __construct(
-        UserDeletionRepository $userDeletionRepository,DeletionLogRepository $deletionLogRepository
-    )
+    public function __construct(UserDeletionRepository $userDeletionRepository)
     {
         $this->userDeletionRepo = $userDeletionRepository;
-        $this->DeletionLogRepo = $deletionLogRepository;
     }
 
-    //根据传入字符返回实例
+    //根据传入字符返回仓库实例
     private function getRepo(string $tableName):SoftDeletionInterface
     {
         $app = Container::getInstance();
 
+        //不符合命名规则的在这里添加case
         switch ($tableName)
         {
-            case "UserGroup":
-                $repoName = 'UserGroupRepository';
-                break;
-            case "UserGroupRelation":
-                $repoName = 'UserGroupRelationRepository';
+
+            default:
+                $repoName = $tableName."Repository";
         }
 
-        //如果想保证不出错建议做一个switch
         $class = "NEUQOJ\Repository\Eloquent\\".$repoName;
         return $app->make($class);
     }
 
-    public function createDeletion(int $gid, array $data): bool
+    function getLog(int $page,int $size)
     {
-        $current = new Carbon();
+        return $this->userDeletionRepo->paginate($page,$size);
+    }
 
-        $data['gid'] = $gid;
-
-        $data['time'] = $current;
-
+    /**
+     * 单条删除记录部分
+     */
+    public function createDeletion(array $data): bool
+    {
         return $this->userDeletionRepo->insert($data) == 1;
+    }
+
+    public function createDeletions(array $data)
+    {
+        return $this->userDeletionRepo->insert($data);
     }
 
     function confirmDeletion(int $id): bool
     {
         $deletion = $this->userDeletionRepo->get($id)->first();
-
-//        dd($deletion);
 
         $repo = $this->getRepo($deletion->table_name);
 
@@ -78,7 +78,7 @@ class DeletionService implements DeletionServiceInterface
             return false;
 
         //clear the single deletion
-        return $this->userDeletionRepo->deleteWhere(['id' => $id]);
+        return $this->userDeletionRepo->deleteWhere(['id' => $id])==1;
 
     }
 
@@ -92,7 +92,7 @@ class DeletionService implements DeletionServiceInterface
             return false;
 
         //clear the single deletion
-        return $this->userDeletionRepo->deleteWhere(['id' => $id]);
+        return $this->userDeletionRepo->deleteWhere(['id' => $id])==1;
     }
 
     function getDeletion(int $opid)
@@ -100,35 +100,68 @@ class DeletionService implements DeletionServiceInterface
         return $this->userDeletionRepo->get($opid)->first();
     }
 
+    function getDeletionCount(): int
+    {
+        return $this->userDeletionRepo->getCount();
+    }
+
+    //因为复杂度和效率原因废弃了对删除行为制作分组日志的功能
+
+/*
+
     function getLogs(int $page, int $size)
     {
-        // TODO: Implement getLogs() method.
+        return $this->deletionLogRepo->paginate($page,$size);
     }
 
     function getLogItemById(int $gid)
     {
-        // TODO: Implement getLogItemById() method.
+        return $this->deletionLogRepo->get($gid)->first();
     }
 
-    function getLogsByUser(string $name, int $page, int $size)
+    function getLogsByUser(int $userId, int $page, int $size)
     {
-        // TODO: Implement getLogsByUser() method.
+        return $this->deletionLogRepo->paginate($page,$size,[
+            'user_id' => $userId
+        ]);
     }
 
-    function createLogItem(array $data): bool
+    function createLogItem(array $logItem,array $deletions): int
     {
-        // TODO: Implement createLogItem() method.
+
+        $gid = -1;
+        //内部开启事务处理方式
+        DB::transaction(function() use ($gid,$logItem,$deletions){
+            $gid =$this->deletionLogRepo->insertWithId($logItem);
+            foreach($deletions as $deletion)
+            {
+                $deletion['gid'] = $gid;
+            }
+            $this->userDeletionRepo->insert($deletions);
+        });
+
+        return $gid;//nice idea!
     }
-    function confirmLogItem(int $gid)
+
+    function confirmLogItem(int $gid):bool
     {
-        // TODO: Implement doLogItem() method.
+        //确认一次记录所有项目的删除
+        $deletions = $this->userDeletionRepo->getBy('gid',$gid);
+
+        //虽然循环这样删除效率低下，但是保证逻辑的简单性
+        //若是要考虑性能最好的办法还是先根据表分类，再在每个表中执行批量处理
+        DB::transaction(function() use ($deletions){
+            foreach ($deletions as $deletion)
+            {
+
+            }
+        });
     }
 
-    function undoLogItem(int $gid)
+    function undoLogItem(int $gid):bool
     {
-        // TODO: Implement undoLogItem() method.
     }
 
-
+*/
 
 }
