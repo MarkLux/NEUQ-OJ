@@ -50,7 +50,7 @@ class PrivilegeService
 
         $arr = $this->getRolePrivilege($roleId);
 
-
+        $content = [];
         foreach ($arr as $item)
         {
             foreach ($privilege as $pitem)
