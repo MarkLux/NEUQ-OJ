@@ -34,7 +34,7 @@ class RoleService implements RoleServiceInterface
         $this->PriRepo = $privilegeRepository;
     }
 
-    function hasRole(int $userId,string $role):bool
+    public function hasRole(int $userId,string $role):bool
     {
         $arr = $this->UserRoleRepo->getBy('user_id',$userId);
         $roleId = $this->RoleRepo->getBy('name',$role)->first()->id;
@@ -52,7 +52,7 @@ class RoleService implements RoleServiceInterface
      * 对表Roles，role_privilege_relations 操作
      * 返回值限定为角色的id，方法失败的话返回-1
      */
-    function createRole(array $data):int
+   public function createRole(array $data):int
     {
 
         $role = [
@@ -97,7 +97,7 @@ class RoleService implements RoleServiceInterface
      * 将user_id role_id 插入user_role_relations表
      * 再　填充　user_pri_re
      */
-    function giveRoleTo(int $userId,string $role)
+    public function giveRoleTo(int $userId,string $role)
     {
         $roleData = $this->getRoleDetailByName($role);
 
@@ -117,14 +117,14 @@ class RoleService implements RoleServiceInterface
         return true;
     }
 
-    function roleExisted(string $role)
+    public function roleExisted(string $role)
     {
          return $this->getRoleDetailByName($role);
     }
     /*
      * 删除角色 roles表 user_role_relations表 role_privilege_relations表
      */
-    function deleteRole($roleId){
+    public function deleteRole($roleId){
         $role = array(
             'id'=>$roleId
         );
@@ -154,26 +154,26 @@ class RoleService implements RoleServiceInterface
         return $flag;
     }
 
-    function updateRole(array $condition,array $data)
+    public function updateRole(array $condition,array $data)
     {
         $this->RoleRepo->updateWhere($condition,$data);
     }
 
-    function updateRolePri(array $condition,array $data)
+    public function updateRolePri(array $condition,array $data)
     {
         $this->RolePrRepo->updateWhere($condition,$data);
     }
-    function getRoleDetailById($roleId)
+    public function getRoleDetailById($roleId)
     {
         return $this->RoleRepo->get($roleId)->first();
     }
 
-    function getRoleDetailByName($name)
+    public function getRoleDetailByName($name)
     {
         return $this->RoleRepo->getBy('name',$name)->first();
     }
 
-    function isRoleBelongTo($roleId):bool
+    public function isRoleBelongTo($roleId):bool
     {
         if($this->UserRoleRepo->getBy('role_id',$roleId)->first())
             return true;
