@@ -13,4 +13,5 @@ trait InsertWithId{
     {
         return $this->model->insertGetId($data);
     }
+
 }

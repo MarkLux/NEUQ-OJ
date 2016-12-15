@@ -9,6 +9,8 @@
 namespace NEUQOJ\Repository\Eloquent;
 
 
+
+
 use NEUQOJ\Repository\Traits\InsertWithId;
 
 class ProblemTagRepository extends AbstractRepository

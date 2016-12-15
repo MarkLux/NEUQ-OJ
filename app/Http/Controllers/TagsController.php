@@ -23,11 +23,11 @@ class TagsController extends Controller
 
     }
 
-    public function createTags(Request $request,TagsService $tagsService)
+    public function createTag(Request $request,TagsService $tagsService)
     {
        //表单认证
         $validator = Validator::make($request->all(), [
-            'tags' => 'required|max:45',
+            'name' => 'required|max:45',
         ]);
 
         if($validator->fails())
