@@ -40,8 +40,11 @@ class ProblemService
     /**
      * 添加题目
      */
-    function addProblem(array $problemData,array $testData):int
+    function addProblem(User $user,array $problemData,array $testData):int
     {
+        $problemData['creator_id'] = $user->id;
+        $problemData['creator_name'] = $user->name;
+
         //数据必须已经经过验证
         $id = $this->problemRepo->insertWithId($problemData);
 

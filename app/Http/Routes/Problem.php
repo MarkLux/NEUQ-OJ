@@ -7,7 +7,10 @@
  */
 
 Route::group(['middleware' => 'token'],function(){
-    Route::get('/problem/{id}','ProblemController@getProblem');
     Route::post('/problem/create','ProblemController@addProblem');
 });
+
+Route::get('/problem/{id}','ProblemController@getProblem');
+
+
 

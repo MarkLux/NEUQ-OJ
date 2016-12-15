@@ -16,17 +16,17 @@ class CreateSolutionsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('problem_id');
             $table->bigInteger('user_id');
-            $table->Integer('time');
-            $table->Integer('memory');
+            $table->Integer('time')->nullable();
+            $table->Integer('memory')->nullable();
             $table->smallInteger('result');
             $table->integer('language');
-            $table->string('ip',45);
-            $table->bigInteger('problem_group_id');
+            $table->string('ip',45)->nullable();
+            $table->bigInteger('problem_group_id')->nullable();
             $table->integer('code_length');
-            $table->timestamp('judgetime');//不要修改这个字段的命名
-            $table->decimal('pass_rate');
-            $table->integer('lint_error');
-            $table->string('judger',45);
+            $table->timestamp('judgetime')->nullable();//不要修改这个字段的命名
+            $table->decimal('pass_rate')->nullable();
+            $table->integer('lint_error')->nullable();
+            $table->string('judger',45)->nullable();
             $table->timestamps();
         });
     }
