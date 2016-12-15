@@ -9,7 +9,9 @@
 namespace NEUQOJ\Exceptions;
 
 
-class TagsUnchangedExceptions
+class TagsUnchangedExceptions extends BaseException
 {
+    protected $code =3005;
 
+    protected $data = "tag unchanged";
 }
