@@ -11,6 +11,7 @@ namespace NEUQOJ\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
 use NEUQOJ\Services\ProblemService;
@@ -61,6 +62,9 @@ class ProblemController extends Controller
         $validator = Validator::make($request->all(),$this->getValidateRules());
 
         //  TODO:  权限验证
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
         
         //重新组装数据
         
@@ -83,7 +87,7 @@ class ProblemController extends Controller
             'output' => $request->input('test_output')
         ];
 
-        $id = $this->problemService->addProblem($problemData,$testData);
+        $id = $this->problemService->addProblem($request->user,$problemData,$testData);
 
         if($id==-1)
             throw new InnerError("Fail to add problem");

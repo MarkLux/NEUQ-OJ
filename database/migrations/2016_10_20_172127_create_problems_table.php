@@ -17,6 +17,8 @@ class CreateProblemsTable extends Migration
             $table->string('title',100);
             $table->text('description');
             $table->integer('difficulty');
+            $table->bigInteger('creator_id');
+            $table->string('creator_name',100);
 //            $table->text('input');
 //            $table->text('output');
             $table->text('sample_input')->nullable();
