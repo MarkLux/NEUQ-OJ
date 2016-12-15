@@ -35,12 +35,28 @@ class TagsService implements TagsServiceInterface
 
     public function deleteTags(int $id):bool
     {
-        return $this->problemTagRepo->deleteWhere(['id'=>$id]);
+        DB::transation(
+            function ()use($id)
+            {
+                $this->problemTagRepo->deleteWhere(['id'=>$id]);
+                $this->problemTagRelationRepo->deleteWhere(['tag_id'=>$id]);
+            }
+        );
+
+
     }
 
-    public function updateTags(int $id,string $content):bool
+    public function updateTags(int $id,string $content):bool//如果哪些题目用了这个标签也一并被修改
     {
-        $this->problemTagRepo->updateWhere($id,['name'=>$content]);
+        DB::transation(
+          function ()use($id,$content)
+          {
+              $this->problemTagRepo->updateWhere(['id'=>$id],['name'=>$content]);
+              $this->problemTagRelationRepo->updateWhere(['tag_id'=>$id],['tag_title'=>$content]);
+          }
+        );
+
+        return true;
     }
 
     public function hasTags(int $tagsId,int $problemId):bool//判断某题目是否已经有某标签
@@ -56,9 +72,14 @@ class TagsService implements TagsServiceInterface
         return false;
     }
 
-    public function tagsExisted(string $name):int//判断某标签是否存在 返回tag的id
+    public function tagsExisted(string $name):int//判断某标签是否存在 返回tag的id 不存在返回-1
     {
-        return $this->problemTagRepo->getBy('name',$name)->first();
+        $tagId = -1;
+        $arr = $this->problemTagRepo->getBy('name',$name)->first();
+        if($arr != null)
+            $tagId = $arr['id'];
+
+        return $tagId;
     }
 
     public function giveTagsTo(int $tagsId,int $problemId):bool

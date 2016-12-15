@@ -12,6 +12,7 @@ namespace NEUQOJ\Repository\Eloquent;
 
 
 use NEUQOJ\Repository\Traits\InsertWithId;
+use NEUQOJ\Repository\Traits\InsertWithIdTrait;
 
 class ProblemTagRepository extends AbstractRepository
 {
@@ -19,5 +20,5 @@ class ProblemTagRepository extends AbstractRepository
     {
         return "NEUQOJ\Repository\Models\ProblemTag";
     }
-    use InsertWithId;
+    use InsertWithIdTrait;
 }

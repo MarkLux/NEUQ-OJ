@@ -13,5 +13,5 @@ class TagsExistExceptios extends BaseException
 {
     protected $code = 3005;
 
-    protected $data = "Tags Existed or Tag's content unchanged";
+    protected $data = "Tags Existed";
 }
