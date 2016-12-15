@@ -20,7 +20,7 @@ include 'Routes/User.php';
 
 include 'Routes/DeletionLog.php';
 
-include 'Routes/Admin.php';
+include 'Routes/Problem.php';
 
 Route::get('/', function () {
     return 'here is the main page!!';

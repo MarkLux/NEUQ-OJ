@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
-use NEUQOJ\Repository\Traits\InsertWithId;
+use NEUQOJ\Repository\Traits\InsertWithIdTrait;
 use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 
 class UserGroupRepository extends AbstractRepository implements SoftDeletionInterface
@@ -22,7 +22,7 @@ class UserGroupRepository extends AbstractRepository implements SoftDeletionInte
         return "NEUQOJ\Repository\Models\UserGroup";
     }
 
-    use InsertWithId;
+    use InsertWithIdTrait;
 
     function getWhereLikeCount(string $pattern):int
     {

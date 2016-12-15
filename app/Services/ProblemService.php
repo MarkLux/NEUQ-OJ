@@ -15,7 +15,7 @@ use NEUQOJ\Services\Contracts\ProblemServiceInterface;
 use Illuminate\Support\Facades\File;
 use NEUQOJ\Repository\Eloquent\ProblemRepository;
 
-class ProblemService implements ProblemServiceInterface
+class ProblemService
 {
 
     private $problemRepo;
@@ -40,7 +40,7 @@ class ProblemService implements ProblemServiceInterface
     /**
      * 添加题目
      */
-    function addProblem(array $problemData,array $testData):bool
+    function addProblem(array $problemData,array $testData):int
     {
         //数据必须已经经过验证
         $id = $this->problemRepo->insertWithId($problemData);
@@ -51,7 +51,7 @@ class ProblemService implements ProblemServiceInterface
 
         //创建文件目录
         if(!File::makeDirectory($path,  $mode = 0755))
-            return false;
+            return -1;
 
         //4个文件
         File::put($path.'sample.in',$problemData['sample_input']);
@@ -62,7 +62,7 @@ class ProblemService implements ProblemServiceInterface
 
         File::put($path.'test.out', $testData['output']);
 
-        return true;
+        return $id;
     }
 
     /**
