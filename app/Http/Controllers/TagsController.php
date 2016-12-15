@@ -42,8 +42,12 @@ class TagsController extends Controller
         if($tagId != -1)
             throw new TagsExistExceptios();
 
+        $data = array(
+            'name'=>$request->name
+        );
+
         //创建tag会返回tag的id 创建失败会返回-1
-        if(($tagsService->createTags($request->name))!=-1)
+        if(($tagsService->createTags($data))!=-1)
             return response()->json([
                 'code' => '0'
             ]);
@@ -74,7 +78,11 @@ class TagsController extends Controller
                 $tagsService->giveTagsTo($tagId,$request->problemId);
         else //tag不存在的时候先创建tag获得tag的id，再赋予这道题
 
-            $tagId = $tagsService->createTags($request->name);
+            $data = array(
+                'name'=>$request->name
+            );
+
+            $tagId = $tagsService->createTags($data);
             $tagsService->giveTagsTo($tagId,$request->problemId);
 
         return response()->json(
@@ -175,4 +183,6 @@ class TagsController extends Controller
                 ]
             );
     }
+
+
 }

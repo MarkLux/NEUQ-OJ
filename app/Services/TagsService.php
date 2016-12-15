@@ -11,38 +11,70 @@ namespace NEUQOJ\Services;
 
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Exceptions\TagsUnchangedExceptions;
+use NEUQOJ\Repository\Eloquent\ProblemTagRelationRepository;
+use NEUQOJ\Repository\Eloquent\ProblemTagRepository;
 use NEUQOJ\Services\Contracts\TagsServiceInterface;
 
 class TagsService implements TagsServiceInterface
 {
-    public function createTags(string $name):int//返回tag的id
-    {
+    private $problemTagRepo;
+    private $problemTagRelationRepo;
+    private $problemService;
 
+    public function __construct(ProblemTagRepository $problemTagRepository,ProblemTagRelationRepository $problemTagRelationRepository,ProblemService $problemService)
+    {
+        $this->problemTagRepo = $problemTagRepository;
+        $this->problemTagRelationRepo = $problemTagRelationRepository;
+        $this->problemService = $problemService;
+    }
+
+    public function createTags(array $data):int//返回tag的id
+    {
+        return $this->problemTagRepo->insertWithId($data);
     }
 
     public function deleteTags(int $id):bool
     {
-
+        return $this->problemTagRepo->deleteWhere(['id'=>$id]);
     }
 
     public function updateTags(int $id,string $content):bool
     {
-
+        $this->problemTagRepo->updateWhere($id,['name'=>$content]);
     }
 
     public function hasTags(int $tagsId,int $problemId):bool//判断某题目是否已经有某标签
     {
+        //提出关系表中该题目的所有标签
+        $arr = $this->problemTagRelationRepo->getBy('problem_id',$problemId);
+        foreach ($arr as $item)//匹配到对应标签表示该题目有该标签
+        {
+            if($item['tag_id'] == $tagsId)
+                return true;
+        }
 
+        return false;
     }
 
     public function tagsExisted(string $name):int//判断某标签是否存在 返回tag的id
     {
-
+        return $this->problemTagRepo->getBy('name',$name)->first();
     }
 
     public function giveTagsTo(int $tagsId,int $problemId):bool
     {
+        $problem = $this->problemService->getProblemById($problemId);
 
+        $tag = $this->getTagById($tagsId);
+
+        $data = array(
+          'problem_id'=>$problemId,
+          'tag_id'=>$tagsId,
+          'tag_title'=>$tag['name'],
+          'problem_title'=>$problem['title']
+        );
+
+        return $this->problemTagRepo->insert($data);
     }
 
     function updateProblemTag(int $OldTagId,int $problemId,string $content):bool //对题目已有标签编辑（除直接删除）统一入口
@@ -54,7 +86,11 @@ class TagsService implements TagsServiceInterface
             DB::transation(
                 function ()use($content,$tagId,$problemId,$OldTagId)
                 {
-                    $tagId = $this->createTags($content);//创建一个新的tag
+                    $data = array(
+                        'name'=>$content
+                    );
+
+                    $tagId = $this->createTags($data);//创建一个新的tag
 
                     $this->giveTagsTo($tagId,$problemId);//赋予新的标签
 
@@ -84,7 +120,7 @@ class TagsService implements TagsServiceInterface
 
     function deleteProblemTag(int $tagId,int $problemId):bool//直接删除对应题目的对应标签
     {
-
+        $this->problemTagRelationRepo->deleteWhere(['tag_id'=>$tagId,'problem_id'=>$problemId]);
     }
 
 
@@ -97,7 +133,11 @@ class TagsService implements TagsServiceInterface
         {
             DB::transation(
                 function () use ($content, $tagId, $problemId) {
-                    $tagId = $this->createTags($content);//创建一个新的tag
+
+                    $data = array(
+                        'name'=>$content
+                    );
+                    $tagId = $this->createTags($data);//创建一个新的tag
 
                     $this->giveTagsTo($tagId, $problemId);//赋予新的标签
 
@@ -112,5 +152,15 @@ class TagsService implements TagsServiceInterface
             else return true;
 
         return true;
+    }
+
+    public function getTagById(int $tagId):array
+    {
+        return $this->problemTagRepo->get($tagId)->first();
+    }
+
+    public function getTagByName(string $name):array
+    {
+        return $this->problemTagRepo->getBy('name',$name)->first();
     }
 }

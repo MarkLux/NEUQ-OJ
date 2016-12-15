@@ -11,7 +11,7 @@ namespace NEUQOJ\Services\Contracts;
 
 interface TagsServiceInterface
 {
-    function createTags(string $name):int;//返回tag的id
+    function createTags(array $data):int;//返回tag的id
 
     function deleteTags(int $id):bool;//删除tag表中的字段
 
@@ -28,5 +28,9 @@ interface TagsServiceInterface
     function deleteProblemTag(int $tagId,int $problemId):bool;//直接删除对应题目的对应标签
 
     function createProblemTag(int $problemId,string $content):bool;//对题目添加标签
+
+    function getTagById(int $tagId):array;
+
+    function getTagByName(string $name):array;
 
 }
