@@ -12,6 +12,7 @@ namespace NEUQOJ\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\TagsExistExceptios;
 use NEUQOJ\Exceptions\TagsUnchangedExceptions;
 use NEUQOJ\Services\TagsService;
@@ -73,11 +74,11 @@ class TagsController extends Controller
                 ]
             );
     }
-    public function giveTagsTo(Request $request,TagsService $tagsService)
+    public function giveTagTo(Request $request,TagsService $tagsService)//直接用TagId给予问题标签
     {
         //表单认证
         $validator = Validator::make($request->all(), [
-            'tags' => 'required|max:45',
+            'tagId' => 'required',
             'problemId'=>'required'
         ]);
 
@@ -87,22 +88,13 @@ class TagsController extends Controller
             throw new FormValidatorException($data);
         }
 
-        //判断创建的tag是否存在
-        $tagId = $tagsService->tagsExisted($request->name);//若不存在id为-1
 
-        if($tagId != -1)//tag存在时判断这道题是否已经有这个tag
-            if($tagsService->hasTags($tagId,$request->problemId))
+
+        $tagId = $request->tagId;
+            if($tagsService->hasTags($tagId,$request->problemId))//判断这道题是否已经有该标签了
                 throw new TagsExistExceptios();
             else
                 $tagsService->giveTagsTo($tagId,$request->problemId);
-        else //tag不存在的时候先创建tag获得tag的id，再赋予这道题
-
-            $data = array(
-                'name'=>$request->name
-            );
-
-            $tagId = $tagsService->createTags($data);
-            $tagsService->giveTagsTo($tagId,$request->problemId);
 
         return response()->json(
             [
@@ -115,8 +107,8 @@ class TagsController extends Controller
     {
         //表单认证
         $validator = Validator::make($request->all(), [
-            'tagsId' => 'required',
-            'tags'=>'required|max:45'
+            'tagId' => 'required',
+            'name'=>'required|max:45'
         ]);
 
         if($validator->fails())
@@ -126,10 +118,11 @@ class TagsController extends Controller
         }
 
         //判断要修改的tag内容是否存在,或者未改变
-        if($tagsService->tagsExisted($request->name))
+        $tagId = $tagsService->tagsExisted($request->name);
+        if($tagId != -1)
             throw new TagsExistExceptios();
 
-        if($tagsService->updateTags($request->tagId,$request->tags))
+        if($tagsService->updateTags($request->tagId,$request->name))
             return response()->json(
                 [
                     'code'=> '0'
@@ -174,7 +167,7 @@ class TagsController extends Controller
             throw new FormValidatorException($data);
         }
 
-        if($tagsService->creatProblemTag($request->problemId,$request->tags))
+        if($tagsService->createProblemTag($request->problemId,$request->tags))
             return response()->json(
                 [
                     'code'=>'0'

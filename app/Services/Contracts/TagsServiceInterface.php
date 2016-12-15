@@ -29,8 +29,8 @@ interface TagsServiceInterface
 
     function createProblemTag(int $problemId,string $content):bool;//对题目添加标签
 
-    function getTagById(int $tagId):array;
+    function getTagById(int $tagId);
 
-    function getTagByName(string $name):array;
+    function getTagByName(string $name);
 
 }
