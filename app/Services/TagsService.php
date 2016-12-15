@@ -35,7 +35,7 @@ class TagsService implements TagsServiceInterface
 
     public function deleteTags(int $id):bool
     {
-        DB::transation(
+        DB::transaction(
             function ()use($id)
             {
                 $this->problemTagRepo->deleteWhere(['id'=>$id]);
@@ -43,7 +43,7 @@ class TagsService implements TagsServiceInterface
             }
         );
 
-
+        return true;
     }
 
     public function updateTags(int $id,string $content):bool//如果哪些题目用了这个标签也一并被修改

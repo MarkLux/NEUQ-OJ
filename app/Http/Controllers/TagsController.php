@@ -53,7 +53,26 @@ class TagsController extends Controller
             ]);
 
     }
+    public function deleteTag(Request $request,TagsService $tagsService)
+    {
+        //表单认证
+        $validator = Validator::make($request->all(), [
+            'tagId' => 'required',
+        ]);
 
+        if($validator->fails())
+        {
+            $data = $validator->getMessageBag()->all();
+            throw new FormValidatorException($data);
+        }
+
+        if($tagsService->deleteTags($request->tagId))
+            return response()->json(
+                [
+                    'code'=>'0'
+                ]
+            );
+    }
     public function giveTagsTo(Request $request,TagsService $tagsService)
     {
         //表单认证
