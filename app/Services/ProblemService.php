@@ -10,17 +10,22 @@ namespace NEUQOJ\Services;
 
 
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
+use NEUQOJ\Repository\Eloquent\SourceCodeRepository;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Services\Contracts\ProblemServiceInterface;
 use Illuminate\Support\Facades\File;
 use NEUQOJ\Repository\Eloquent\ProblemRepository;
+use Illuminate\Support\Facades\DB;
 
 class ProblemService
 {
 
     private $problemRepo;
     private $solutionRepo;
+    private $sourceRepo;
     private $deletionService;
+
+    //获取对应题目数据的磁盘储存路径
 
     private function getPath(int $problemId):string
     {
@@ -29,12 +34,13 @@ class ProblemService
 
     function __construct(
         ProblemRepository $problemRepository,SolutionRepository $solutionRepository,
-        DeletionService $deletionService
+        DeletionService $deletionService,SourceCodeRepository $sourceCodeRepository
     )
     {
         $this->problemRepo = $problemRepository;
         $this->solutionRepo = $solutionRepository;
         $this->deletionService = $deletionService;
+        $this->sourceRepo = $sourceCodeRepository;
     }
 
     /**
@@ -119,6 +125,40 @@ class ProblemService
         }
 
         return false;
+    }
+
+    function submitProlem(User $user,int $problemId,array $data):int
+    {
+        //写入solution和source_code
+        //插入顺序必须是先插入source_code获取id然后再给solution不然一定会编译错误。
+        //提交成功后返回solution_id否则返回0
+
+        $code = [
+            'source' => $data['source_code'],
+            'private' => $data['private']
+        ];
+
+        $solutionId = 0;
+
+        $solutionData = [
+            'problem_id' => $problemId,
+            'problem_group_id' => $data['problem_group_id'],
+            'user_id' => $user->id,
+            'ip' => $data['ip'],
+            'language' => $data['language'],
+            'result' => 0,
+            'code_length' => $data['code_length']
+        ];
+
+        DB::transaction(function ()use(&$solutionId,$code,$solutionData){
+            //请注意！如果要在闭包里改变外部变量的值必须传引用
+            $solutionId = $this->sourceRepo->insertWithId($code);
+            $solutionData['id'] = $solutionId;
+            $this->solutionRepo->insert($solutionData);
+        });
+
+
+        return $solutionId;
     }
 
     /**

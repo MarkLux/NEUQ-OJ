@@ -97,4 +97,43 @@ class ProblemController extends Controller
             'problem_id' => $id
         ]);
     }
+
+    public function submitProblem(Request $request,int $problemId)
+    {
+        $validator = Validator::make($request->all(),[
+            'source_code' => 'required|string|min:2',
+            'private' => 'required|boolean',
+            'language' => 'required|integer|min:0|max:9',
+            'problem_group_id' => 'integer'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        //TODO: 检查权限
+
+        if(!$this->problemService->isProblemExist($problemId))
+            throw new ProblemNotExistException();
+
+        $data = [
+            'source_code' => $request->input('source_code'),
+            'private' => $request->input('private'),
+            'code_length' => strlen($request->input('source_code')),
+            'ip' => $request->ip(),
+            'problem_group_id' => $request->input('problem_group_id'),
+            'language' => $request->input('language')
+        ];
+
+        $solutionId = $this->problemService->submitProlem($request->user,$problemId,$data);
+
+        if(!$solutionId)
+            throw new InnerError("Fail to Submit :problem id".$problemId);
+
+        return response()->json([
+            'code' => 0,
+            'data' => [
+                'solution_id' => $solutionId
+            ]
+        ]);
+    }
 }

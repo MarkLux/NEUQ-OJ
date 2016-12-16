@@ -38,7 +38,7 @@ interface ProblemServiceInterface
 
     //创建
 
-    function addProblem(array $problemData,array $testData):bool;
+    function addProblem(User $user,array $problemData,array $testData):int;
 
    //修改
 
@@ -50,7 +50,7 @@ interface ProblemServiceInterface
 
     //判题
 
-    function submitProlem(int $problemId,array $data);
+    function submitProlem(User $user,int $problemId,array $code):int;
 
     function getProblemStatus(int $userId,int $problemId);
 

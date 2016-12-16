@@ -13,7 +13,7 @@ class CreateSolutionsTable extends Migration
     public function up()
     {
         Schema::create('solutions', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->bigInteger('id')->primary();//id其实是在source_code表生成放进来的
             $table->bigInteger('problem_id');
             $table->bigInteger('user_id');
             $table->Integer('time')->nullable();
