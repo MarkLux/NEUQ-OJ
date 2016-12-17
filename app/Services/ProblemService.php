@@ -78,6 +78,47 @@ class ProblemService implements ProblemServiceInterface
      *获取题目以及状态辅助函数
      */
 
+    function getProblems(int $page,int $size)
+    {
+        $problems = $this->problemRepo->getProblems($page,$size);
+        //重新组装数据
+        $data = [];
+        $single = [];
+
+        $temp_id = 0;
+
+        foreach ($problems as $problem)
+        {
+            if($problem->id == $temp_id)
+            {
+                //是上一个数据,继续组装single
+                array_push($single['tags'],[
+                    'tag_id' => $problem->tag_id,
+                    'tag_title'=>$problem->tag_title
+                ]);
+            }
+            else
+            {
+                if(!empty($single))
+                    array_push($data,$single);
+                $temp_id = $problem->id;
+                $single = $problem->toArray();
+                $single['tags'] = [];
+                array_push($single['tags'],[
+                    'tag_id' => $problem->tag_id,
+                    'tag_title' => $problem->tag_title
+                ]);
+                unset($single['tag_id']);
+                unset($single['tag_title']);
+            }
+        }
+
+        //还有一个数据没有组装进去，再组装
+        array_push($data,$single);
+
+        return $data;
+    }
+
     function getProblemById(int $problemId)
     {
         //TODO:需要join信息

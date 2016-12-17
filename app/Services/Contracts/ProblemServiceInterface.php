@@ -19,6 +19,8 @@ interface ProblemServiceInterface
 
     //获取
 
+    function getProblems(int $page,int $size);
+
     function getProblemById(int $problemId);
 
     function getProblemBy(string $param,$value);

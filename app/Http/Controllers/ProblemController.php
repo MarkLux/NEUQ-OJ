@@ -42,6 +42,30 @@ class ProblemController extends Controller
         ];
     }
 
+    public function getProblems(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'page' => 'integer|min:1',
+            'size' => 'integer|min:1'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $page = $request->input('page',1);
+        $size = $request->input('size',15);
+
+        $data = $this->problemService->getProblems($page,$size);
+
+
+
+        return response()->json([
+            'code' => 0,
+            'data' => $data
+        ]);
+
+    }
+
     public function getProblem(int $problemId)
     {
         $problem = $this->problemService->getProblemById($problemId);
@@ -154,6 +178,6 @@ class ProblemController extends Controller
         if(!empty($filePath))
             return response()->download($filePath);
         else
-            throw new InnerError("wrong param");
+            throw new FormValidatorException(["wrong param"]);
     }
 }

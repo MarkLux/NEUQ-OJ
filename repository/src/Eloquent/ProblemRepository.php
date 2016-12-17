@@ -25,6 +25,25 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
 
     use InsertWithIdTrait;
 
+    function getProblems(int $page,int $size)
+    {
+        return $this->model
+            ->select('problems.*','problem_tag_relations.tag_id','problem_tag_relations.tag_title')
+            ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+            ->orderBy('problems.id')
+            ->skip($size * --$page)
+            ->take($size)
+            ->get();
+    }
+
+    function getBy(string $param, string $value, array $columns = ['*'])
+    {
+        //TODO : join
+        return $this->model
+            ->where($param, $value)
+            ->get($columns);
+    }
+
     //覆盖方法
 
     function doDeletion(int $id): bool
@@ -45,6 +64,10 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
             return File::deleteDirectory($path);
 
     }
+
+    /*
+     * 搜索
+     */
 
     function getWhereLikeCount(string $pattern):int
     {

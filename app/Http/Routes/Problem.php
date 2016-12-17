@@ -13,8 +13,4 @@ Route::group(['middleware' => 'token'],function(){
 });
 
 Route::get('/problem/{id}','ProblemController@getProblem');
-
-
-
-
-
+Route::get('/problems','ProblemController@getProblems');
