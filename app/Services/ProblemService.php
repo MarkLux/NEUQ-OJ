@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\File;
 use NEUQOJ\Repository\Eloquent\ProblemRepository;
 use Illuminate\Support\Facades\DB;
 
-class ProblemService
+class ProblemService implements ProblemServiceInterface
 {
 
     private $problemRepo;
@@ -80,6 +80,8 @@ class ProblemService
 
     function getProblemById(int $problemId)
     {
+        //TODO:需要join信息
+
        return $this->problemRepo->get($problemId)->first();
     }
 
@@ -127,6 +129,10 @@ class ProblemService
         return false;
     }
 
+    /**
+     * 提交题目
+     */
+
     function submitProlem(User $user,int $problemId,array $data):int
     {
         //写入solution和source_code
@@ -150,6 +156,8 @@ class ProblemService
             'code_length' => $data['code_length']
         ];
 
+        //开启事务处理
+
         DB::transaction(function ()use(&$solutionId,$code,$solutionData){
             //请注意！如果要在闭包里改变外部变量的值必须传引用
             $solutionId = $this->sourceRepo->insertWithId($code);
@@ -171,6 +179,10 @@ class ProblemService
 
     }
 
+    /**
+     * 搜索
+     */
+
     function searchProblemsCount(string $likeName): int
     {
         // TODO: Implement searchProblemsCount() method.
@@ -179,5 +191,34 @@ class ProblemService
     function searchProblems(string $likeName, int $start, int $size)
     {
         // TODO: Implement searchProblems() method.
+    }
+
+    /**
+     * 以文件形式获取题解数据
+     */
+
+    function getRunDataPath(int $problemId,string $name)
+    {
+        $path = $this->getPath($problemId);
+
+        if(File::isDirectory($path))
+        {
+            switch ($name)
+            {
+                case "test_in":
+                    return $path."test.in";
+                case "test_out":
+                    return $path."test.out";
+                case "sample_in":
+                    return $path."sample.in";
+                case "sample_out":
+                    return $path."sample.out";
+                default:
+                    return null;
+            }
+
+        }
+
+        return null;
     }
 }

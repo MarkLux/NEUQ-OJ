@@ -136,4 +136,24 @@ class ProblemController extends Controller
             ]
         ]);
     }
+
+    public function getRunData(Request $request,int $problemId)
+    {
+        $validator = Validator::make($request->all(),[
+            'filename' => 'required|string'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        if(!$this->problemService->isProblemExist($problemId))
+            throw new ProblemNotExistException();
+
+        $filePath = $this->problemService->getRunDataPath($problemId,$request->filename);
+
+        if(!empty($filePath))
+            return response()->download($filePath);
+        else
+            throw new InnerError("wrong param");
+    }
 }

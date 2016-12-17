@@ -26,7 +26,7 @@ interface ProblemServiceInterface
     function getProblemByMult(array $condition);
 
     //以文件形式输出测试输入输出等数据
-    function getRunDatas(int $problemId);
+    function getRunDataPath(int $problemId,string $name);
 
     //查找
     //宽泛检索
@@ -52,49 +52,9 @@ interface ProblemServiceInterface
 
     function submitProlem(User $user,int $problemId,array $code):int;
 
-    function getProblemStatus(int $userId,int $problemId);
-
     /*
     *状态辅助函数
     */
 
     function isProblemExist(int $problemId):bool;
-
-    function isProblemHasKey(int $problemId):bool;
-
-    function isUserAcProblem(int $userId,int $problemId):bool;
-
-    /*
-    *讨论版
-    */
-
-    function getProblemDiscussion(int $problemId);
-
-    /*
-    *tag
-    */
-
-    function addTagToProblem(int $problemId,int $tagId);
-
-    function deleteTagFromProblem(int $problemId,int $tagId);
-
-    //注意检查unique
-    function addTag(string $tagName);
-
-    function deleteTag(int $tagId);
-
-    function getTagId(string $tagname);
-
-    function getTagName(int $tagId);
-
-    /**
-     * 题解problem_key
-     */
-
-    function addProblemKey(int $problemId,array $data);
-
-    function updateProblemKey(int $problemId,array $data);
-
-    function deleteProblemKey(int $problemId);
-
 }

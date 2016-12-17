@@ -44,6 +44,32 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
         if(File::isDirectory($path))
             return File::deleteDirectory($path);
 
+    }
 
+    function getWhereLikeCount(string $pattern):int
+    {
+        //在三个字段中搜索
+        //TODO: 考虑要join题目的tag信息
+
+        return $this->model
+            ->where('title','like',$pattern)
+            ->orWhere('source','like',$pattern)
+            ->orWhere('creator_name','like',$pattern)
+            ->count();
+    }
+
+    //简易like搜索
+    function getWhereLike(string $pattern,int $page = 1,int $size = 15,array $columns = ['*'])
+    {
+        if(!empty($size))
+        {
+            return $this->model
+                ->where('title','like',$pattern)
+                ->orWhere('source','like',$pattern)
+                ->orWhere('creator_name','like',$pattern)
+                ->skip($size * --$page)
+                ->take($size)
+                ->get($columns);
+        }
     }
 }
