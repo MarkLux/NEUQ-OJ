@@ -8,6 +8,7 @@
 
 namespace NEUQOJ\Services\Contracts;
 
+
 interface DiscussionInterface
 {
     function addTopic(array $data);
@@ -17,7 +18,7 @@ interface DiscussionInterface
     function updateTopic(int $topicId , array $condition);
 
     /**
-     * 查找
+     * 查找 ，暂定为全局，不分题号
      */
 
     function searchTopicByAuthor(string $authorName);
@@ -29,7 +30,4 @@ interface DiscussionInterface
      */
 
     function addReply(int $father , array $condition);
-
-    function deleteReply(int $topicId);
-
 }

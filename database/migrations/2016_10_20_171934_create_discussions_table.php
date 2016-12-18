@@ -17,6 +17,7 @@ class CreateDiscussionsTable extends Migration
             $table->bigInteger('problem_id');
             $table->bigInteger('user_id');
             $table->bigInteger('father');
+            $table->string('title',100);
             $table->text('content');
             $table->string('ip',45);
             $table->timestamps();

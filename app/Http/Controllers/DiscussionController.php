@@ -8,5 +8,8 @@ use NEUQOJ\Http\Requests;
 
 class DiscussionController extends Controller
 {
-    //
+    public function addTopic(Request $request)
+    {
+
+    }
 }
