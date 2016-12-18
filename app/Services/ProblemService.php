@@ -121,14 +121,57 @@ class ProblemService implements ProblemServiceInterface
 
     function getProblemById(int $problemId)
     {
-        //TODO:需要join信息
+        //join过的表不能再简单的用原表主键找   
+        $problems = $this->problemRepo->getBy('problems.id',$problemId)->toArray();
+        //拿到的全部的数据
 
-       return $this->problemRepo->get($problemId)->first();
+        if(empty($problems))
+            return false;
+
+        //重新组装
+        $data = $problems[0];
+        $data['tags'] = [];
+
+        if(count($problems)>1)
+        {
+            foreach ($problems as $problem)
+                $data['tags'][] = [
+                    'tag_id' => $problem['tag_id'],
+                    'tag_title' => $problem['tag_title']
+                ];
+        }
+
+        unset($data['tag_id']);
+        unset($data['tag_title']);
+
+        return $data;
     }
 
     function getProblemBy(string $param, $value)
     {
-        return $this->problemRepo->getBy($param,$value)->first();
+        $problems = $this->problemRepo->getBy($param,$value)->toArray();
+        //拿到的全部的数据
+
+        if(empty($problems))
+            return false;
+
+        //重新组装
+        $data = $problems[0];
+        $data['tags'] = [];
+
+        if(count($problems)>1)
+        {
+            foreach ($problems as $problem)
+                $data['tags'][] = [
+                    'tag_id' => $problem['tag_id'],
+                    'tag_title' => $problem['tag_title']
+                ];
+        }
+
+        unset($data['tag_id']);
+        unset($data['tag_title']);
+
+        return $data;
     }
 
     function getProblemByMult(array $condition)
@@ -226,7 +269,10 @@ class ProblemService implements ProblemServiceInterface
 
     function searchProblemsCount(string $likeName): int
     {
-        // TODO: Implement searchProblemsCount() method.
+       $partten = "%".$likeName."%";
+       $count = $this->problemRepo->getWhereLikeCount($partten);
+
+       //去重
     }
 
     function searchProblems(string $likeName, int $start, int $size)

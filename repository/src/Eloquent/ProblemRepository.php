@@ -27,8 +27,12 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
 
     function getProblems(int $page,int $size)
     {
+        //其实这个接口不应该取出problems里的description,影响速度
+
         return $this->model
-            ->select('problems.*','problem_tag_relations.tag_id','problem_tag_relations.tag_title')
+            ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
+                'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
+                'problem_tag_relations.tag_title')
             ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
             ->orderBy('problems.id')
             ->skip($size * --$page)
@@ -38,10 +42,12 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
 
     function getBy(string $param, string $value, array $columns = ['*'])
     {
-        //TODO : join
         return $this->model
             ->where($param, $value)
-            ->get($columns);
+            ->select('problems.*','problem_tag_relations.tag_id','problem_tag_relations.tag_title')
+            ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+            ->orderBy('problems.id')
+            ->get();
     }
 
     //覆盖方法
@@ -72,12 +78,15 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
     function getWhereLikeCount(string $pattern):int
     {
         //在三个字段中搜索
-        //TODO: 考虑要join题目的tag信息
+        //TODO: join之后题目总数变动 需要修正 考虑删除这个函数直接在search里组装total_page等信息
 
         return $this->model
-            ->where('title','like',$pattern)
-            ->orWhere('source','like',$pattern)
-            ->orWhere('creator_name','like',$pattern)
+            ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+            ->select('problems.title','problems.source','problems.creator_name','problem_tag_relations.tag_title')
+            ->where('problems.title','like',$pattern)
+            ->orWhere('problems.source','like',$pattern)
+            ->orWhere('problems.creator_name','like',$pattern)
+            ->orWhere('problem_tag_relations.tag_title','like',$pattern)
             ->count();
     }
 

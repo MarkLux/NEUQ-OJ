@@ -70,13 +70,12 @@ class ProblemController extends Controller
     {
         $problem = $this->problemService->getProblemById($problemId);
 
-        //这样处理可以减少一次数据库查询
-        if($problem == null)
+        if(!$problem)
             throw new ProblemNotExistException();
 
         return response()->json([
             'code' => 0,
-            'problem' => $problem
+            'data' => $problem
         ]);
     }
 
@@ -170,6 +169,8 @@ class ProblemController extends Controller
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
+        //TODO:检查权限
+
         if(!$this->problemService->isProblemExist($problemId))
             throw new ProblemNotExistException();
 
@@ -179,5 +180,17 @@ class ProblemController extends Controller
             return response()->download($filePath);
         else
             throw new FormValidatorException(["wrong param"]);
+    }
+
+    public function searchProblems(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'keyword' => 'required|string|min:1|max:20'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        return $this->problemService->searchProblemsCount($request->input('keyword'));
     }
 }
