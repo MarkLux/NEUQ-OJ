@@ -11,6 +11,8 @@ namespace NEUQOJ\Services\Contracts;
 
 interface DiscussionInterface
 {
+    function isTopicCreator(int $topicId,int $userId):bool;
+
     function addTopic(array $data);
 
     function deleteTopic(int $topicId);
@@ -30,4 +32,12 @@ interface DiscussionInterface
      */
 
     function addReply(int $father , array $condition);
+
+    /**
+     * 置顶
+     */
+
+    function stick(array $data);
+
+    function unStick(array $data);
 }

@@ -23,6 +23,15 @@ class DiscussionService implements DiscussionInterface
         $this->userService = $userService;
     }
 
+    public function isTopicCreator(int $topicId,int $userId): bool
+    {
+        $topic = $this->discussionRepo->get($topicId)->first();
+        if($userId == $topic->user_id)
+            return true;
+        else
+            return false;
+    }
+
     public function addTopic(array $data)
     {
         $this->discussionRepo->insert($data);
@@ -58,5 +67,15 @@ class DiscussionService implements DiscussionInterface
     {
         $condition['father'] = $father;
         $this->discussionRepo->insert($condition);
+    }
+
+    public function stick(array $data)
+    {
+
+    }
+
+    public function unStick(array $data)
+    {
+
     }
 }
