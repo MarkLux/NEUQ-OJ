@@ -185,12 +185,28 @@ class ProblemController extends Controller
     public function searchProblems(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'keyword' => 'required|string|min:1|max:20'
+            'keyword' => 'required|string|min:1|max:20',
+            'page' => 'integer|min:0',
+            'size' => 'integer|min:0'
         ]);
 
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        return $this->problemService->searchProblemsCount($request->input('keyword'));
+        $keyword = $request->input('keyword');
+        $page = $request->input('page',1);
+        $size = $request->input('size',15);
+
+        $total_count = $this->problemService->searchProblemsCount($keyword);
+        if($total_count > 0)
+            $data = $this->problemService->searchProblems($keyword,$page,$size);
+        else
+            $data = null;
+
+        return response()->json([
+            'code' => 0,
+            'data' => $data,
+            'page_count' => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+        ]);
     }
 }

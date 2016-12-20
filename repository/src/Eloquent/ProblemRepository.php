@@ -13,6 +13,7 @@ use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
 use NEUQOJ\Repository\Traits\InsertWithIdTrait;
 use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 class ProblemRepository extends AbstractRepository implements SoftDeletionInterface
 {
@@ -77,17 +78,33 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
 
     function getWhereLikeCount(string $pattern):int
     {
-        //在三个字段中搜索
-        //TODO: join之后题目总数变动 需要修正 考虑删除这个函数直接在search里组装total_page等信息
+        //join过后的表的总数会出现不必要的重复，需要检测
 
-        return $this->model
+        $problems = $this->model
             ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
-            ->select('problems.title','problems.source','problems.creator_name','problem_tag_relations.tag_title')
+            ->select('problems.id')
             ->where('problems.title','like',$pattern)
             ->orWhere('problems.source','like',$pattern)
             ->orWhere('problems.creator_name','like',$pattern)
             ->orWhere('problem_tag_relations.tag_title','like',$pattern)
-            ->count();
+            ->get();
+
+        if($problems->first() == null)
+            return 0;
+
+        $count = $problems->count();
+
+
+        $tempId = $problems->first()->id;
+
+        foreach ($problems as $problem)
+        {
+            if($problem->id == $tempId)
+                $count--;
+            $tempId = $problem->id;
+        }
+
+        return $count+1;
     }
 
     //简易like搜索
@@ -96,12 +113,20 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
         if(!empty($size))
         {
             return $this->model
-                ->where('title','like',$pattern)
-                ->orWhere('source','like',$pattern)
-                ->orWhere('creator_name','like',$pattern)
+                ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+                ->where('problems.title','like',$pattern)
+                ->orWhere('problems.source','like',$pattern)
+                ->orWhere('problems.creator_name','like',$pattern)
+                ->orWhere('problem_tag_relations.tag_title','like',$pattern)
+                ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
+                    'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
+                    'problem_tag_relations.tag_title')
+                ->orderBy('problems.id')
                 ->skip($size * --$page)
                 ->take($size)
                 ->get($columns);
         }
+
+        return null;
     }
 }
