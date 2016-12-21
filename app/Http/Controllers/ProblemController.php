@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
+use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
 use NEUQOJ\Services\ProblemService;
 
@@ -208,5 +209,34 @@ class ProblemController extends Controller
             'data' => $data,
             'page_count' => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
         ]);
+    }
+
+    public function deleteProblem(Request $request,int $problemId)
+    {
+        $validator = Validator::make($request->all(),[
+            'password' => 'required|string|min:6|max:20'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        if(!$this->problemService->isProblemExist($problemId))
+            throw new ProblemNotExistException();
+
+        $problem = $this->problemService->getProblemById($problemId);
+
+        //判断是否是创建者
+        if($request->user->id != $problem['creator_id'])
+            throw new NoPermissionException();
+
+        //TODO ：角色权限检验
+
+        if(!$this->problemService->deleteProblem($request->user,$problemId))
+            throw new InnerError("Fail to delete Problem: ".$problemId);
+
+        return response()->json([
+            'code' => 0
+        ]);
+
     }
 }

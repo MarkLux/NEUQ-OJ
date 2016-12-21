@@ -19,6 +19,7 @@ class CreateProblemTagRelationsTable extends Migration
             $table->string('problem_title',100);
             $table->string('tag_title',45);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

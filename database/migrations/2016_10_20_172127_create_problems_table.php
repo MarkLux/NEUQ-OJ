@@ -32,6 +32,7 @@ class CreateProblemsTable extends Migration
             $table->integer('submit')->nullable();
             $table->boolean('is_public');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

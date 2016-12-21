@@ -264,12 +264,10 @@ class UserGroupController extends Controller
         ]);
     }
 
-    public function dismissGroup(Request $request,$groupId)
+    public function dismissGroup(Request $request,int $groupId)
     {
-        $groupId = intval($groupId);
-
         $validator = Validator::make($request->all(),[
-            'password' => 'required|min:6|max:255'
+            'password' => 'required|min:6|max:20'
         ]);
 
         if($validator->fails())

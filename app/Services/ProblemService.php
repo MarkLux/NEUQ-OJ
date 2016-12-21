@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use NEUQOJ\Repository\Eloquent\ProblemTagRelationRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Repository\Eloquent\SourceCodeRepository;
 use NEUQOJ\Repository\Models\User;
@@ -24,6 +25,7 @@ class ProblemService implements ProblemServiceInterface
     private $solutionRepo;
     private $sourceRepo;
     private $deletionService;
+    private $tagRelationRepo;
 
     //获取对应题目数据的磁盘储存路径
 
@@ -34,13 +36,15 @@ class ProblemService implements ProblemServiceInterface
 
     public function __construct(
         ProblemRepository $problemRepository,SolutionRepository $solutionRepository,
-        DeletionService $deletionService,SourceCodeRepository $sourceCodeRepository
+        DeletionService $deletionService,SourceCodeRepository $sourceCodeRepository,
+        ProblemTagRelationRepository $tagRelationRepository
     )
     {
         $this->problemRepo = $problemRepository;
         $this->solutionRepo = $solutionRepository;
         $this->deletionService = $deletionService;
         $this->sourceRepo = $sourceCodeRepository;
+        $this->tagRelationRepo = $tagRelationRepository;
     }
 
     /**
@@ -181,7 +185,7 @@ class ProblemService implements ProblemServiceInterface
 
     public function isProblemExist(int $problemId): bool
     {
-        return $this->problemRepo->get($problemId)->first()!=null;
+        return $this->problemRepo->get($problemId,['id'])->first()!=null;
     }
 
     /**
@@ -259,8 +263,47 @@ class ProblemService implements ProblemServiceInterface
 
     public function deleteProblem(User $user,int $problemId): bool
     {
-        //TODO: 删除一道题目会涉及到很多其他的表，随着以后系统的扩充慢慢完善这个方法的内容
+        $flag = true;
 
+        //TODO: 删除一道题目会涉及到很多其他的表，随着以后系统的扩充慢慢完善这个方法的内容
+        DB::transaction(function () use($user,$problemId,&$flag){
+            //删除题目表
+            if($this->problemRepo->deleteWhere(['id'=>$problemId])!=1) $flag = false;
+            //创建删除日志的条目
+            $data = [
+                'table_name' => 'Problem',
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'key' => $problemId
+            ];
+
+            if(!$this->deletionService->createDeletion($data)) $flag = false;
+
+            //包装tag关系信息
+            $tagRelations = $this->tagRelationRepo->getBy('problem_id',$problemId,['id']);
+            //创建删除记录
+            if($tagRelations->count()>0)
+            {
+                $data = [];
+
+                foreach ($tagRelations as $tagRelation)
+                {
+                    array_push($data,[
+                        'table_name' => 'ProblemTagRelation',
+                        'user_id' => $user->id,
+                        'user_name' => $user->name,
+                        'key' => $tagRelation->id
+                    ]);
+                }
+
+                $this->deletionService->createDeletions($data);
+                //删除tag关系
+                $this->tagRelationRepo->deleteWhere(['problem_id' => $problemId]);
+            }
+
+        });
+
+        return $flag;
     }
 
     /**

@@ -26,7 +26,7 @@ use NEUQOJ\Repository\Models\UserGroup;
 use NEUQOJ\Services\Contracts\UserGroupServiceInterface;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Exceptions\InnerError;
-use NEUQOJ\Exceptions\NoPermissionException;
+use Illuminate\Support\Facades\DB;
 use NEUQOJ\Services\DeletionService;
 
 
@@ -93,7 +93,7 @@ class UserGroupService implements UserGroupServiceInterface
 
     public function isGroupExistById(int $groupId):bool
     {
-        $group = $this->userGroupRepo->get($groupId);
+        $group = $this->userGroupRepo->get($groupId,['id']);
         if($group!=null)
             return true;
         return false;
@@ -104,7 +104,7 @@ class UserGroupService implements UserGroupServiceInterface
         $group = $this->userGroupRepo->getByMult([
             'owner_id' => $ownerId,
             'name' => $name
-        ])->first();
+        ],['id'])->first();
 
         if($group!=null)
             return true;
@@ -177,51 +177,48 @@ class UserGroupService implements UserGroupServiceInterface
         // 要删除很多关系 相关模型基本都设立了软删除功能
         // 目前涉及到 组员 考试 作业 公告等一系列内容
 
-        //删除用户组的表
-        if(!$this->userGroupRepo->deleteWhere(['id' =>$groupId]))
-            return false;
+        //多张表数据操作，应该使用数据库事务
 
-        //record deletion
+        DB::transaction(function ()use($groupId,$user){
+            $this->userGroupRepo->deleteWhere(['id' =>$groupId]);
 
-        $data = [
-            'table_name' => 'UserGroup',
-            'key' => $groupId,
-            'user_id' => $user->id,
-            'user_name' => $user->name
-        ];
+            $data = [
+                'table_name' => 'UserGroup',
+                'key' => $groupId,
+                'user_id' => $user->id,
+                'user_name' => $user->name
+            ];
 
-        $this->deletionService->createDeletion($data);
+            $this->deletionService->createDeletion($data);
 
-        //reset
-        $data = [];
+            $data = [];
 
-        $relations = $this->relationRepo->getBy('group_id',$groupId,['id']);
+            $relations = $this->relationRepo->getBy('group_id',$groupId,['id']);
 
-        if($relations->count()!=0) //修正bug
-        {
-            foreach ($relations as $relation)
+            if($relations->count()!=0) //修正bug
             {
-                array_push($data,[
-                    'user_id' => $user->id,
-                    'user_name' => $user->name,
-                    'table_name' => 'UserGroupRelation',
-                    'key' => $relation->id
-                ]);
+                foreach ($relations as $relation)
+                {
+                    array_push($data,[
+                        'user_id' => $user->id,
+                        'user_name' => $user->name,
+                        'table_name' => 'UserGroupRelation',
+                        'key' => $relation->id
+                    ]);
+                }
+
+                $this->deletionService->createDeletions($data);
+                //删除用户关系
+                $this->relationRepo->deleteWhere(['group_id' => $groupId]);
             }
-
-            $this->deletionService->createDeletions($data);
-        }
-
-        //删除用户关系
-        $this->relationRepo->deleteWhere(['group_id' => $groupId]);
-
-        //删除公告
-        //公告不记录在日志里
-        $this->noticeRepo->deleteWhere(['group_id' => $groupId]);
+            //删除公告
+            //公告不记录在日志里
+            $this->noticeRepo->deleteWhere(['group_id' => $groupId]);
+        });
 
         return true;
 
-        //删除作业
+        //TODO 删除作业等一系列相关数据
         //删除考试
         //...
     }
