@@ -69,7 +69,7 @@ class RoleController extends Controller
         );
         if($roleService->createRole($data))
             return response()->json([
-                'code' => '0'
+                'code' => 0
             ]);
     }
 
@@ -105,7 +105,7 @@ class RoleController extends Controller
 
         if($roleService->deleteRole($roleId))
             return response()->json([
-                'code' => '0'
+                'code' => 0
             ]);
     }
 

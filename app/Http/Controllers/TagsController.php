@@ -50,7 +50,7 @@ class TagsController extends Controller
         //创建tag会返回tag的id 创建失败会返回-1
         if(($tagsService->createTags($data))!=-1)
             return response()->json([
-                'code' => '0'
+                'code' =>0
             ]);
 
     }
@@ -70,7 +70,7 @@ class TagsController extends Controller
         if($tagsService->deleteTags($request->tagId))
             return response()->json(
                 [
-                    'code'=>'0'
+                    'code'=>0
                 ]
             );
     }
@@ -98,7 +98,7 @@ class TagsController extends Controller
 
         return response()->json(
             [
-                'code'=>'0'
+                'code'=>0
             ]
         );
     }
@@ -125,7 +125,7 @@ class TagsController extends Controller
         if($tagsService->updateTags($request->tagId,$request->name))
             return response()->json(
                 [
-                    'code'=> '0'
+                    'code'=>0
                 ]
             );
     }
@@ -148,7 +148,7 @@ class TagsController extends Controller
 
         if(($tagsService->updateProblemTag($request->tagId,$request->problemId,$request->tags)))
             return response()->json([
-                'code'=>'0'
+                'code'=>0
             ]);
 
     }
@@ -170,7 +170,7 @@ class TagsController extends Controller
         if($tagsService->createProblemTag($request->problemId,$request->tags))
             return response()->json(
                 [
-                    'code'=>'0'
+                    'code'=>0
                 ]
             );
     }
@@ -191,7 +191,7 @@ class TagsController extends Controller
         if ($tagsService->deleteProblemTag($request->tagId,$request->problemId))
             return response()->json(
                 [
-                    'code'=>'0'
+                    'code'=>0
                 ]
             );
     }
