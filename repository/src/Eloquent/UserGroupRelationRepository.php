@@ -21,7 +21,7 @@ class UserGroupRelationRepository extends AbstractRepository implements SoftDele
 
     function getMemberCountById(int $groupId):int
     {
-        $this->model->where('group_id',$groupId)->count();
+        return $this->model->where('group_id',$groupId)->count();
     }
 
     use SoftDeletionTrait;

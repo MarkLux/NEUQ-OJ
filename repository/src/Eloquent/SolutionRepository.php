@@ -11,8 +11,13 @@ namespace NEUQOJ\Repository\Eloquent;
 
 class SolutionRepository extends AbstractRepository
 {
-    function model()
+    public function model()
     {
         return "NEUQOJ\Repository\Models\Solution";
+    }
+
+    public function getTotalCount()
+    {
+        return $this->model->all()->count();
     }
 }

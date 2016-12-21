@@ -16,6 +16,7 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
+        \NEUQOJ\Http\Middleware\EnableCrossRequestMiddleware::class
     ];
 
     /**

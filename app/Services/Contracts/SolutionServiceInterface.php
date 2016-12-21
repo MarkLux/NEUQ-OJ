@@ -12,8 +12,19 @@ interface SolutionServiceInterface
 {
     function getAllSolutions(int $page,int $size);
 
-    function getSolutionBy(string $param,$value);
+    function getSolutionBy(string $param,$value,array $columns = ['*']);
 
-    function getSolution(int $solutionId);
+    function getSolution(int $solutionId,array $columns = ['*']);
 
+    function isSolutionExist(int $solutionId):bool;
+
+    function getSourceCode(int $solutionId);
+
+    function getRuntimeInfo(int $solutionId);
+
+    function getCompileInfo(int $solutionId);
+
+    function getSolutionCount():int;
+
+    //TODO： 查重功能
 }

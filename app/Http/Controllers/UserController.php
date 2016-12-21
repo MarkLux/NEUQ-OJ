@@ -11,6 +11,7 @@ use NEUQOJ\Http\Requests;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Services\TokenService;
 use NEUQOJ\Services\UserService;
+use Illuminate\Support\Facades\Response;
 
 class UserController extends Controller
 {
@@ -34,7 +35,7 @@ class UserController extends Controller
         if(!$userService->register($data))
             throw new RegisterErrorException();
         return response()->json([
-            'code' => '0',
+            'code' => 0,
         ]);
     }
 
@@ -55,7 +56,7 @@ class UserController extends Controller
         $tokenStr = $tokenService->makeToken($user->id,$request->ip());
 
         return response()->json([
-            'code' => '0',
+            'code' => 0,
             'data' => [
                 'user' => $user,
                 'token' => $tokenStr
@@ -86,7 +87,7 @@ class UserController extends Controller
             $user = $userService->getUserByMult($request->all());
 
         return response()->json([
-            'code' => '0',
+            'code' => 0,
             'user' => $user
         ]);
     }
@@ -95,7 +96,7 @@ class UserController extends Controller
     {
         $users = $userService->getUsers($request->all());
         return response()->json([
-            'code' => '0',
+            'code' => 0,
             'users' => $users
         ]);
     }
@@ -131,7 +132,7 @@ class UserController extends Controller
 
         if($flag) {
             return response()->json([
-                'code' => '0',
+                'code' => 0,
             ]);
         }
     }
@@ -140,7 +141,7 @@ class UserController extends Controller
     {
         if($userService->lockUser($id))
             return response()->json([
-                'code' => '0'
+                'code' => 0
             ]);
     }
 
@@ -148,7 +149,7 @@ class UserController extends Controller
     {
         if($userService->unlockUser($id))
             return response()->json([
-                'code' => '0'
+                'code' => 0
             ]);
     }
 
@@ -157,7 +158,7 @@ class UserController extends Controller
         $tokenService->destoryToken($request->user->id);
 
         return response()->json([
-            'code' => '0'
+            'code' => 0
         ]);
     }
 }
