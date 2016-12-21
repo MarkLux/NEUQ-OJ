@@ -66,7 +66,7 @@ class SolutionService implements SolutionServiceInterface
 
     public function getSourceCode(int $solutionId)
     {
-        return $this->sourceCodeRepo->get($solutionId,['*'],'solution_id')->first();
+        return $this->sourceCodeRepo->get($solutionId,['source','private','created_at'],'solution_id')->first();
     }
 
     public function isSolutionExist(int $solutionId):bool
