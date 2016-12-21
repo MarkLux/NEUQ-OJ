@@ -18,11 +18,11 @@ interface UserGroupServiceInterface
   *基本信息部分
   */
 
-    function getGroupById(int $id);
+    function getGroupById(int $id,array $columns = ['*']);
 
-    function getGroupBy(string $param,string $value);
+    function getGroupBy(string $param,string $value,array $columns = ['*']);
 
-    function getGroupByMult(array $condition);
+    function getGroupByMult(array $condition,array $columns = ['*']);
 
     //有可能改成private
     function isGroupExistByName(int $ownerId,string $name):bool;

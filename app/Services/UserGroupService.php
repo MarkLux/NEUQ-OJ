@@ -54,19 +54,19 @@ class UserGroupService implements UserGroupServiceInterface
      * 基本获取部分
      */
 
-    public function getGroupById(int $groupId)
+    public function getGroupById(int $groupId,array $columns = ['*'])
     {
-        return $this->userGroupRepo->get($groupId)->first();
+        return $this->userGroupRepo->get($groupId,$columns)->first();
     }
 
-    public function getGroupBy(string $param,string $value)
+    public function getGroupBy(string $param,string $value,array $columns = ['*'])
     {
-        return $this->userGroupRepo->getBy($param,$value)->first();
+        return $this->userGroupRepo->getBy($param,$value,$columns)->first();
     }
 
-    public function getGroupByMult(array $condition)
+    public function getGroupByMult(array $condition,array $columns = ['*'])
     {
-       return $this->userGroupRepo->getByMult($condition)->first();
+       return $this->userGroupRepo->getByMult($condition,$columns)->first();
     }
 
     /**

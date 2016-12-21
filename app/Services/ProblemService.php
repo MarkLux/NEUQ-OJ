@@ -108,10 +108,11 @@ class ProblemService implements ProblemServiceInterface
                 $temp_id = $problem->id;
                 $single = $problem->toArray();
                 $single['tags'] = [];
-                array_push($single['tags'],[
-                    'tag_id' => $problem->tag_id,
-                    'tag_title' => $problem->tag_title
-                ]);
+                if($problem->tag_id!=null)
+                    array_push($single['tags'],[
+                        'tag_id' => $problem->tag_id,
+                        'tag_title' => $problem->tag_title
+                    ]);
                 unset($single['tag_id']);
                 unset($single['tag_title']);
             }
@@ -123,10 +124,10 @@ class ProblemService implements ProblemServiceInterface
         return $data;
     }
 
-    public function getProblemById(int $problemId)
+    public function getProblemById(int $problemId,array $columns = ['*'])
     {
         //join过的表不能再简单的用原表主键找   
-        $problems = $this->problemRepo->getBy('problems.id',$problemId)->toArray();
+        $problems = $this->problemRepo->getBy('problems.id',$problemId,$columns)->toArray();
         //拿到的全部的数据
 
         if(empty($problems))
@@ -144,6 +145,15 @@ class ProblemService implements ProblemServiceInterface
                     'tag_title' => $problem['tag_title']
                 ];
         }
+        else
+        {
+            if($data['tag_id']!=null)
+                $data['tags'] = [
+                    'tag_id' => $data['tag_id'],
+                    'tag_title' => $data['tag_title']
+                ];
+        }
+
 
         unset($data['tag_id']);
         unset($data['tag_title']);
@@ -151,9 +161,9 @@ class ProblemService implements ProblemServiceInterface
         return $data;
     }
 
-    public function getProblemBy(string $param, $value)
+    public function getProblemBy(string $param, $value,array $columns = ['*'])
     {
-        $problems = $this->problemRepo->getBy($param,$value)->toArray();
+        $problems = $this->problemRepo->getBy($param,$value,$columns)->toArray();
         //拿到的全部的数据
 
         if(empty($problems))
@@ -171,6 +181,14 @@ class ProblemService implements ProblemServiceInterface
                     'tag_title' => $problem['tag_title']
                 ];
         }
+        else
+        {
+            if($data['tag_id']!=null)
+                $data['tags'] = [
+                    'tag_id' => $data['tag_id'],
+                    'tag_title' => $data['tag_title']
+                ];
+        }
 
         unset($data['tag_id']);
         unset($data['tag_title']);
@@ -178,9 +196,10 @@ class ProblemService implements ProblemServiceInterface
         return $data;
     }
 
-    public function getProblemByMult(array $condition)
+    public function getProblemByMult(array $condition,array $columns = ['*'])
     {
-        return $this->problemRepo->getByMult($condition)->first();
+        //缺少组装
+        return $this->problemRepo->getByMult($condition,$columns)->first();
     }
 
     public function isProblemExist(int $problemId): bool
