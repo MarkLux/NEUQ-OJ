@@ -17,7 +17,7 @@ interface ProblemKeysServiceInterface
 
     function deleteProblemKey(int $problemId):bool;
 
-    function updateProblemKey(array $data):bool;
+    function updateProblemKey(array $condition,array $data):bool;
 
     function getProblemKey(int $problemId);
 }

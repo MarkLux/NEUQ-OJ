@@ -17,7 +17,7 @@ use NEUQOJ\Services\UserService;
 
 class ProblemKeysController extends Controller
 {
-    public function addProblemSolution(Request $request,UserService $userService,ProblemKeysService $problemKeysService,RoleService $roleService)
+    public function addProblemKey(Request $request,UserService $userService,ProblemKeysService $problemKeysService,RoleService $roleService)
     {
         //表单认证
         $validator = Validator::make($request->all(), [
@@ -90,7 +90,7 @@ class ProblemKeysController extends Controller
             );
     }
 
-    public function updateProblemKey(Request $request)
+    public function updateProblemKey(Request $request,UserService $userService,RoleService $roleService,ProblemKeysService $problemKeysService)
     {
         //表单认证
         $validator = Validator::make($request->all(), [
@@ -107,6 +107,34 @@ class ProblemKeysController extends Controller
         }
 
         $user = $request->user;
+
+        $problem = $userService->getUserById($user->id);
+        if($problem->creator_id != $user->id)//判断是否是出题人
+            if($roleService->hasRole($user->id,'admin'))//管理
+                throw new NoPermissionException();
+
+        $data =array(
+            'title'=>$request->title,
+            'key'=>$request->key
+
+        );
+        if ($problemKeysService->updateProblemKey(['problem_id'=>$request->problemId],$data))
+            return response()->json(
+                [
+                    'code'=>0
+                ]
+            );
+    }
+
+    public function getProblemKey(Request $request,ProblemKeysService $problemKeysService)
+    {
+        if($data = $problemKeysService->getProblemKey($request->problemId))
+            return response()->json(
+                [
+                    'code'=>0,
+                    'problemKey'=>$data
+                ]
+            );
 
     }
 

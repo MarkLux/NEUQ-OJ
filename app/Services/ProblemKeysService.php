@@ -9,8 +9,10 @@
 namespace NEUQOJ\Services;
 
 
+use NEUQOJ\Exceptions\ProblemKeyNotExistedException;
 use NEUQOJ\Repository\Eloquent\ProblemKeyRepository;
 use NEUQOJ\Services\Contracts\ProblemKeysServiceInterface;
+use phpDocumentor\Reflection\Types\Null_;
 
 class ProblemKeysService implements ProblemKeysServiceInterface
 {
@@ -31,14 +33,24 @@ class ProblemKeysService implements ProblemKeysServiceInterface
         return $this->problemKeyRepo->deleteWhere(['problem_id'=>$problemId]);
     }
 
-    public function updateProblemKey(array $data):bool
+    public function updateProblemKey(array $condition, array $data):bool
     {
-        // TODO: Implement updateProblemKey() method.
+        if ($this->updateProblemKey($condition,$data))
+            return true;
+        else
+            return false;
     }
+
 
     public function getProblemKey(int $problemId)
     {
-        // TODO: Implement getProblemKey() method.
+        $data = $this->problemKeyRepo->getBy('problem_id',$problemId);
+
+        if($data == null)
+            Throw new ProblemKeyNotExistedException();
+        else
+            return $data;
+
     }
 
 }

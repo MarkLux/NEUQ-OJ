@@ -157,6 +157,11 @@ class RoleController extends Controller
 
     public function updateRole(Request $request,RoleService $roleService)
     {
-        //
+        if($roleService->updateRole(['id'=>$request->id],['name'=>$request->name,'description'=>$request->description]))
+            return response()->json(
+                ['code'=>0]
+            );
     }
+
+
 }
