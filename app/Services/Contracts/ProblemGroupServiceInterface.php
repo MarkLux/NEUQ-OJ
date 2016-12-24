@@ -41,4 +41,5 @@ interface ProblemGroupServiceInterface
      */
 
     function updateProblemGroup(int $groupId,array $data):bool;
+
 }

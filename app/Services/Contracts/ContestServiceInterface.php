@@ -14,6 +14,10 @@ interface ContestServiceInterface
 {
     function getAllContests(int $page,int $size);
 
+    function getContest(int $userId,int $groupId);
+
+    function getInContestByPassword(int $userId,int $groupId,string $password):bool;
+
     function createContest(array $data,array $users=[]):int;
 
     function deleteContest(int $groupId):bool;
@@ -32,7 +36,7 @@ interface ContestServiceInterface
 
     function isContestExist(int $groupId):bool;
 
-    function submitProblem(User $user,int $groupId,int $problemId);
+    function submitProblem(User $user,int $groupId,int $problemId,array $data):int;
 
     function canUserAccessContest(int $userId,int $groupId):bool;
 }

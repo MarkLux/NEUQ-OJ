@@ -11,6 +11,7 @@ namespace NEUQOJ\Services;
 
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
 use NEUQOJ\Repository\Eloquent\ProblemRepository;
+use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Services\Contracts\ProblemGroupServiceInterface;
 
 class ProblemGroupService implements ProblemGroupServiceInterface
@@ -18,11 +19,13 @@ class ProblemGroupService implements ProblemGroupServiceInterface
     private $problemGroupRepo;
 //    private $problemGroupRelationRepo;
     private $problemRepo;
+    private $solutionRepo;
 
-    public function __construct(ProblemGroupRepository $problemGroupRepository,ProblemRepository $problemRepository)
+    public function __construct(ProblemGroupRepository $problemGroupRepository, ProblemRepository $problemRepository,SolutionRepository $solutionRepository)
     {
         $this->problemRepo = $problemRepository;
         $this->problemGroupRepo = $problemGroupRepository;
+        $this->solutionRepo = $solutionRepository;
     }
 
     public function getProblemGroup(int $groupId, array $columns = ['*'])

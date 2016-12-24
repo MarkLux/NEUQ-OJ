@@ -10,6 +10,7 @@ namespace NEUQOJ\Services;
 
 
 use Illuminate\Support\Facades\DB;
+use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Repository\Contracts\ContestServiceInterface;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
@@ -22,16 +23,24 @@ class ContestService implements ContestServiceInterface
     private $problemGroupRelationRepo;
     private $problemGroupRepo;
     private $problemAdmissionRepo;
+    private $problemService;
 
     public function __construct(
         ProblemGroupService $problemGroupService,ProblemGroupRepository $problemGroupRepository,
-        ProblemGroupRelationRepository $problemGroupRelationRepository,ProblemGroupAdmissionRepository $problemGroupAdmissionRepository
+        ProblemGroupRelationRepository $problemGroupRelationRepository,ProblemGroupAdmissionRepository $problemGroupAdmissionRepository,
+        ProblemService $problemService
     )
     {
         $this->problemGroupRepo = $problemGroupRepository;
         $this->problemGroupRelationRepo = $problemGroupRelationRepository;
         $this->problemGroupService = $problemGroupService;
         $this->problemAdmissionRepo = $problemGroupAdmissionRepository;
+        $this->problemService = $problemService;
+    }
+
+    function getContest(int $userId, int $groupId)
+    {
+        // TODO: Implement getContest() method.
     }
 
     function getAllContests(int $page, int $size)
@@ -131,12 +140,44 @@ class ContestService implements ContestServiceInterface
         return true;
     }
 
-    function submitProblem(User $user,int $groupId,int $problemId)
+    function submitProblem(User $user,int $groupId,int $problemNum,array $data):int
     {
+        if(!$this->canUserAccessContest($user->id,$groupId))
+            throw new NoPermissionException();
+
+        $relation = $this->problemGroupRelationRepo->getBy(['problem_group_id'=>$groupId,'problem_num'=>$problemNum],['problem_id'])->first();
+
+        if($relation == null)
+            return false;
+
+        $data['problem_group_id'] = $groupId;
+
+        return $this->problemService->submitProlem($user,$relation->problem_id,$data);
     }
 
     function canUserAccessContest(int $userId, int $groupId): bool
     {
-        // TODO: Implement canUserAccessContest() method.
+        $group = $this->problemGroupRepo->get($groupId,['private','type'])->first();
+
+        if($group == null || $group->type!=1)
+            return false;
+
+        if($group->private == 0)
+            return true;
+
+        $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId,'problem_group_id'=>$groupId])->first();
+
+        return !($admission==null);
+    }
+
+    function getInContestByPassword(int $userId, int $groupId, string $password): bool
+    {
+        $group = $this->problemGroupRepo->get($groupId,['private'])->first();
+
+        if($group == null || $group->private!=1) return false;
+
+        $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId,'problem_group_id' => $groupId])->first();
+
+        if($admission!=null) return true;//已经有权限了
     }
 }
