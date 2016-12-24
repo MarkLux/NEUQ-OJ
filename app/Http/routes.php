@@ -22,6 +22,8 @@ include 'Routes/DeletionLog.php';
 
 include 'Routes/Problem.php';
 
+include 'Routes/Status.php';
+
 Route::get('/', function () {
     return 'here is the main page!!';
 });

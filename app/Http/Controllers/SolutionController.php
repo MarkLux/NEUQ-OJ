@@ -14,8 +14,8 @@ use NEUQOJ\Exceptions\Problem\CompileInfoNotExistException;
 use NEUQOJ\Exceptions\Problem\RuntimeInfoNotExistException;
 use NEUQOJ\Exceptions\Problem\SolutionNotExistException;
 use NEUQOJ\Http\Controllers\Controller;
-use NEUQOJ\Http\Requests\Request;
-use NEUQOJ\Services\Contracts\SolutionService;
+use Illuminate\Http\Request;
+use NEUQOJ\Services\SolutionService;
 
 class SolutionController extends Controller
 {

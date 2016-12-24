@@ -10,6 +10,6 @@ namespace NEUQOJ\Exceptions;
 
 class NameExistException extends BaseException
 {
-    protected $code = 1001;
+    protected $code = 1003;
     protected $data = "The name is exist";
 }

@@ -6,13 +6,14 @@
  * Time: 下午3:33
  */
 
-namespace NEUQOJ\Services\Contracts;
+namespace NEUQOJ\Services;
 
 
 use NEUQOJ\Repository\Eloquent\CompileInfoRepository;
 use NEUQOJ\Repository\Eloquent\RuntimeInfoRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Repository\Eloquent\SourceCodeRepository;
+use NEUQOJ\Services\Contracts\SolutionServiceInterface;
 
 class SolutionService implements SolutionServiceInterface
 {
@@ -35,7 +36,7 @@ class SolutionService implements SolutionServiceInterface
     public function getAllSolutions(int $page, int $size)
     {
         return $this->solutionRepo->paginate($page,$size,[],[
-            'id','problem_id','user_id','time','memory','result','language','code_length','created_time'
+            'id','problem_id','user_id','time','memory','result','language','code_length','created_at'
         ]);
     }
 

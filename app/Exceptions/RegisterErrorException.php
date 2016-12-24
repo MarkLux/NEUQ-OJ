@@ -10,7 +10,7 @@ namespace NEUQOJ\Exceptions;
 
 class RegisterErrorException extends BaseException
 {
-    protected $code = 1006;
+    protected $code = 1008;
 
     protected $data = "Register Fails";
 }

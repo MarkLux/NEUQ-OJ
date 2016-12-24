@@ -64,6 +64,14 @@ class UserController extends Controller
         ]);
     }
 
+    public function getUserInfo(Request $request)
+    {
+        return response()->json([
+            'code' => 0,
+            'data' => $request->user
+        ]);
+    }
+
     public function getUser(Request $request,UserService $userService)
     {
         $validator = Validator::make($request->all(),[

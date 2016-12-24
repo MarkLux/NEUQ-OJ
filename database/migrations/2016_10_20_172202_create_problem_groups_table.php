@@ -1,4 +1,4 @@
-<?php
+  <?php
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -15,14 +15,17 @@ class CreateProblemGroupsTable extends Migration
         Schema::create('problem_groups', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title',100);
-            $table->bigInteger('user_group_id');
+            $table->bigInteger('user_group_id')->nullable();
             $table->integer('type');
-            $table->string('description',512);
+            $table->text('description');
             $table->dateTime('start_time');
             $table->dateTime('end_time');
-            $table->tinyInteger('private');
+            $table->bigInteger('creator_id');
+            $table->string('creator_name',100);
+            $table->integer('private');
             $table->tinyInteger('status');
-            $table->string('langmask',100);
+            $table->string('password')->nullable();
+            $table->string('langmask',100)->nullable();
             $table->timestamps();
         });
     }
