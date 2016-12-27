@@ -48,9 +48,9 @@ interface ProblemGroupServiceInterface
      * 题目部分
      */
 
-    function removeProblem(int $groupId,int $problemNum):bool;
+    function removeProblem(int $groupId,array $problemNums):bool;
 
-    function addProblem(int $groupId,int $problemId,int $score=null):bool;
+    function addProblem(int $groupId,array $problems):bool;
 
     /*
      * 核心部分
@@ -58,6 +58,6 @@ interface ProblemGroupServiceInterface
 
     function getSolutionCount(int $groupId):int;
 
-    function getSolutions(int $page,int $size);
+    function getSolutions(int $groupId,int $page,int $size);
 
 }

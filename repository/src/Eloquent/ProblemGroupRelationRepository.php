@@ -20,4 +20,16 @@ class ProblemGroupRelationRepository extends AbstractRepository implements SoftD
     }
 
     use SoftDeletionTrait;
+
+    public function getRelationsByNums(int $groupId,array $problemNums,array $columns = ['*'])
+    {
+        return $this->model
+            ->where('problem_group_id',$groupId)
+            ->whereIn('problem_num',$problemNums)->get($columns);
+    }
+
+    public function deleteWhereIn(string $param,array $data)
+    {
+        return $this->model->whereIn($param,$data)->delete();
+    }
 }

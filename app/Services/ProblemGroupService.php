@@ -55,15 +55,23 @@ class ProblemGroupService implements ProblemGroupServiceInterface
 
     public function createProblemGroup(array $data,array $problems=[]): int
     {
+        $id = -1;
         $flag = false;
 
-        DB::transaction(function()use($data,$problems,&$flag){
-            $this->problemGroupRepo->insert($data);
+        DB::transaction(function()use($data,$problems,&$id,&$flag){
+            $id = $this->problemGroupRepo->insertWithId($data);
+            //重新填充数据
+            foreach ($problems as &$problem){
+                $problem['problem_group_id'] = $id;
+            }
+
             $this->problemGroupRelationRepo->insert($problems);
             $flag = true;
         });
-
-        return $flag;
+        if($flag)
+            return $id;
+        else
+            return -1;
     }
 
     public function deleteProblemGroup(int $groupId): bool
@@ -94,24 +102,36 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return !($problemGroup == null);
     }
 
-    public function addProblem(int $groupId, int $problemId,int $score=null): bool
+    //支持多个题目的添加 若存在题号不存在的题目将会返回错误,题目的特定信息应该提前组织在problems数组里
+    public function addProblem(int $groupId,array $problems): bool
     {
+        $problemIds = [];
+        //重新组织数据
+        foreach ($problems as $problem)
+        {
+            $problemIds[] = $problem['problem_id'];
+        }
         //判断数据合理性
         $group = $this->problemGroupRepo->get($groupId,['problem_count'])->first();
-        $problem = $this->problemRepo->get($problemId,['problem_id'])->first();
-        if($group == null||$problem == null) return false;
+        $problemIds = $this->problemRepo->getIn('id',$problemIds,['problem_id'])->toArray();
+        if($group == null) return false;
+        if(count($problemIds)!=count($problems)) return false;//存在题号不存在的题目
 
-        //维护题目数量的字段
-        $count = $group->problem_count+1;
-        $relation = ['problem_group_id'=>$groupId,'problem_id'=>$problemId,'problem_num'=>$count];
-        if($score!=null) $relation['problem_score'] = $score;
+        //组装relations
+        $count = $group->problem_count;
+
+        foreach ($problems as $problem)
+        {
+            $problem['problem_group_id'] = $groupId;
+            $problem['problem_num'] = ++$count;
+        }
 
         $flag = false;
 
-        DB::transaction(function()use($relation,&$flag){
-            $this->problemGroupRelationRepo->insert($relation);
+        DB::transaction(function()use($problems,&$flag,$count,$groupId){
+            $this->problemGroupRelationRepo->insert($problems);
             //更新题号
-            $this->problemGroupRepo->update(['problem_count'=>$relation['problem_num']],$relation['problem_group_id']);
+            $this->problemGroupRepo->update(['problem_count'=>$count],$groupId);
 
             $flag = true;
         });
@@ -119,23 +139,43 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $flag;
     }
 
-    public function removeProblem(int $groupId, int $problemNum): bool
+    //支持多个题目的删除，如果题号不存在则自动忽略
+    public function removeProblem(int $groupId, array $problemNums): bool
     {
         //判断数据合理性
         $group = $this->problemGroupRepo->get($groupId,['problem_count'])->first();
-        $problemId= $this->problemGroupRelationRepo->getByMult(['problem_group_id'=>$groupId,'problem_num'=>$problemNum],['problem_id'])->first()->problem_id;
-        if($group==null||$problemId == null) return false;
+        $relationIds= $this->problemGroupRelationRepo->getRelationsByNums($groupId,$problemNums,['id','problem_id'])->toArray();
+        if($group==null||empty($relationIds)) return false;
+
+        $problemIds = [];
+
+        //重新组装数据
+        foreach ($relationIds as &$relation)
+        {
+            $problemIds[] = $relation['problem_id'];
+            unset($relation['problem_id']);
+        }
 
         $flag = false;
-        $solutionIds = $this->solutionRepo->getByMult(['problem_group_id'=>$groupId,'problem_id'=>$problemId],['id'])->toArray();
+        $solutionIds = $this->solutionRepo->getSolutionsIn($groupId,$problemIds)->toArray();
 
-        DB::transaction(function()use($groupId,$problemId,&$flag,$solutionIds){
-            $this->problemGroupRelationRepo->deleteWhere(['problem_group_id'=>$groupId,'problem_id'=>$problemId]);
+        DB::transaction(function()use($groupId,$problemIds,&$flag,$solutionIds,$relationIds){
+            $this->problemGroupRelationRepo->deleteWhereIn('id',$relationIds);
             $this->solutionRepo->deleteWhereIn('id',$solutionIds);
             $this->sourceRepo->deleteWhereIn('solution_id',$solutionIds);
             //删除相关的所有数据
             $flag = true;
         });
+    }
+
+    public function getSolutionCount(int $groupId): int
+    {
+        return $this->solutionRepo->getWhereCount(['problem_group_id' => $groupId]);
+    }
+
+    public function getSolutions(int $groupId,int $page, int $size)
+    {
+        return $this->solutionRepo->paginate($page,$size,['problem_group_id'=>$groupId]);
     }
 
 }
