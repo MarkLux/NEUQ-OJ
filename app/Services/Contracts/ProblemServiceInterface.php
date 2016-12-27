@@ -19,6 +19,8 @@ interface ProblemServiceInterface
 
     //获取
 
+    function getTotalCount():int;
+
     function getProblems(int $page,int $size);
 
     function getProblemById(int $problemId,array $columns = ['*']);
@@ -52,7 +54,7 @@ interface ProblemServiceInterface
 
     //判题
 
-    function submitProlem(User $user,int $problemId,array $code):int;
+    function submitProblem(int $problemId,array $data):int;
 
     /*
     *状态辅助函数

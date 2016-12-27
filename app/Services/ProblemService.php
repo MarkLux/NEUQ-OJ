@@ -82,6 +82,11 @@ class ProblemService implements ProblemServiceInterface
      *获取题目以及状态辅助函数
      */
 
+    public function getTotalCount():int
+    {
+        return $this->problemRepo->getTotalCount();
+    }
+
     public function getProblems(int $page,int $size)
     {
         $problems = $this->problemRepo->getProblems($page,$size);
@@ -240,7 +245,7 @@ class ProblemService implements ProblemServiceInterface
      * 提交题目
      */
 
-    public function submitProlem(User $user,int $problemId,array $data):int
+    public function submitProblem(int $problemId,array $data):int
     {
         //写入solution和source_code
         //插入顺序必须是先插入source_code获取id然后再给solution不然一定会编译错误。
@@ -256,7 +261,7 @@ class ProblemService implements ProblemServiceInterface
         $solutionData = [
             'problem_id' => $problemId,
             'problem_group_id' => $data['problem_group_id'],
-            'user_id' => $user->id,
+            'user_id' => $data['user_id'],
             'ip' => $data['ip'],
             'language' => $data['language'],
             'result' => 0,

@@ -56,13 +56,17 @@ class ProblemController extends Controller
         $page = $request->input('page',1);
         $size = $request->input('size',15);
 
-        $data = $this->problemService->getProblems($page,$size);
-
+        $total_count = $this->problemService->getTotalCount();
+        if(!empty($total_count))
+            $data = $this->problemService->getProblems($page,$size);
+        else
+            $data = null;
 
 
         return response()->json([
             'code' => 0,
-            'data' => $data
+            'data' => $data,
+            'total_count' => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
         ]);
 
     }
@@ -145,10 +149,11 @@ class ProblemController extends Controller
             'code_length' => strlen($request->input('source_code')),
             'ip' => $request->ip(),
             'problem_group_id' => $request->input('problem_group_id'),
-            'language' => $request->input('language')
+            'language' => $request->input('language'),
+            'user_id' => $request->user->id
         ];
 
-        $solutionId = $this->problemService->submitProlem($request->user,$problemId,$data);
+        $solutionId = $this->problemService->submitProblem($problemId,$data);
 
         if(!$solutionId)
             throw new InnerError("Fail to Submit :problem id".$problemId);

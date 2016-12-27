@@ -26,6 +26,11 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
 
     use InsertWithIdTrait;
 
+    function getTotalCount()
+    {
+        return $this->all()->count();
+    }
+
     function getProblems(int $page,int $size)
     {
         //其实这个接口不应该取出problems里的description,影响速度

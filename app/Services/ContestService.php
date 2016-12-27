@@ -15,7 +15,6 @@ use NEUQOJ\Repository\Contracts\ContestServiceInterface;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
-use NEUQOJ\Repository\Models\User;
 
 class ContestService implements ContestServiceInterface
 {
@@ -40,7 +39,7 @@ class ContestService implements ContestServiceInterface
 
     function getContest(int $userId, int $groupId)
     {
-        // TODO: Implement getContest() method.
+        // TODO: Implement getContest() method. join简略的题目信息
     }
 
     function getAllContests(int $page, int $size)
@@ -140,9 +139,10 @@ class ContestService implements ContestServiceInterface
         return true;
     }
 
-    function submitProblem(User $user,int $groupId,int $problemNum,array $data):int
+    function submitProblem(int $groupId,int $problemNum,array $data):int
     {
-        if(!$this->canUserAccessContest($user->id,$groupId))
+        //先检测用户能不能提交
+        if(!$this->canUserAccessContest($data['user_id'],$groupId))
             throw new NoPermissionException();
 
         $relation = $this->problemGroupRelationRepo->getBy(['problem_group_id'=>$groupId,'problem_num'=>$problemNum],['problem_id'])->first();
@@ -152,14 +152,14 @@ class ContestService implements ContestServiceInterface
 
         $data['problem_group_id'] = $groupId;
 
-        return $this->problemService->submitProlem($user,$relation->problem_id,$data);
+        return $this->problemService->submitProblem($relation->problem_id,$data);
     }
 
     function canUserAccessContest(int $userId, int $groupId): bool
     {
         $group = $this->problemGroupRepo->get($groupId,['private','type'])->first();
 
-        if($group == null || $group->type!=1)
+        if($group == null || $group->type!=1)//判断题目组类型
             return false;
 
         if($group->private == 0)
@@ -179,5 +179,7 @@ class ContestService implements ContestServiceInterface
         $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId,'problem_group_id' => $groupId])->first();
 
         if($admission!=null) return true;//已经有权限了
+
+        return $this->problemAdmissionRepo->insert(['user_id' => $userId,'problem_group_id'=>$groupId]) == 1;
     }
 }

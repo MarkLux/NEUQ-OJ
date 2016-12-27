@@ -42,4 +42,6 @@ interface ProblemGroupServiceInterface
 
     function updateProblemGroup(int $groupId,array $data):bool;
 
+//    function submitProblem(int $groupId,int $problemId,array $data):int;
+
 }

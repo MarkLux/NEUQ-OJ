@@ -36,7 +36,7 @@ interface ContestServiceInterface
 
     function isContestExist(int $groupId):bool;
 
-    function submitProblem(User $user,int $groupId,int $problemId,array $data):int;
+    function submitProblem(int $groupId,int $problemNum,array $data):int;
 
     function canUserAccessContest(int $userId,int $groupId):bool;
 }
