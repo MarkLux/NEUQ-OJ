@@ -28,7 +28,7 @@ interface ProblemGroupServiceInterface
      * 创建
      */
 
-    function createProblemGroup(array $data):int;
+    function createProblemGroup(array $data,array $problems):int;
 
     /*
      * 删除
@@ -43,5 +43,21 @@ interface ProblemGroupServiceInterface
     function updateProblemGroup(int $groupId,array $data):bool;
 
 //    function submitProblem(int $groupId,int $problemId,array $data):int;
+
+    /*
+     * 题目部分
+     */
+
+    function removeProblem(int $groupId,int $problemNum):bool;
+
+    function addProblem(int $groupId,int $problemId,int $score=null):bool;
+
+    /*
+     * 核心部分
+     */
+
+    function getSolutionCount(int $groupId):int;
+
+    function getSolutions(int $page,int $size);
 
 }

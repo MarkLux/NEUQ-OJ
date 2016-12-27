@@ -18,5 +18,10 @@ class SourceCodeRepository extends AbstractRepository
         return "NEUQOJ\Repository\Models\SourceCode";
     }
 
+    function deleteWhereIn(string $param,array $data = [])
+    {
+        return $this->model->whereIn($param,$data)->delete();
+    }
+
     use InsertWithIdTrait;
 }

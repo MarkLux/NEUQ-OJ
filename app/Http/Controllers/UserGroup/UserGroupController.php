@@ -23,6 +23,41 @@ class UserGroupController extends Controller
         $this->userGroupService = $service;
     }
 
+    public function getGroups(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'size' => 'integer|min:1|max:50',
+            'page' => 'integer|min:1',
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $total_count = $this->userGroupService->getGroupCount();
+
+        $size = $request->input('size',10);
+        $page = $request->input('page',1);
+
+        $groups = $this->userGroupService->getGroups($page,$size,['owner_name','owner_id','id','is_closed','password','name','created_at'])->toArray();
+
+        //添加小组是否公开的标记
+        foreach ($groups as &$group)
+        {
+            if($group['password'] == null)
+                $group['is_public'] = 1;
+            else
+                $group['is_public'] = 0;
+
+            unset($group['password']);
+        }
+
+        return response()->json([
+            'code' => 0,
+            'data' => $groups,
+            'page_count' => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+        ]);
+    }
+
     /**
      * 创建新用户组
      */
@@ -64,7 +99,7 @@ class UserGroupController extends Controller
 
     public function joinGroup(Request $request,$groupId)
     {
-        $group = $this->userGroupService->getGroupById($groupId);
+        $group = $this->userGroupService->getGroupById($groupId,['password']);
 
         if($group == null)
             throw new UserGroupNotExistException();
@@ -132,7 +167,7 @@ class UserGroupController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'size' => 'integer|min:1|max:50',
-            'page' => 'integer|min:1|max:500',
+            'page' => 'integer|min:1',
             'keyword' => 'required|max:30'
         ]);
 

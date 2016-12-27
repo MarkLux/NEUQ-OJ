@@ -9,10 +9,15 @@
 namespace NEUQOJ\Repository\Eloquent;
 
 
-class ProblemGroupRelationRepository extends AbstractRepository
+use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
+use NEUQOJ\Repository\Traits\SoftDeletionTrait;
+
+class ProblemGroupRelationRepository extends AbstractRepository implements SoftDeletionInterface
 {
     public function model()
     {
         return "NEUQOJ\Models\ProblemGroupRelation";
     }
+
+    use SoftDeletionTrait;
 }

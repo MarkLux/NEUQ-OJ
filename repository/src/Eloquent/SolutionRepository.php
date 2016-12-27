@@ -20,4 +20,9 @@ class SolutionRepository extends AbstractRepository
     {
         return $this->model->all()->count();
     }
+
+    public function deleteWhereIn(string $param,array $data = [])
+    {
+        return $this->model->whereIn($param,$data)->delete();
+    }
 }

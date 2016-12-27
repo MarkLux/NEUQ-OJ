@@ -7,6 +7,7 @@
  */
 
 Route::get('/user-group/search','UserGroup\UserGroupController@searchGroups');
+Route::get('/user-groups','UserGroup\UserGroupController@getGroups');
 
 Route::group(['middleware' => 'token'],function (){
 

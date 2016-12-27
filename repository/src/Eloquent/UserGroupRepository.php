@@ -50,6 +50,11 @@ class UserGroupRepository extends AbstractRepository implements SoftDeletionInte
         }
     }
 
+    function getTotalCount()
+    {
+        return $this->model->all()->count();
+    }
+
 //    function doDeletion(int $id): bool
 //    {
 //        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();

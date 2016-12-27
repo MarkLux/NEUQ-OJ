@@ -50,6 +50,7 @@ class ContestService implements ContestServiceInterface
         return $groups;
     }
 
+    //创建一个竞赛，如果成功，返回新创建的竞赛id，否则返回-1
     function createContest(array $data,array $users=[]):int
     {
         //根据私有性类别来创建
@@ -74,14 +75,14 @@ class ContestService implements ContestServiceInterface
 
     function deleteContest(int $groupId):bool
     {
-        if(!$this->isContestExist($groupId))
+        if($this->isContestExist($groupId))
             return $this->problemGroupService->deleteProblemGroup($groupId);
         return false;
     }
 
     function updateContest(int $groupId,array $data):bool
     {
-        if(!$this->isContestExist($groupId))
+        if($this->isContestExist($groupId))
             return $this->problemGroupService->updateProblemGroup($groupId,$data);
         return false;
     }

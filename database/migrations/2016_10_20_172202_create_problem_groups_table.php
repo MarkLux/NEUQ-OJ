@@ -26,6 +26,7 @@ class CreateProblemGroupsTable extends Migration
             $table->tinyInteger('status');
             $table->string('password')->nullable();
             $table->string('langmask',100)->nullable();
+            $table->integer('problem_count')->default(0);//记录题目数量
             $table->timestamps();
         });
     }

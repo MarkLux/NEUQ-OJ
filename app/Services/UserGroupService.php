@@ -69,6 +69,16 @@ class UserGroupService implements UserGroupServiceInterface
        return $this->userGroupRepo->getByMult($condition,$columns)->first();
     }
 
+    public function getGroups(int $page,int $size,array $columns = ['*'])
+    {
+        return $this->userGroupRepo->paginate($page,$size,[],$columns);
+    }
+
+    public function getGroupCount():int
+    {
+        return $this->userGroupRepo->getTotalCount();
+    }
+
     /**
      * 搜索
      */

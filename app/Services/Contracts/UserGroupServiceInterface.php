@@ -24,6 +24,10 @@ interface UserGroupServiceInterface
 
     function getGroupByMult(array $condition,array $columns = ['*']);
 
+    function getGroups(int $page,int $size,array $columns=['*']);
+
+    function getGroupCount():int;
+
     //有可能改成private
     function isGroupExistByName(int $ownerId,string $name):bool;
 
