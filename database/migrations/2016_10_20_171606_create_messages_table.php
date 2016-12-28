@@ -14,7 +14,7 @@ class CreateMessagesTable extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->increments('id');
-            $table->enum('choices',['text','image','video','audio']);
+            $table->boolean('is_read');
             $table->bigInteger('from_id');
             $table->bigInteger('to_id');
             $table->text('content');
