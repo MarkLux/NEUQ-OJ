@@ -48,6 +48,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $this->problemGroupRepo->get($groupId,$columns)->first();
     }
 
+    //注意可能是多条
     public function getProblemGroupBy(string $param, string $value, array $columns = ['*'])
     {
         return $this->problemGroupRepo->getBy($param,$value,$columns);
@@ -97,12 +98,12 @@ class ProblemGroupService implements ProblemGroupServiceInterface
 
     public function isProblemGroupExist(int $groupId): bool
     {
-        $problemGroup = $this->problemGroupRepo->get($groupId,['id']);
+        $problemGroup = $this->problemGroupRepo->get($groupId,['id'])->first();
 
         return !($problemGroup == null);
     }
 
-    //支持多个题目的添加 若存在题号不存在的题目将会返回错误,题目的特定信息应该提前组织在problems数组里
+    //支持多个题目的添加 若存在题号不存在的题目或者已经存在的题目将会返回错误,题目的特定信息应该提前组织在problems数组里
     public function addProblem(int $groupId,array $problems): bool
     {
         $problemIds = [];
@@ -111,16 +112,20 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         {
             $problemIds[] = $problem['problem_id'];
         }
+
         //判断数据合理性
         $group = $this->problemGroupRepo->get($groupId,['problem_count'])->first();
-        $problemIds = $this->problemRepo->getIn('id',$problemIds,['problem_id'])->toArray();
         if($group == null) return false;
-        if(count($problemIds)!=count($problems)) return false;//存在题号不存在的题目
+        $problemIdArray = $this->problemRepo->getIn('id',$problemIds,['id'])->toArray();
+        if(count($problemIdArray)!=count($problems)) return false;//存在题号不存在的题目
+        $relations = $this->problemGroupRelationRepo->getRelationsByIds($groupId,$problemIds,['id']);
 
+
+        if(count($relations) > 0) return false;//存在已经在竞赛的题目
         //组装relations
         $count = $group->problem_count;
 
-        foreach ($problems as $problem)
+        foreach ($problems as &$problem)
         {
             $problem['problem_group_id'] = $groupId;
             $problem['problem_num'] = ++$count;
@@ -145,7 +150,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         //判断数据合理性
         $group = $this->problemGroupRepo->get($groupId,['problem_count'])->first();
         $relationIds= $this->problemGroupRelationRepo->getRelationsByNums($groupId,$problemNums,['id','problem_id'])->toArray();
-        if($group==null||empty($relationIds)) return false;
+        if($group==null||count($relationIds)==0) return false;
 
         $problemIds = [];
 
@@ -166,6 +171,8 @@ class ProblemGroupService implements ProblemGroupServiceInterface
             //删除相关的所有数据
             $flag = true;
         });
+
+        return $flag;
     }
 
     public function getSolutionCount(int $groupId): int
@@ -173,7 +180,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $this->solutionRepo->getWhereCount(['problem_group_id' => $groupId]);
     }
 
-    public function getSolutions(int $groupId,int $page, int $size)
+    public function getSolutions(int $groupId,int $page=1,int $size=15)
     {
         return $this->solutionRepo->paginate($page,$size,['problem_group_id'=>$groupId]);
     }

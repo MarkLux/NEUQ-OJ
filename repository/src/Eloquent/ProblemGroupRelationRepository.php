@@ -16,7 +16,7 @@ class ProblemGroupRelationRepository extends AbstractRepository implements SoftD
 {
     public function model()
     {
-        return "NEUQOJ\Models\ProblemGroupRelation";
+        return "NEUQOJ\Repository\Models\ProblemGroupRelation";
     }
 
     use SoftDeletionTrait;
@@ -26,6 +26,13 @@ class ProblemGroupRelationRepository extends AbstractRepository implements SoftD
         return $this->model
             ->where('problem_group_id',$groupId)
             ->whereIn('problem_num',$problemNums)->get($columns);
+    }
+
+    public function getRelationsByIds(int $groupId,array $problemIds,array $columns =  ['*'])
+    {
+        return $this->model
+            ->where('problem_group_id',$groupId)
+            ->whereIn('problem_id',$problemIds)->get($columns);
     }
 
     public function deleteWhereIn(string $param,array $data)

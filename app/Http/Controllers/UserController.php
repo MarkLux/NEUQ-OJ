@@ -30,12 +30,13 @@ class UserController extends Controller
             throw new FormValidatorException($error);
         }
 
-        $data = $request->all();
+        $userId = $userService->register($request->all());
 
-        if(!$userService->register($data))
-            throw new RegisterErrorException();
+        $data = $userService->loginUser($userId,$request->ip());
+
         return response()->json([
             'code' => 0,
+            'data' => $data
         ]);
     }
 

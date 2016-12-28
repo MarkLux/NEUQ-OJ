@@ -1,2 +1,2 @@
 <?php
-Route::get('/home/data','TestController@test');
+Route::get('/test','TestController@test');
