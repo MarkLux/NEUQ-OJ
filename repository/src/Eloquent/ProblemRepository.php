@@ -33,8 +33,21 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
 
     function getProblems(int $page,int $size)
     {
-        //其实这个接口不应该取出problems里的description,影响速度
+        //只显示公开的题目
+        return $this->model
+            ->where('is_public',1)
+            ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
+                'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
+                'problem_tag_relations.tag_title')
+            ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+            ->orderBy('problems.id')
+            ->skip($size * --$page)
+            ->take($size)
+            ->get();
+    }
 
+    function getProblemsByAdmin(int $page,int $size)
+    {
         return $this->model
             ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
                 'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',

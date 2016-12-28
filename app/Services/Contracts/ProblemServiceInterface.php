@@ -61,4 +61,6 @@ interface ProblemServiceInterface
     */
 
     function isProblemExist(int $problemId):bool;
+
+    function canUserAccessProblem(int $userId,int $problemId):bool;
 }

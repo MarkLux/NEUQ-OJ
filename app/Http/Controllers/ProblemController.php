@@ -71,12 +71,18 @@ class ProblemController extends Controller
 
     }
 
-    public function getProblem(int $problemId)
+    public function getProblem(Request $request,int $problemId)
     {
         $problem = $this->problemService->getProblemById($problemId);
 
         if(!$problem)
             throw new ProblemNotExistException();
+
+        if($problem->is_public == 1)//是私有题目
+        {
+            if($request->user == null) throw new NoPermissionException();
+            elseif(!$this->problemService->canUserAccessProblem($request->user->id,$problemId)) throw new NoPermissionException();
+        }
 
         return response()->json([
             'code' => 0,
@@ -143,6 +149,9 @@ class ProblemController extends Controller
         if(!$this->problemService->isProblemExist($problemId))
             throw new ProblemNotExistException();
 
+        if(!$this->problemService->canUserAccessProblem($request->user->id,$problemId))
+            throw new NoPermissionException();
+
         $data = [
             'source_code' => $request->input('source_code'),
             'private' => $request->input('private'),
@@ -192,8 +201,8 @@ class ProblemController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'keyword' => 'required|string|min:1|max:20',
-            'page' => 'integer|min:0',
-            'size' => 'integer|min:0'
+            'page' => 'integer|min:1',
+            'size' => 'integer|min:1|max:25'
         ]);
 
         if($validator->fails())

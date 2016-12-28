@@ -82,6 +82,14 @@ class ProblemService implements ProblemServiceInterface
      *获取题目以及状态辅助函数
      */
 
+    public function canUserAccessProblem(int $userId, int $problemId): bool
+    {
+        $problem = $this->problemRepo->get($problemId,['is_public','creator_id'])->first();
+        if($problem == null) return false;
+        if($problem->is_public == 0&&$problem->creator_id != $userId) return false;
+        return true;
+    }
+
     public function getTotalCount():int
     {
         return $this->problemRepo->getTotalCount();
@@ -135,7 +143,7 @@ class ProblemService implements ProblemServiceInterface
         $problems = $this->problemRepo->getBy('problems.id',$problemId,$columns)->toArray();
         //拿到的全部的数据
 
-        if(empty($problems))
+        if(count($problems) == 0)
             return false;
 
         //重新组装
