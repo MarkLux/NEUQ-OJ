@@ -28,7 +28,12 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
 
     function getTotalCount()
     {
-        return $this->all()->count();
+        return $this->model->all()->count();
+    }
+
+    function getTotalPublicCount()
+    {
+        return $this->model->where('is_public',1)->count();
     }
 
     function getProblems(int $page,int $size)
@@ -36,18 +41,34 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
         //只显示公开的题目
         return $this->model
             ->where('is_public',1)
+            ->skip($size * --$page)
+            ->take($size)
             ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
                 'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
                 'problem_tag_relations.tag_title')
             ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
             ->orderBy('problems.id')
+            ->get();
+    }
+
+    function getProblemGroupTest(int $page,int $size)
+    {
+        return $this->model
+            ->groupBy('id')
+            ->where('is_public',1)
             ->skip($size * --$page)
             ->take($size)
+            ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+            ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
+                'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
+                'problem_tag_relations.tag_title')
+            ->orderBy('id')
             ->get();
     }
 
     function getProblemsByAdmin(int $page,int $size)
     {
+        //所有题目都显示
         return $this->model
             ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
                 'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',

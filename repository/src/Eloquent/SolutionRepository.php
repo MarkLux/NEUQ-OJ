@@ -31,12 +31,32 @@ class SolutionRepository extends AbstractRepository
         return $this->model->where($params)->count();
     }
 
-    //辅助题目组方法
-    public function getSolutionsIn(int $groupId,array $problemIds,array $columns = ['*'])
+    //辅助方法
+    public function getSolutionsIn(string $param1,string $value,string $param2,array $values,array $columns = ['*'])
+    {
+        return $this->model
+            ->where($param1,$value)
+            ->whereIn($param2,$values)
+            ->get($columns);
+    }
+
+
+    //在题目组中获取题目的提交数
+    public function refreshProblemSubmitted(int $groupId,int $problemId)
     {
         return $this->model
             ->where('problem_group_id',$groupId)
-            ->whereIn('problem_id',$problemIds)
-            ->get($columns);
+            ->where('problem_id',$problemId)
+            ->count();
+    }
+
+    //在题目组中获取题目的解决数
+    public function refreshProblemSolved(int $groupId,int $problemId)
+    {
+        return $this->model
+            ->where('problem_group_id',$groupId)
+            ->where('problem_id',$problemId)
+            ->where('result',4)
+            ->count();
     }
 }

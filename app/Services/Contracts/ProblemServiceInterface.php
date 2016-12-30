@@ -21,7 +21,9 @@ interface ProblemServiceInterface
 
     function getTotalCount():int;
 
-    function getProblems(int $page,int $size);
+    function getTotalPublicCount():int;
+
+    function getProblems(int $userId = -1,int $page,int $size);
 
     function getProblemById(int $problemId,array $columns = ['*']);
 

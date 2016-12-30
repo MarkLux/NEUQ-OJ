@@ -15,16 +15,19 @@ use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
+use NEUQOJ\Repository\Models\Token;
 use NEUQOJ\Services\ProblemService;
+use NEUQOJ\Services\TokenService;
 
 class ProblemController extends Controller
 {
     private $problemService;
-//    private $roleService;
+    private $tokenService;
 
-    public function __construct(ProblemService $service)
+    public function __construct(ProblemService $problemService,TokenService $tokenService)
     {
-        $this->problemService = $service;
+        $this->problemService = $problemService;
+        $this->tokenService = $tokenService;
     }
 
     private function getValidateRules()
@@ -54,14 +57,19 @@ class ProblemController extends Controller
             throw new FormValidatorException($validator->getMessageBag()->all());
 
         $page = $request->input('page',1);
-        $size = $request->input('size',15);
+        $size = $request->input('size',20);
 
-        $total_count = $this->problemService->getTotalCount();
+        $total_count = $this->problemService->getTotalPublicCount();
+
+        $userId = -1;
+        //检测用户登陆状态
+        if($request->hasHeader('token'))
+            $userId = $this->tokenService->getUserIdByToken($request->header('token'));
+
         if(!empty($total_count))
-            $data = $this->problemService->getProblems($page,$size);
+            $data = $this->problemService->getProblems($userId,$page,$size);
         else
             $data = null;
-
 
         return response()->json([
             'code' => 0,
@@ -75,12 +83,12 @@ class ProblemController extends Controller
     {
         $problem = $this->problemService->getProblemById($problemId);
 
-        if(!$problem)
+        if($problem == false)//可能出bug
             throw new ProblemNotExistException();
 
-        if($problem->is_public == 1)//是私有题目
+        if($problem['is_public'] == 0)//是私有题目
         {
-            if($request->user == null) throw new NoPermissionException();
+            if($request->user == null) throw new NoPermissionException(); //没登陆
             elseif(!$this->problemService->canUserAccessProblem($request->user->id,$problemId)) throw new NoPermissionException();
         }
 

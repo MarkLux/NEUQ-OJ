@@ -39,7 +39,15 @@ class ContestService implements ContestServiceInterface
 
     function getContest(int $userId, int $groupId)
     {
-        // TODO: Implement getContest() method. join简略的题目信息
+        if(!$this->canUserAccessContest($userId,$groupId))
+            throw new NoPermissionException();
+
+        $group = $this->problemGroupService->getProblemGroup($groupId);
+    }
+
+    function getProblem(int $groupId, int $problemNum)
+    {
+        // TODO: Implement getProblem() method.
     }
 
     function getAllContests(int $page, int $size)

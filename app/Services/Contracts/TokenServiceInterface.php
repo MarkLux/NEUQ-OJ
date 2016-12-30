@@ -23,4 +23,6 @@ interface TokenServiceInterface
     function isTokenExpire(string $tokenStr):bool;
 
     function destoryToken(int $userId);
+
+    function getUserIdByToken(string $tokenStr):int;
 }

@@ -162,7 +162,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         }
 
         $flag = false;
-        $solutionIds = $this->solutionRepo->getSolutionsIn($groupId,$problemIds)->toArray();
+        $solutionIds = $this->solutionRepo->getSolutionsIn('problem_group_id',$groupId,'problem_id',$problemIds)->toArray();
 
         DB::transaction(function()use($groupId,$problemIds,&$flag,$solutionIds,$relationIds){
             $this->problemGroupRelationRepo->deleteWhereIn('id',$relationIds);

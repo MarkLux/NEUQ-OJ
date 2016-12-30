@@ -16,6 +16,8 @@ interface ContestServiceInterface
 
     function getContest(int $userId,int $groupId);
 
+    function getProblem(int $groupId,int $problemNum);
+
     function getInContestByPassword(int $userId,int $groupId,string $password):bool;
 
     function createContest(array $data,array $users=[]):int;
