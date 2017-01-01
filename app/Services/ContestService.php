@@ -11,7 +11,8 @@ namespace NEUQOJ\Services;
 
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Exceptions\NoPermissionException;
-use NEUQOJ\Repository\Contracts\ContestServiceInterface;
+use NEUQOJ\Repository\Eloquent\SolutionRepository;
+use NEUQOJ\Services\Contracts\ContestServiceInterface;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
@@ -23,11 +24,12 @@ class ContestService implements ContestServiceInterface
     private $problemGroupRepo;
     private $problemAdmissionRepo;
     private $problemService;
+    private $solutionRepo;
 
     public function __construct(
         ProblemGroupService $problemGroupService,ProblemGroupRepository $problemGroupRepository,
         ProblemGroupRelationRepository $problemGroupRelationRepository,ProblemGroupAdmissionRepository $problemGroupAdmissionRepository,
-        ProblemService $problemService
+        ProblemService $problemService,SolutionRepository $solutionRepository
     )
     {
         $this->problemGroupRepo = $problemGroupRepository;
@@ -35,14 +37,27 @@ class ContestService implements ContestServiceInterface
         $this->problemGroupService = $problemGroupService;
         $this->problemAdmissionRepo = $problemGroupAdmissionRepository;
         $this->problemService = $problemService;
+        $this->solutionRepo = $solutionRepository;
     }
 
-    function getContest(int $userId, int $groupId)
+    function getContest(int $userId = -1, int $groupId)
     {
         if(!$this->canUserAccessContest($userId,$groupId))
             throw new NoPermissionException();
 
-        $group = $this->problemGroupService->getProblemGroup($groupId);
+        //获取基本信息
+
+        $group = $this->problemGroupService->getProblemGroup($groupId,['id','title','description','creator_id','creator_name','start_time','end_time','private','status']);
+
+        //获取题目信息
+
+        $problems = $this->problemGroupRelationRepo->getProblemInfosInGroup($groupId)->toArray();
+
+        //刷新提交量和正确数量
+
+        $submitted = $this->solutionRepo->refreshProblemSubmitted(); //有效率问题
+
+        dd($problems);
     }
 
     function getProblem(int $groupId, int $problemNum)

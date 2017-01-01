@@ -6,7 +6,7 @@
  * Time: 下午1:53
  */
 
-namespace NEUQOJ\Repository\Contracts;
+namespace NEUQOJ\Services\Contracts;
 
 use NEUQOJ\Repository\Models\User;
 
