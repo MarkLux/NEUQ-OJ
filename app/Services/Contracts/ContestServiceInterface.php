@@ -20,7 +20,7 @@ interface ContestServiceInterface
 
     function getInContestByPassword(int $userId,int $groupId,string $password):bool;
 
-    function createContest(array $data,array $users=[]):int;
+    function createContest(array $data,array $problems,array $users=[]):int;
 
     function deleteContest(int $groupId):bool;
 

@@ -42,22 +42,17 @@ class ContestService implements ContestServiceInterface
 
     function getContest(int $userId = -1, int $groupId)
     {
+        //先检测竞赛的可见性
         if(!$this->canUserAccessContest($userId,$groupId))
             throw new NoPermissionException();
 
         //获取基本信息
+        $contest = $this->problemGroupService->getProblemGroup($groupId,[
+            'id','title','description','start_time','end_time',
+            'creator_id','creator_name', 'status','langmask'
+        ]);
 
-        $group = $this->problemGroupService->getProblemGroup($groupId,['id','title','description','creator_id','creator_name','start_time','end_time','private','status']);
-
-        //获取题目信息
-
-        $problems = $this->problemGroupRelationRepo->getProblemInfosInGroup($groupId)->toArray();
-
-        //刷新提交量和正确数量
-
-        $submitted = $this->solutionRepo->refreshProblemSubmitted(); //有效率问题
-
-        dd($problems);
+        $problemInfos = $this->problemGroupRelationRepo->getProblemInfosInGroup($groupId);
     }
 
     function getProblem(int $groupId, int $problemNum)
@@ -74,14 +69,18 @@ class ContestService implements ContestServiceInterface
     }
 
     //创建一个竞赛，如果成功，返回新创建的竞赛id，否则返回-1
-    function createContest(array $data,array $users=[]):int
+    function createContest(array $data,array $problems,array $users=[]):int
     {
         //根据私有性类别来创建
         $data['type'] = 1;
         $id = -1;
 
-        DB::transaction(function()use($data,$users,&$id){
-            $id = $this->problemGroupService->createProblemGroup($data);
+        /**
+         * 传入的problems数组应该包含题目id、题目标题、题目编号
+         */
+
+        DB::transaction(function()use($data,$problems,$users,&$id){
+            $id = $this->problemGroupService->createProblemGroup($data,$problems);
             //如果是指定可见的私有模式,重新组装数据
             if($data['private'] == 2&&!empty($users))
             {

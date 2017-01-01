@@ -39,9 +39,10 @@ class ProblemGroupRelationRepository extends AbstractRepository implements SoftD
     {
         return $this->model
             ->where('problem_group_id',$groupId)
-            ->join('problems','problem_group_relations.problem_id','=','problems.id')
-            ->select('problem_group_relations.problem_num','problem_group_relations.problem_score', 'problems.id','problems.title',
-                'problems.source')
+            ->leftJoin('solution',function($join){
+                $join->on('');
+            })
+            ->leftJoin()
             ->get();
     }
 
