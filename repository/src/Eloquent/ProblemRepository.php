@@ -51,20 +51,20 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
             ->get();
     }
 
-    function getProblemGroupTest(int $page,int $size)
-    {
-        return $this->model
-            ->groupBy('id')
-            ->where('is_public',1)
-            ->skip($size * --$page)
-            ->take($size)
-            ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
-            ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
-                'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
-                'problem_tag_relations.tag_title')
-            ->orderBy('id')
-            ->get();
-    }
+//    function getProblemGroupTest(int $page,int $size)
+//    {
+//        return $this->model
+//            ->groupBy('id')
+//            ->where('is_public',1)
+//            ->skip($size * --$page)
+//            ->take($size)
+//            ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+//            ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
+//                'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
+//                'problem_tag_relations.tag_title')
+//            ->orderBy('id')
+//            ->get();
+//    }
 
     function getProblemsByAdmin(int $page,int $size)
     {
@@ -118,8 +118,10 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
     function getWhereLikeCount(string $pattern):int
     {
         //join过后的表的总数会出现不必要的重复，需要检测
+        //只搜索公共题目
 
         $problems = $this->model
+            ->where('is_public',1)
             ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
             ->select('problems.id')
             ->where('problems.title','like',$pattern)
@@ -152,12 +154,13 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
         if(!empty($size))
         {
             return $this->model
+                ->where('is_public',1)
                 ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
                 ->where('problems.title','like',$pattern)
                 ->orWhere('problems.source','like',$pattern)
                 ->orWhere('problems.creator_name','like',$pattern)
                 ->orWhere('problem_tag_relations.tag_title','like',$pattern)
-                ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
+                ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.accepted',
                     'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
                     'problem_tag_relations.tag_title')
                 ->orderBy('problems.id')

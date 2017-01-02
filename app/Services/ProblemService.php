@@ -368,47 +368,63 @@ class ProblemService implements ProblemServiceInterface
        return $this->problemRepo->getWhereLikeCount($pattern);
     }
 
-    public function searchProblems(string $likeName, int $start, int $size)
+    public function searchProblems(int $userId = -1,string $likeName, int $start, int $size)
     {
         $pattern = "%".$likeName."%";
 
         $problems = $this->problemRepo->getWhereLike($pattern,$start,$size);
 
-        $data = [];
-        $single = [];
-
-        $temp_id = 0;
+        $problemIds = [];
 
         foreach ($problems as $problem)
         {
-            if($problem->id == $temp_id)
+            $problemIds[] = $problem['id'];
+        }
+
+        $tagRelations = $this->tagRelationRepo->getIn('problem_id',$problemIds,['problem_id','tag_id','tag_title'])->toArray();
+
+        //组织题目标签信息
+
+        $tags = [];
+
+        foreach ($tagRelations as $tagRelation)
+        {
+            $tags[$tagRelation['problem_id']][] = $tagRelation;
+        }//合并
+
+        //组织用户解题情况
+
+        if($userId != -1)
+        {
+            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
+            $status = [];
+
+            foreach ($userStatuses as $userStatus)
             {
-                //是上一个数据,继续组装single
-                array_push($single['tags'],[
-                    'tag_id' => $problem->tag_id,
-                    'tag_title'=>$problem->tag_title
-                ]);
+                $status[$userStatus['problem_id']] = $userStatus['result'];
             }
-            else
-            {
-                if(!empty($single))
-                    array_push($data,$single);
-                $temp_id = $problem->id;
-                $single = $problem->toArray();
-                $single['tags'] = [];
-                array_push($single['tags'],[
-                    'tag_id' => $problem->tag_id,
-                    'tag_title' => $problem->tag_title
-                ]);
-                unset($single['tag_id']);
-                unset($single['tag_title']);
+        }
+        if($userId == -1) {
+            foreach ($problems as &$problem) {
+                if (isset($tags[$problem['id']]))
+                    $problem['tags'] = $tags[$problem['id']];
+                else
+                    $problem['tags'] = null;
+            }
+        }else{
+            foreach ($problems as &$problem) {
+                if (isset($tags[$problem['id']]))
+                    $problem['tags'] = $tags[$problem['id']];
+                else
+                    $problem['tags'] = null;
+                if(isset($status[$problem['id']]))
+                    $problem['user_status'] = $status[$problem['id']]==4?'Y':'N';
+                else
+                    $problem['user_status'] = null;
             }
         }
 
-        //还有一个数据没有组装进去，再组装
-        array_push($data,$single);
-
-        return $data;
+        return $problems;
     }
 
     /**

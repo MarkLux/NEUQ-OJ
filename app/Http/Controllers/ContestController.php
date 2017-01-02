@@ -54,4 +54,14 @@ class ContestController extends Controller
             'data' => $problem
         ]);
     }
+
+    public function submitProblem(Request $request,int $contestId,int $problemNum)
+    {
+
+    }
+
+    public function getRankList(Request $request,int $contestId)
+    {
+
+    }
 }

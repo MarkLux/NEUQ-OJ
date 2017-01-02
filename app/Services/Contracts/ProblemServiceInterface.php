@@ -40,7 +40,7 @@ interface ProblemServiceInterface
 
     function searchProblemsCount(string $likeName):int;
 
-    function searchProblems(string $likeName,int $start,int $size);
+    function searchProblems(int $userId=-1,string $likeName,int $start,int $size);
 
     //创建
 

@@ -221,8 +221,12 @@ class ProblemController extends Controller
         $size = $request->input('size',15);
 
         $total_count = $this->problemService->searchProblemsCount($keyword);
+
+        $userId = -1;
+        if(isset($request->user)) $userId = $request->user->id;
+
         if($total_count > 0)
-            $data = $this->problemService->searchProblems($keyword,$page,$size);
+            $data = $this->problemService->searchProblems($userId,$keyword,$page,$size);
         else
             $data = null;
 
