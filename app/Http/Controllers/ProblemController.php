@@ -63,8 +63,8 @@ class ProblemController extends Controller
 
         $userId = -1;
         //检测用户登陆状态
-        if($request->hasHeader('token'))
-            $userId = $this->tokenService->getUserIdByToken($request->header('token'));
+        if(isset($request->user))
+            $userId = $request->user->id;
 
         if(!empty($total_count))
             $data = $this->problemService->getProblems($userId,$page,$size);
@@ -74,7 +74,7 @@ class ProblemController extends Controller
         return response()->json([
             'code' => 0,
             'data' => $data,
-            'total_count' => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+            'total_count' => $total_count
         ]);
 
     }
@@ -229,7 +229,7 @@ class ProblemController extends Controller
         return response()->json([
             'code' => 0,
             'data' => $data,
-            'page_count' => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+            'total_count' => $total_count
         ]);
     }
 

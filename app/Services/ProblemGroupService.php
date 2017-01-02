@@ -54,6 +54,11 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $this->problemGroupRepo->getBy($param,$value,$columns);
     }
 
+    public function getProblemByNum(int $groupId, int $problemNum)
+    {
+        return $this->problemGroupRelationRepo->getProblemByNum($groupId,$problemNum)->first();
+    }
+
     public function createProblemGroup(array $data,array $problems=[]): int
     {
         $id = -1;

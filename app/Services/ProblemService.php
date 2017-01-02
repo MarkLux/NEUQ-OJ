@@ -102,7 +102,7 @@ class ProblemService implements ProblemServiceInterface
 
     public function getProblems(int $userId = -1,int $page,int $size)
     {
-        $problems = $this->problemRepo->paginate($page,$size,['is_public'=>1],['id','title','difficulty','source','submit','solved','is_public','created_at','updated_at'])->toArray();
+        $problems = $this->problemRepo->paginate($page,$size,['is_public'=>1],['id','title','difficulty','source','submit','accepted','is_public','created_at','updated_at'])->toArray();
 
         $problemIds = [];
 

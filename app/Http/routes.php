@@ -24,6 +24,8 @@ include 'Routes/Problem.php';
 
 include 'Routes/Status.php';
 
+include 'Routes/Contest.php';
+
 Route::get('/', function () {
     return 'here is the main page!!';
 });

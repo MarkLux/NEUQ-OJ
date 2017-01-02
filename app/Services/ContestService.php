@@ -42,9 +42,6 @@ class ContestService implements ContestServiceInterface
 
     function getContest(int $userId = -1, int $groupId)
     {
-        //先检测竞赛的可见性
-        if(!$this->canUserAccessContest($userId,$groupId))
-            throw new NoPermissionException();
 
         //获取基本信息
         $contest = $this->problemGroupService->getProblemGroup($groupId,[
@@ -52,12 +49,28 @@ class ContestService implements ContestServiceInterface
             'creator_id','creator_name', 'status','langmask'
         ]);
 
-        $problemInfos = $this->problemGroupRelationRepo->getProblemInfosInGroup($groupId);
+        $problemInfo = $this->problemGroupRelationRepo->getProblemInfoInGroup($groupId);
+
+        //消除null值
+        foreach ($problemInfo as &$info)
+        {
+            if($info->submit == null) $info->submit = 0;
+            if($info->accepted == null) $info->accepted = 0;
+        }
+
+        //获取用户解题状态
+
+        $data['contest_info'] = $contest;
+        $data['problem_info'] = $problemInfo;
+
+        return $data;
     }
 
     function getProblem(int $groupId, int $problemNum)
     {
-        // TODO: Implement getProblem() method.
+        $problem =  $this->problemGroupService->getProblemByNum($groupId,$problemNum);
+
+        return $problem;
     }
 
     function getAllContests(int $page, int $size)

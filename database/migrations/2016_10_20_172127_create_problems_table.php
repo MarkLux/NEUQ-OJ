@@ -28,8 +28,8 @@ class CreateProblemsTable extends Migration
             $table->string('source',100)->nullable();
             $table->integer('time_limit');
             $table->integer('memory_limit');
-            $table->integer('accepted')->nullable();
-            $table->integer('submit')->nullable();
+            $table->integer('accepted')->default(0);
+            $table->integer('submit')->default(0);
             $table->boolean('is_public');
             $table->timestamps();
             $table->softDeletes();

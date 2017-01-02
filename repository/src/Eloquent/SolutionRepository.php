@@ -9,6 +9,8 @@
 namespace NEUQOJ\Repository\Eloquent;
 
 
+use Illuminate\Support\Facades\DB;
+
 class SolutionRepository extends AbstractRepository
 {
     public function model()
@@ -21,9 +23,9 @@ class SolutionRepository extends AbstractRepository
         return $this->model->all()->count();
     }
 
-    public function deleteWhereIn(string $param,array $data = [])
+    public function deleteWhereIn(string $param, array $data = [])
     {
-        return $this->model->whereIn($param,$data)->delete();
+        return $this->model->whereIn($param, $data)->delete();
     }
 
     public function getWhereCount(array $params)
@@ -32,31 +34,12 @@ class SolutionRepository extends AbstractRepository
     }
 
     //辅助方法
-    public function getSolutionsIn(string $param1,string $value,string $param2,array $values,array $columns = ['*'])
+    public function getSolutionsIn(string $param1, string $value, string $param2, array $values, array $columns = ['*'])
     {
         return $this->model
-            ->where($param1,$value)
-            ->whereIn($param2,$values)
+            ->where($param1, $value)
+            ->whereIn($param2, $values)
             ->get($columns);
     }
 
-
-    //在题目组中获取题目的提交数
-    public function refreshProblemSubmitted(int $groupId,int $problemId)
-    {
-        return $this->model
-            ->where('problem_group_id',$groupId)
-            ->where('problem_id',$problemId)
-            ->count();
-    }
-
-    //在题目组中获取题目的解决数
-    public function refreshProblemSolved(int $groupId,int $problemId)
-    {
-        return $this->model
-            ->where('problem_group_id',$groupId)
-            ->where('problem_id',$problemId)
-            ->where('result',4)
-            ->count();
-    }
 }

@@ -53,6 +53,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'flow' => FlowControllerMiddleware::class,
         'token' => \NEUQOJ\Http\Middleware\TokenMiddleware::class,
-        'privilege' => \NEUQOJ\Http\Middleware\PrivilegeMiddleware::class
+        'privilege' => \NEUQOJ\Http\Middleware\PrivilegeMiddleware::class,
+        'user' => \NEUQOJ\Http\Middleware\UserMiddleware::class
     ];
 }

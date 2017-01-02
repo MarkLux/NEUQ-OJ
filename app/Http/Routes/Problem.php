@@ -13,6 +13,10 @@ Route::group(['middleware' => 'token'],function(){
     Route::post('/problem/{id}/delete','ProblemController@deleteProblem');
 });
 
-Route::get('/problem/{id}','ProblemController@getProblem');
-Route::get('/problems','ProblemController@getProblems');
-Route::get('/problems/search','ProblemController@searchProblems');
+Route::group(['middleware' => 'user'],function(){
+    Route::get('/problem/{id}','ProblemController@getProblem');
+    Route::get('/problems','ProblemController@getProblems');
+    Route::get('/problems/search','ProblemController@searchProblems');
+});
+
+

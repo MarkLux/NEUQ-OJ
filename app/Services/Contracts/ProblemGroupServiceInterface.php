@@ -18,6 +18,8 @@ interface ProblemGroupServiceInterface
 
     function getProblemGroupBy(string $param,string $value,array $columns = ['*']);
 
+    function getProblemByNum(int $groupId,int $problemNum);
+
     /*
      * 状态辅助函数
      */
