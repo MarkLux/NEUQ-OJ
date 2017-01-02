@@ -123,6 +123,7 @@ class ProblemService implements ProblemServiceInterface
         }//合并
 
         //组织用户解题情况
+        //注意：没有使用join的方法而是进行了3次查询 影响了效率
 
         if($userId != -1)
         {
@@ -177,17 +178,16 @@ class ProblemService implements ProblemServiceInterface
                     'tag_id' => $problem['tag_id'],
                     'tag_title' => $problem['tag_title']
                 ];
+
         }
         else
         {
             if($data['tag_id']!=null)
-                $data['tags'] = [
+                $data['tags'][] = [
                     'tag_id' => $data['tag_id'],
                     'tag_title' => $data['tag_title']
                 ];
         }
-
-
         unset($data['tag_id']);
         unset($data['tag_title']);
 

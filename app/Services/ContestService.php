@@ -50,15 +50,36 @@ class ContestService implements ContestServiceInterface
         ]);
 
         $problemInfo = $this->problemGroupRelationRepo->getProblemInfoInGroup($groupId);
+        $problemIds = [];
 
         //消除null值
         foreach ($problemInfo as &$info)
         {
             if($info->submit == null) $info->submit = 0;
             if($info->accepted == null) $info->accepted = 0;
+            $problemIds[] = $info->pid;
         }
 
         //获取用户解题状态
+
+        if($userId != -1)
+        {
+            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
+            $status = [];
+
+            foreach ($userStatuses as $userStatus)
+            {
+                $status[$userStatus['problem_id']] = $userStatus['result'];
+            }
+            foreach ($problemInfo as &$info) {
+
+                if(isset($status[$info->pid]))
+                    $info->user_status = $status[$info->pid]==4?'Y':'N';
+                else
+                    $info->user_status = null;
+            }
+
+        }
 
         $data['contest_info'] = $contest;
         $data['problem_info'] = $problemInfo;
@@ -146,6 +167,8 @@ class ContestService implements ContestServiceInterface
     function getRankList(int $groupId)
     {
         //TODO 使用redis缓存数据
+        //正常mysql查询方法：
+
     }
 
     function searchContest(string $keyword,int $page,int $size)

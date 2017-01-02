@@ -2,6 +2,7 @@
 
 namespace NEUQOJ\Http\Controllers;
 
+use Illuminate\Cache\Repository;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
@@ -55,12 +56,46 @@ class ContestController extends Controller
         ]);
     }
 
+    public function joinContest(Request $request,int $contestId)
+    {
+
+    }
+
+    public function updateContest(Request $request,int $contestId)
+    {
+
+    }
+
+    public function getContestAdmission(Request $request,int $contestId)
+    {
+
+    }
+
+    public function resetContestAdmission(Request $request,int $contestId)
+    {
+
+    }
+
+    public function deleteContest(Request $request,int $contestId)
+    {
+
+    }
+
+    public function searchContest(Requset $requset,int $contestId)
+    {
+
+    }
     public function submitProblem(Request $request,int $contestId,int $problemNum)
     {
 
     }
 
     public function getRankList(Request $request,int $contestId)
+    {
+
+    }
+
+    public function getStatus(Requset $requset,int $contestId)
     {
 
     }

@@ -25,6 +25,7 @@ interface ProblemGroupServiceInterface
      */
 
     function isProblemGroupExist(int $groupId):bool;
+    function isUserProblemOwner(int $userId,int $groupId):bool;
 
     /*
      * 创建
@@ -61,5 +62,13 @@ interface ProblemGroupServiceInterface
     function getSolutionCount(int $groupId):int;
 
     function getSolutions(int $groupId,int $page,int $size);
+
+    /*
+     * 权限部分
+     */
+
+    function getGroupAdmissions(int $groupId);
+
+    function resetGroupAdmissions(int $groupId,array $newData):bool;
 
 }

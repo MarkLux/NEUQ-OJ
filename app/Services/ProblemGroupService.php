@@ -190,4 +190,34 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $this->solutionRepo->paginate($page,$size,['problem_group_id'=>$groupId]);
     }
 
+    public function isUserProblemOwner(int $userId,int $groupId): bool
+    {
+       $group = $this->getProblemGroup($groupId,['creator_id'])->first();
+
+       if($group == null ||$group->creator_id != $userId) return false;
+       return true;
+    }
+
+    public function getGroupAdmissions(int $groupId)
+    {
+        $admissions = $this->admissionRepo->getBy('problem_group_id',$groupId,['problem_group_id','user_id'])->toArray();
+
+        return $admissions;
+    }
+
+    public function resetGroupAdmissions(int $groupId, array $newData): bool
+    {
+        if(!$this->isProblemGroupExist($groupId)) return false;//不存在
+
+        $flag = false;
+
+        //先把之前的权限全部删除了，然后再重新插入一次（感觉很蠢）
+        DB::transaction(function()use($groupId,$newData,&$flag){
+            $this->admissionRepo->deleteWhere(['problem_group_id' => $groupId]);
+            $this->admissionRepo->insert($newData);
+            $flag = true;
+        });
+
+        return $flag;
+    }
 }
