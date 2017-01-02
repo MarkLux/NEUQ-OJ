@@ -9,6 +9,8 @@
 namespace NEUQOJ\Repository\Eloquent;
 
 
+use NEUQOJ\Repository\Traits\InsertWithIdTrait;
+
 class MessageRepository extends  AbstractRepository
 {
     function model()
@@ -25,4 +27,5 @@ class MessageRepository extends  AbstractRepository
     {
         return $this->model()->where(['to_id'=>$userId,'is_read'=>0])->count();
     }
+    use InsertWithIdTrait;
 }

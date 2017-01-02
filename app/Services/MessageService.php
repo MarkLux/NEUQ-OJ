@@ -61,22 +61,21 @@ class MessageService implements MessageServiceInterface
     {
         return $this->messageRepo->paginate($page,$size,['to_id'=>$userId],$columns);
     }
-    public function sendMessage(int $from, int $to, array $data): int
+    public function sendMessage(int $from, int $to, array $data): int//返回消息id
     {
-        $fromData = $this->userService->getUserById($from);
-        $toData = $this->userService->getUserById($to);
+
         $message = [
             'from_id'=>$from,
             'to_id'=>$to,
-            'from_name'=>$fromData['name'],
-            'to_name'=>$toData['name'],
+            'from_name'=>$data['from_name'],
+            'to_name'=>$data['to_name'],
             'content'=>$data['content']
         ];
-        return $this->messageRepo->insert($message);
+        return $this->messageRepo->insertWithId($message);
     }
 
     public function deleteMessage(int $userId, int $messageId): bool
     {
-        return $this->messageRepo->deleteWhere(['to_id'=>$userId]);
+        return $this->messageRepo->deleteWhere(['to_id'=>$userId,'id'=>$messageId]);
     }
 }
