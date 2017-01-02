@@ -8,47 +8,75 @@
 
 namespace NEUQOJ\Services;
 
+
+use NEUQOJ\Repository\Eloquent\MessageRepository;
+
+use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Services\Contracts\MessageServiceInterface;
 
 
 class MessageService implements MessageServiceInterface
 {
+
+
+
+    private $messageRepo;
+    private $userService;
+
+    public function __construct(MessageRepository $messageRepository,UserService $userService)
+    {
+        $this->messageRepo = $messageRepository;
+        $this->userService = $userService;
+    }
+
     public function getMessage(int $messageId, array $columns = ['*'])
     {
-        // TODO: Implement getMessage() method.
+        return $this->messageRepo->get($messageId,$columns)->fisrt();
+
     }
 
     public function getUnreadMessages(int $userId, int $page, int $size, array $columns = ['*'])
     {
-        // TODO: Implement getUnreadMessages() method.
+
+        return $this->messageRepo->paginate($page,$size,['to_id'=>$userId,'is_read'=>0],$columns);
+
     }
 
 
     public function getUserMessageCount(int $userId): int
     {
-        // TODO: Implement getUserMessageCount() method.
+        return $this->messageRepo->getMessageCount($userId);
     }
 
 
     public function getMessageBy(string $param, string $value, array $columns = ['*'])
     {
-        // TODO: Implement getMessageBy() method.
+        return $this->messageRepo->getBy($param,$value,$columns);
     }
     public function getUnreadMessagesCount(int $userId): int
     {
-        // TODO: Implement getUnreadMessagesCount() method.
+        return $this->messageRepo->getUnreadMessagesCount($userId);
     }
     public function getUserMessages(int $userId, int $page, int $size, array $columns = ['*'])
     {
-        // TODO: Implement getUserMessages() method.
+        return $this->messageRepo->paginate($page,$size,['to_id'=>$userId],$columns);
     }
     public function sendMessage(int $from, int $to, array $data): int
     {
-        // TODO: Implement sendMessage() method.
+        $fromData = $this->userService->getUserById($from);
+        $toData = $this->userService->getUserById($to);
+        $message = [
+            'from_id'=>$from,
+            'to_id'=>$to,
+            'from_name'=>$fromData['name'],
+            'to_name'=>$toData['name'],
+            'content'=>$data['content']
+        ];
+        return $this->messageRepo->insert($message);
     }
 
     public function deleteMessage(int $userId, int $messageId): bool
     {
-        // TODO: Implement deleteMessage() method.
+        return $this->messageRepo->deleteWhere(['to_id'=>$userId]);
     }
 }

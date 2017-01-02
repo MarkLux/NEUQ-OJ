@@ -16,7 +16,9 @@ class CreateMessagesTable extends Migration
             $table->increments('id');
             $table->boolean('is_read');
             $table->bigInteger('from_id');
+            $table->string('from_name',100);
             $table->bigInteger('to_id');
+            $table->string('to_name',100);
             $table->text('content');
             $table->timestamps();
         });
