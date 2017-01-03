@@ -28,4 +28,7 @@ interface MessageServiceInterface
 
     function deleteMessage(int $userId,int $messageId):bool;
     //注意检查一下是否有权删除信息
+
+    function getUserMessagesByMult(array $data,array $columns = ['*']);
+
 }

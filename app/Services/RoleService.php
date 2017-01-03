@@ -36,8 +36,10 @@ class RoleService implements RoleServiceInterface
 
     public function hasRole(int $userId,string $role):bool
     {
-        $arr = $this->UserRoleRepo->getBy('user_id',$userId);
-        $roleId = $this->RoleRepo->getBy('name',$role)->first()->id;
+
+        $arr = $this->UserRoleRepo->getBy('user_id',$userId,['role_id']);
+        $roleId = $this->RoleRepo->getBy('name',$role,['id'])->first();
+
 
         foreach ($arr as $item) {
             if($item['role_id'] ==$roleId)
@@ -66,7 +68,7 @@ class RoleService implements RoleServiceInterface
         //检查输入合法性
         $privileges = $this->PriRepo->getIn('id',$data['privilege']);
         if(count($data['privilege']!=count($privileges)))
-            return -1;
+            return $rid;
 
 
         //创建事件，对数据库操作的有哪项失败的话就自动回滚
@@ -99,7 +101,7 @@ class RoleService implements RoleServiceInterface
      */
     public function giveRoleTo(int $userId,string $role)
     {
-        $roleData = $this->getRoleDetailByName($role);
+        $roleData = $this->getRoleDetailByName($role,['id']);
 
         $roleId = $roleData->id;
 
@@ -169,19 +171,19 @@ class RoleService implements RoleServiceInterface
         else
             return false;
     }
-    public function getRoleDetailById($roleId)
+    public function getRoleDetailById(int $roleId,array $columns=['*'])
     {
-        return $this->RoleRepo->get($roleId)->first();
+        return $this->RoleRepo->get($roleId,$columns)->first();
     }
 
-    public function getRoleDetailByName($name)
+    public function getRoleDetailByName(string $name,array $columns=['*'])
     {
-        return $this->RoleRepo->getBy('name',$name)->first();
+        return $this->RoleRepo->getBy('name',$name,$columns)->first();
     }
 
-    public function isRoleBelongTo($roleId):bool
+    public function isRoleBelongTo(int $roleId):bool
     {
-        if($this->UserRoleRepo->getBy('role_id',$roleId)->first())
+        if($this->UserRoleRepo->getBy('role_id',$roleId,['user_id'])->first())
             return true;
         else return false;
     }

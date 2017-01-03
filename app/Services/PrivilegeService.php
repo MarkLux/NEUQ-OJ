@@ -27,17 +27,17 @@ class PrivilegeService
         $this->userPriRepo = $usrPriRepository;
     }
 
-    public function getPrivilegeDetailByName(string $name)
+    public function getPrivilegeDetailByName(string $name,array $columns = ['*'])
     {
-        return $this->priRepo->getBy('name',$name)->first();
+        return $this->priRepo->getBy('name',$name,$columns)->first();
     }
 
     /*
      * 获取角色对应的权利
      */
-    public function getRolePrivilege($roleId)
+    public function getRolePrivilege(int $roleId,array $columns = ['*'])
     {
-        return $this->rolePriRepo->getBy('role_id',$roleId);
+        return $this->rolePriRepo->getBy('role_id',$roleId,$columns);
     }
 
     /*
@@ -46,9 +46,9 @@ class PrivilegeService
     public function givePrivilegeTo($userId,$roleId)
     {
 
-        $privilege = $this->userPriRepo->getBy('user_id',$userId);
+        $privilege = $this->userPriRepo->getBy('user_id',$userId,['privilege_id']);
 
-        $arr = $this->getRolePrivilege($roleId);
+        $arr = $this->getRolePrivilege($roleId,['privilege_id']);
 
         $content = [];
         foreach ($arr as $item)
@@ -112,4 +112,6 @@ class PrivilegeService
     {
         return $this->priRepo->deleteWhere($data);
     }
+
+
 }

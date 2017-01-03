@@ -55,7 +55,7 @@ class MessageService implements MessageServiceInterface
     }
     public function getUnreadMessagesCount(int $userId): int
     {
-        return $this->messageRepo->getUnreadMessagesCount($userId);
+        return $this->messageRepo->getUnreadMessageCount($userId);
     }
     public function getUserMessages(int $userId, int $page, int $size, array $columns = ['*'])
     {
@@ -77,5 +77,10 @@ class MessageService implements MessageServiceInterface
     public function deleteMessage(int $userId, int $messageId): bool
     {
         return $this->messageRepo->deleteWhere(['to_id'=>$userId,'id'=>$messageId]);
+    }
+
+    public function getUserMessagesByMult(array $data, array $columns = ['*'])
+    {
+        return $this->messageRepo->getByMult($data,$columns);
     }
 }

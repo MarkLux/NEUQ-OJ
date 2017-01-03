@@ -33,4 +33,6 @@ interface TagsServiceInterface
 
     function getTagByName(string $name);
 
+    function getSameTagProblemList(int $tagId,int $page,int $size);//获取标签相同的题目
+
 }
