@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use League\CommonMark\CommonMarkConverter;
 use NEUQOJ\Repository\Eloquent\ProblemTagRelationRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Repository\Eloquent\SourceCodeRepository;
@@ -26,6 +27,7 @@ class ProblemService implements ProblemServiceInterface
     private $sourceRepo;
     private $deletionService;
     private $tagRelationRepo;
+    private $converter;
 
     //获取对应题目数据的磁盘储存路径
 
@@ -45,6 +47,7 @@ class ProblemService implements ProblemServiceInterface
         $this->deletionService = $deletionService;
         $this->sourceRepo = $sourceCodeRepository;
         $this->tagRelationRepo = $tagRelationRepository;
+        $this->converter = app('CommonMarkService');
     }
 
     /**
@@ -158,6 +161,8 @@ class ProblemService implements ProblemServiceInterface
         return $problems;
     }
 
+    //组织数据 转化md为markdown
+
     public function getProblemById(int $problemId,array $columns = ['*'])
     {
         //join过的表不能再简单的用原表主键找   
@@ -190,6 +195,11 @@ class ProblemService implements ProblemServiceInterface
         }
         unset($data['tag_id']);
         unset($data['tag_title']);
+
+        //转换markdown内容
+        $data['description'] = $this->converter->convertToHtml($data['description']);
+        $data['input'] = $this->converter->convertToHtml($data['input']);
+        $data['output'] = $this->converter->convertToHtml($data['output']);
 
         return $data;
     }
@@ -232,7 +242,7 @@ class ProblemService implements ProblemServiceInterface
     public function getProblemByMult(array $condition,array $columns = ['*'])
     {
         //缺少组装
-        return $this->problemRepo->getByMult($condition,$columns)->first();
+        return $this->problemRepo->getByMult($condition,$columns)->first()->toArray();
     }
 
     public function isProblemExist(int $problemId): bool

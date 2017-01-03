@@ -23,6 +23,8 @@ class CreateProblemsTable extends Migration
 //            $table->text('output');
             $table->text('sample_input')->nullable();
             $table->text('sample_output');
+            $table->text('input')->nullable();
+            $table->text('output')->nullable();
             $table->string('spj',1);
             $table->text('hint')->nullable();
             $table->string('source',100)->nullable();

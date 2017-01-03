@@ -8,8 +8,12 @@
 
 namespace NEUQOJ\Services;
 
+use Illuminate\Support\Facades\Redis;
 
 class CacheService
 {
+    public function makeRankCache(int $groupId,array $data)
+    {
 
+    }
 }
