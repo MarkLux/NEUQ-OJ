@@ -166,9 +166,77 @@ class ContestService implements ContestServiceInterface
 
     function getRankList(int $groupId)
     {
-        //TODO 使用redis缓存数据
-        //正常mysql查询方法：
+        $group = $this->problemGroupService->getProblemGroup($groupId,['title','type','start_time','end_time','status']);
 
+        //TODO 使用redis缓存数据
+
+
+
+        //正常mysql查询方法：
+        $solutions = $this->solutionRepo->getRankList($groupId)->toArray();
+
+        $rank = [];//最终保存总数据的数组
+        $userCnt = -1;//计算用户总数
+        $userId = -1;
+
+        //组装排行榜
+        foreach ($solutions as $solution)
+        {
+            if($userId != $solution['id'])//新的用户
+            {
+                //创建一个新的数组
+                $rank[++$userCnt] = [
+                    'user_id' => $solution['id'],
+                    'user_name' => $solution['name'],
+                    'time' => 0,
+                    'solved' => 0,
+                    'problem_wa_num' => [],
+                    'problem_ac_sec' => []
+                ];
+
+                //判断第一个数据
+
+                if($solution['result'] == 4)
+                {
+                    $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']] = strtotime($solution['judge_time']) - strtotime($group->start_time);
+                    $rank[$userCnt]['solved']++;
+                }
+                elseif($solution['result' > 4]) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
+                    $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
+
+                //刷新总时间，注意所有时间全部以秒级正整数方式保存,错题的罚时只在题目成功ac之后才计算
+                if($solution['result'] ==4)
+                    $rank[$userCnt]['time'] += (strtotime($solution['judge_time'])-strtotime($group->start_time));
+
+                $userId = $solution['id'];//标记用户
+            }
+            else
+            {
+                //说明不是一个新的用户，还属于上个用户
+                if($solution['result'] == 4)//ac
+                {
+                    if(!isset($rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]))//之前还没有ac过对应的题目
+                    {
+                        $rank[$userCnt]['solved'] ++;//解题数目+1
+                        $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]  = strtotime($solution['judge_time']) - strtotime($group->start_time);
+                        //计算题目总罚时
+                        if(isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
+                            $rank['time'] += 1200*$rank[$userCnt]['problem_wa_num'][$solution['problem_num']];
+                    }
+                    //如果已经ac过这个题目，不再考虑
+                }
+                elseif ($solution['result'] > 4)//错误
+                {
+                    if(isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
+                        $rank[$userCnt]['problem_wa_num'][$solution['problem_num']]++;
+                    else
+                        $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
+                    //是否应该判断题目已经ac，如果ac了可以考虑不再增加错误了（虽然对罚时没有影响）
+                }
+            }
+        }
+
+        return $rank;
     }
 
     function searchContest(string $keyword,int $page,int $size)
@@ -211,7 +279,7 @@ class ContestService implements ContestServiceInterface
 
         $data['problem_group_id'] = $groupId;
 
-        return $this->problemService->submitProblem($relation->problem_id,$data);
+        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_num);
     }
 
     function canUserAccessContest(int $userId, int $groupId): bool

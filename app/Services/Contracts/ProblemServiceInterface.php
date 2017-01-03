@@ -56,7 +56,7 @@ interface ProblemServiceInterface
 
     //判题
 
-    function submitProblem(int $problemId,array $data):int;
+    function submitProblem(int $problemId,array $data,int $problemNum = -1):int;
 
     /*
     *状态辅助函数

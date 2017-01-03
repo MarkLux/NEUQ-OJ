@@ -273,11 +273,12 @@ class ProblemService implements ProblemServiceInterface
      * 提交题目
      */
 
-    public function submitProblem(int $problemId,array $data):int
+    public function submitProblem(int $problemId,array $data,int $problemNum = -1):int
     {
         //写入solution和source_code
         //插入顺序必须是先插入source_code获取id然后再给solution不然一定会编译错误。
         //提交成功后返回solution_id否则返回0
+        //题目组中的题目插入时附带题目编号，默认-1
 
         $code = [
             'source' => $data['source_code'],
@@ -288,6 +289,7 @@ class ProblemService implements ProblemServiceInterface
 
         $solutionData = [
             'problem_id' => $problemId,
+            'problem_num' => $problemNum,
             'problem_group_id' => $data['problem_group_id'],
             'user_id' => $data['user_id'],
             'ip' => $data['ip'],

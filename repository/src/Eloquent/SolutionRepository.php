@@ -42,4 +42,17 @@ class SolutionRepository extends AbstractRepository
             ->get($columns);
     }
 
+    //题目组通用排行榜功能
+    public function getRankList(int $groupId)
+    {
+        return $this->model
+            ->where('problem_group_id',$groupId)
+            ->where('problem_num','>','0')
+            ->leftJoin('users','users.id','=','solutions.user_id')
+            ->select('users.id','users.name','solutions.result','solutions.judge_time','solutions.problem_num')
+            //注意时间的选择标准，repo层维护的时间戳并不准确，这里先用judge_time来代替
+            ->orderBy('users.id', 'desc')
+            ->orderBy('solutions.created_at','desc')
+            ->get();
+    }
 }
