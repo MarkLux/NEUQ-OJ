@@ -31,4 +31,6 @@ interface MessageServiceInterface
 
     function getUserMessagesByMult(array $data,array $columns = ['*']);
 
+    function checkUserMessage($messageId);
+
 }

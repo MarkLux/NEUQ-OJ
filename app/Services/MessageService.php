@@ -31,7 +31,7 @@ class MessageService implements MessageServiceInterface
 
     public function getMessage(int $messageId, array $columns = ['*'])
     {
-        return $this->messageRepo->get($messageId,$columns)->fisrt();
+        return $this->messageRepo->get($messageId,$columns)->first();
 
     }
 
@@ -69,7 +69,8 @@ class MessageService implements MessageServiceInterface
             'to_id'=>$to,
             'from_name'=>$data['from_name'],
             'to_name'=>$data['to_name'],
-            'content'=>$data['content']
+            'content'=>$data['content'],
+            'title'=>$data['title']
         ];
         return $this->messageRepo->insertWithId($message);
     }
@@ -82,5 +83,10 @@ class MessageService implements MessageServiceInterface
     public function getUserMessagesByMult(array $data, array $columns = ['*'])
     {
         return $this->messageRepo->getByMult($data,$columns);
+    }
+
+    public function checkUserMessage($messageId)
+    {
+        return $this->messageRepo->update(['is_read'=>1],$messageId);
     }
 }

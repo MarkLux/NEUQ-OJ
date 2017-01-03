@@ -11,8 +11,9 @@ namespace NEUQOJ\Http\Controllers;
 
 
 
-use Dotenv\Validator;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Services\MessageService;
 use NEUQOJ\Services\PrivilegeService;
@@ -22,13 +23,15 @@ class MessageController extends Controller
 {
     public function sendMessage(Request $request,MessageService $messageService)
     {
+
         //表单认证
         $validator = Validator::make($request->all(), [
             'from_id' => 'required',
             'to_id'=>'required',
             'from_name'=>'required|max:100',
             'to_name'=>'required|max:100',
-            'contents'=>'required'
+            'contents'=>'required',
+            'title'=>'required|max:100'
         ]);
 
         if($validator->fails())
@@ -39,7 +42,9 @@ class MessageController extends Controller
         $data = [
             'from_name'=>$request->from_name,
             'to_name'=>$request->to_name,
-            'content'=>$request->contents
+            'content'=>$request->contents,
+            'title'=>$request->title,
+            'is_read'=>0
         ];
 
         if($messageService->sendMessage($request->from_id,$request->to_id,$data))
@@ -49,12 +54,11 @@ class MessageController extends Controller
                 ]
     );
     }
-    public function getUserMessages(Request $request,MessageService $messageService)
+    public function getUserMessages(Request $request,MessageService $messageService,int $userId)
     {
         $validator = Validator::make($request->all(),[
            'page'=>'required|min:1',
             'size'=>'required|min:1',
-            'user_id'=>'required'
         ]);
         if($validator->fails())
         {
@@ -62,9 +66,9 @@ class MessageController extends Controller
             throw new FormValidatorException($data);
         }
         $message = null;
-        //只取了发送人信息和内容
-        $message = $messageService->getUserMessages($request->user_id,$request->page,$request->size,
-            ['id','from_id','from_name','content']);
+        //只取了发送人信息和标题
+        $message = $messageService->getUserMessages($userId,$request->page,$request->size,
+            ['id','is_read','from_id','from_name','title','created_at']);
 
             return response()->json(
                 [
@@ -76,12 +80,11 @@ class MessageController extends Controller
 
     }
 
-    public function getUserUnreadMessages(Request $request,MessageService $messageService)
+    public function getUserUnreadMessages(Request $request,MessageService $messageService,int $userId)
     {
         $validator = Validator::make($request->all(),[
             'page'=>'required|min:1',
             'size'=>'required|min:1',
-            'user_id'=>'required'
         ]);
         if($validator->fails())
         {
@@ -90,8 +93,8 @@ class MessageController extends Controller
         }
 
         $message =null;
-        $message = $messageService->getUnreadMessages($request->user_id,$request->page,$request->size,
-            ['id','from_id','from_name','content']);
+        $message = $messageService->getUnreadMessages($userId,$request->page,$request->size,
+            ['id','from_id','from_name','title','created_at']);
 
             return response()->json(
                 [
@@ -103,20 +106,13 @@ class MessageController extends Controller
 
     }
 
-    public function getUserMessageCount(Request $request,MessageService $messageService)
+    public function getUserMessageCount(MessageService $messageService,int $userId)
     {
-        $validator = Validator::make($request->all(),[
-            'user_id'=>'required'
-        ]);
-        if($validator->fails())
-        {
-            $data = $validator->getMessageBag()->all();
-            throw new FormValidatorException($data);
-        }
+
 
         $messageCount = 0;
 
-        $messageCount = $messageService->getUserMessageCount($request->user_id);
+        $messageCount = $messageService->getUserMessageCount($userId);
 
         return response()->json(
             [
@@ -127,21 +123,12 @@ class MessageController extends Controller
 
     }
 
-    public function getUserUnreadMessageCount(Request $request,MessageService $messageService)
+    public function getUserUnreadMessageCount(MessageService $messageService,int $userId)
     {
-        $validator = Validator::make($request->all(),[
-            'user_id'=>'required'
-        ]);
-
-        if($validator->fails())
-        {
-            $data = $validator->getMessageBag()->all();
-            throw new FormValidatorException($data);
-        }
 
         $messageCount = 0;
 
-        $messageCount = $messageService->getUnreadMessagesCount($request->user_id);
+        $messageCount = $messageService->getUnreadMessagesCount($userId);
 
         return response()->json(
             [
@@ -200,5 +187,17 @@ class MessageController extends Controller
             );
     }
 
+    //点开某条消息
+    public function checkUserMessage($messageId,MessageService $messageService)
+    {
+        $message = $messageService->getMessage($messageId,['from_name','from_id','content','title']);
 
+        if($messageService->checkUserMessage($messageId))//更改状态
+            return response()->json(
+                [
+                    'code'=>0,
+                    'message'=>$message
+                ]
+            ) ;
+    }
 }

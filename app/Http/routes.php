@@ -24,6 +24,7 @@ include 'Routes/Problem.php';
 
 include 'Routes/Tag.php';
 
+include 'Routes/Message.php';
 Route::get('/', function () {
     return 'here is the main page!!';
 });

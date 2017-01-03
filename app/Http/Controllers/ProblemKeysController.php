@@ -10,6 +10,7 @@ namespace NEUQOJ\Http\Controllers;
 
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Services\ProblemKeysService;
 use NEUQOJ\Services\RoleService;
