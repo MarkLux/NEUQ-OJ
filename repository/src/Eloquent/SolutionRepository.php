@@ -49,7 +49,7 @@ class SolutionRepository extends AbstractRepository
             ->where('problem_group_id',$groupId)
             ->where('problem_num','>','0')
             ->leftJoin('users','users.id','=','solutions.user_id')
-            ->select('users.id','users.name','solutions.result','solutions.judge_time','solutions.problem_num')
+            ->select('users.id','users.name','solutions.result','solutions.judgetime','solutions.problem_num')
             //注意时间的选择标准，repo层维护的时间戳并不准确，这里先用judge_time来代替
             ->orderBy('users.id', 'desc')
             ->orderBy('solutions.created_at','desc')
