@@ -20,12 +20,12 @@ class MessageRepository extends  AbstractRepository
 
     function getMessageCount($userId)
     {
-        return $this->model()->where('to_id',$userId)->count();
+        return $this->model->where('to_id',$userId)->count();
     }
 
     function getUnreadMessageCount($userId)
     {
-        return $this->model()->where(['to_id'=>$userId,'is_read'=>0])->count();
+        return $this->model->where(['to_id'=>$userId,'is_read'=>0])->count();
     }
     use InsertWithIdTrait;
 }

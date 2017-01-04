@@ -117,7 +117,7 @@ class MessageController extends Controller
         return response()->json(
             [
                 'code'=>0,
-                'data'=>$messageCount
+                'count'=>$messageCount
             ]
         );
 
@@ -133,28 +133,19 @@ class MessageController extends Controller
         return response()->json(
             [
                 'code'=>0,
-                'data'=>$messageCount
+                'count'=>$messageCount
             ]
         );
     }
 
-    public function deleteOwnMessage(Request $request,MessageService $messageService)
+    public function deleteOwnMessage(MessageService $messageService,int $UserId,int $mId)
     {
-        $validator = Validator::make($request->all(),[
-            'user_id'=>'required',
-            'message_id'=>'required'
-        ]);
 
-        if($validator->fails())
-        {
-            $data = $validator->getMessageBag()->all();
-            throw new FormValidatorException($data);
-        }
 
-        if (!($messageService->getUserMessagesByMult(['to_id'=>$request->user_id,'id'=>$request->message_id],['id'])))
+        if (!($messageService->getUserMessagesByMult(['to_id'=>$UserId,'id'=>$mId],['id'])))
             throw new NoPermissionException();
 
-        if($messageService->deleteMessage($request->user_id,$request->message_id))
+        if($messageService->deleteMessage($UserId,$mId))
             return response()->json(
                 [
                     'code'=>0
@@ -162,11 +153,9 @@ class MessageController extends Controller
             );
     }
 
-    public function deleteMessage(Request $request,MessageService $messageService,RoleService $roleService)
+    public function deleteMessage(Request $request,MessageService $messageService,RoleService $roleService,int $userId,int $messageId)
     {
         $validator = Validator::make($request->all(),[
-            'user_id'=>'required',
-            'message_id'=>'required',
             'operator_id'=>'required'
         ]);
 
@@ -179,7 +168,7 @@ class MessageController extends Controller
         if (!($roleService->hasRole($request->opreator_id,'admin')))
             throw new NoPermissionException();
 
-        if($messageService->deleteMessage($request->user_id,$request->message_id))
+        if($messageService->deleteMessage($userId,$messageId))
             return response()->json(
                 [
                     'code'=>0
