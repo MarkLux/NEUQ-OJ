@@ -188,7 +188,8 @@ class UserService implements UserServiceInterface
         } elseif(Utils::IsEmail($data['identifier'])) {
             $user = $this->getUserBy('email',$data['identifier']);
         } else {
-            throw new FormValidatorException(["Invalid Identifier Format"]);
+            //添加用户名登陆方式
+            $user = $this->getUserBy('name',$data['identifier']);
         }
 
         if($user == null)
