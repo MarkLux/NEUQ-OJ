@@ -219,4 +219,9 @@ class TagsController extends Controller
                 ]
             );
     }
+
+    public function getSameSourceProblem(TagsService $tagsService)
+    {
+
+    }
 }

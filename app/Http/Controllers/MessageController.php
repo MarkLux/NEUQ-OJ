@@ -54,20 +54,12 @@ class MessageController extends Controller
                 ]
     );
     }
-    public function getUserMessages(Request $request,MessageService $messageService,int $userId)
+    public function getUserMessages(MessageService $messageService,int $page,int $size,int $userId)
     {
-        $validator = Validator::make($request->all(),[
-           'page'=>'required|min:1',
-            'size'=>'required|min:1',
-        ]);
-        if($validator->fails())
-        {
-            $data = $validator->getMessageBag()->all();
-            throw new FormValidatorException($data);
-        }
+
         $message = null;
         //只取了发送人信息和标题
-        $message = $messageService->getUserMessages($userId,$request->page,$request->size,
+        $message = $messageService->getUserMessages($userId,$page,$size,
             ['id','is_read','from_id','from_name','title','created_at']);
 
             return response()->json(
@@ -80,17 +72,9 @@ class MessageController extends Controller
 
     }
 
-    public function getUserUnreadMessages(Request $request,MessageService $messageService,int $userId)
+    public function getUserUnreadMessages(Request $request,MessageService $messageService,int $page,int $size ,int $userId)
     {
-        $validator = Validator::make($request->all(),[
-            'page'=>'required|min:1',
-            'size'=>'required|min:1',
-        ]);
-        if($validator->fails())
-        {
-            $data = $validator->getMessageBag()->all();
-            throw new FormValidatorException($data);
-        }
+
 
         $message =null;
         $message = $messageService->getUnreadMessages($userId,$request->page,$request->size,
@@ -153,19 +137,11 @@ class MessageController extends Controller
             );
     }
 
-    public function deleteMessage(Request $request,MessageService $messageService,RoleService $roleService,int $userId,int $messageId)
+    public function deleteMessage(MessageService $messageService,RoleService $roleService,int $operatorId ,int $userId,int $messageId)
     {
-        $validator = Validator::make($request->all(),[
-            'operator_id'=>'required'
-        ]);
 
-        if($validator->fails())
-        {
-            $data = $validator->getMessageBag()->all();
-            throw new FormValidatorException($data);
-        }
         //管理员才可以删除别人的消息
-        if (!($roleService->hasRole($request->opreator_id,'admin')))
+        if (!($roleService->hasRole($operatorId,'admin')))
             throw new NoPermissionException();
 
         if($messageService->deleteMessage($userId,$messageId))

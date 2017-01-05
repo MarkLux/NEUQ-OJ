@@ -35,4 +35,5 @@ interface TagsServiceInterface
 
     function getSameTagProblemList(int $tagId,int $page,int $size);//获取标签相同的题目
 
+    function getSameSourceProblemList(string $Source,int $page,int $size);//获取相同来源的题目
 }
