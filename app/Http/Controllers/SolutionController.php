@@ -40,12 +40,13 @@ class SolutionController extends Controller
         $size = $request->input('size',15);
 
         $data = $this->solutionService->getAllSolutions($page,$size);
-        $total_count = $this->solutionService->getSolutionCount();
+//        $total_count = $this->solutionService->getSolutionCount();
+        //数据量太大，如果统计数据总数会导致严重延迟
 
         return response()->json([
             'code' => 0,
-            'data' => $data,
-            'total_count' => $total_count
+            'data' => $data
+//            'total_count' => $total_count
         ]);
     }
 
