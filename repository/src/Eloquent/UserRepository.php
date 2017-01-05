@@ -9,10 +9,14 @@
 namespace NEUQOJ\Repository\Eloquent;
 
 
+use NEUQOJ\Repository\Traits\InsertWithIdTrait;
+
 class UserRepository extends AbstractRepository
 {
     function model()
     {
         return "NEUQOJ\Repository\Models\User";
     }
+
+    use InsertWithIdTrait;
 }

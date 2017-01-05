@@ -13,9 +13,9 @@ class CreateProblemGroupAdmissionsTable extends Migration
     public function up()
     {
         Schema::create('problem_group_admissions', function (Blueprint $table) {
+            $table->bigIncrements('id');
             $table->bigInteger('problem_group_id');
-            $table->bigInteger('user_group_id');
-            $table->primary(['problem_group_id','user_group_id']);
+            $table->bigInteger('user_id');
             $table->timestamps();
         });
     }

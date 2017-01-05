@@ -19,14 +19,20 @@ interface ProblemServiceInterface
 
     //获取
 
-    function getProblemById(int $problemId);
+    function getTotalCount():int;
 
-    function getProblemBy(string $param,$value);
+    function getTotalPublicCount():int;
 
-    function getProblemByMult(array $condition);
+    function getProblems(int $userId = -1,int $page,int $size);
+
+    function getProblemById(int $problemId,array $columns = ['*']);
+
+    function getProblemBy(string $param,$value,array $columns = ['*']);
+
+    function getProblemByMult(array $condition,array $columns = ['*']);
 
     //以文件形式输出测试输入输出等数据
-    function getRunDatas(int $problemId);
+    function getRunDataPath(int $problemId,string $name);
 
     //查找
     //宽泛检索
@@ -34,11 +40,11 @@ interface ProblemServiceInterface
 
     function searchProblemsCount(string $likeName):int;
 
-    function searchProblems(string $likeName,int $start,int $size);
+    function searchProblems(int $userId=-1,string $likeName,int $start,int $size);
 
     //创建
 
-    function addProblem(array $problemData,array $testData):bool;
+    function addProblem(User $user,array $problemData,array $testData):int;
 
    //修改
 
@@ -50,9 +56,7 @@ interface ProblemServiceInterface
 
     //判题
 
-    function submitProlem(int $problemId,array $data);
-
-    function getProblemStatus(int $userId,int $problemId);
+    function submitProblem(int $problemId,array $data,int $problemNum = -1):int;
 
     /*
     *状态辅助函数
@@ -60,41 +64,5 @@ interface ProblemServiceInterface
 
     function isProblemExist(int $problemId):bool;
 
-    function isProblemHasKey(int $problemId):bool;
-
-    function isUserAcProblem(int $userId,int $problemId):bool;
-
-    /*
-    *讨论版
-    */
-
-    function getProblemDiscussion(int $problemId);
-
-    /*
-    *tag
-    */
-
-    function addTagToProblem(int $problemId,int $tagId);
-
-    function deleteTagFromProblem(int $problemId,int $tagId);
-
-    //注意检查unique
-    function addTag(string $tagName);
-
-    function deleteTag(int $tagId);
-
-    function getTagId(string $tagname);
-
-    function getTagName(int $tagId);
-
-    /**
-     * 题解problem_key
-     */
-
-    function addProblemKey(int $problemId,array $data);
-
-    function updateProblemKey(int $problemId,array $data);
-
-    function deleteProblemKey(int $problemId);
-
+    function canUserAccessProblem(int $userId,int $problemId):bool;
 }

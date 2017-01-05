@@ -9,38 +9,51 @@
 namespace NEUQOJ\Services;
 
 
+use League\CommonMark\CommonMarkConverter;
+use NEUQOJ\Repository\Eloquent\ProblemTagRelationRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
+use NEUQOJ\Repository\Eloquent\SourceCodeRepository;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Services\Contracts\ProblemServiceInterface;
 use Illuminate\Support\Facades\File;
 use NEUQOJ\Repository\Eloquent\ProblemRepository;
+use Illuminate\Support\Facades\DB;
 
-class ProblemService
+class ProblemService implements ProblemServiceInterface
 {
 
     private $problemRepo;
     private $solutionRepo;
+    private $sourceRepo;
     private $deletionService;
+    private $tagRelationRepo;
+    private $converter;
+
+    //获取对应题目数据的磁盘储存路径
 
     private function getPath(int $problemId):string
     {
         return '/home/judge/data/'.$problemId.'/';
     }
 
-    function __construct(
+    public function __construct(
         ProblemRepository $problemRepository,SolutionRepository $solutionRepository,
-        DeletionService $deletionService
+        DeletionService $deletionService,SourceCodeRepository $sourceCodeRepository,
+        ProblemTagRelationRepository $tagRelationRepository
     )
     {
         $this->problemRepo = $problemRepository;
         $this->solutionRepo = $solutionRepository;
         $this->deletionService = $deletionService;
+        $this->sourceRepo = $sourceCodeRepository;
+        $this->tagRelationRepo = $tagRelationRepository;
+        $this->converter = app('CommonMarkService');
     }
 
     /**
      * 添加题目
      */
-    function addProblem(User $user,array $problemData,array $testData):int
+    public function addProblem(User $user,array $problemData,array $testData):int
     {
         $problemData['creator_id'] = $user->id;
         $problemData['creator_name'] = $user->name;
@@ -72,31 +85,176 @@ class ProblemService
      *获取题目以及状态辅助函数
      */
 
-    function getProblemById(int $problemId)
+    public function canUserAccessProblem(int $userId, int $problemId): bool
     {
-       return $this->problemRepo->get($problemId)->first();
+        $problem = $this->problemRepo->get($problemId,['is_public','creator_id'])->first();
+        if($problem == null) return false;
+        if($problem->is_public == 0&&$problem->creator_id != $userId) return false;
+        return true;
     }
 
-    function getProblemBy(string $param, $value)
+    public function getTotalPublicCount():int
     {
-        return $this->problemRepo->getBy($param,$value)->first();
+        return $this->problemRepo->getTotalPublicCount();
     }
 
-    function getProblemByMult(array $condition)
+    public function getTotalCount():int
     {
-        return $this->problemRepo->getByMult($condition)->first();
+        return $this->problemRepo->getTotalCount();
     }
 
-    function isProblemExist(int $problemId): bool
+    public function getProblems(int $userId = -1,int $page,int $size)
     {
-        return $this->problemRepo->get($problemId)->first()!=null;
+        $problems = $this->problemRepo->paginate($page,$size,['is_public'=>1],['id','title','difficulty','source','submit','accepted','is_public','created_at','updated_at'])->toArray();
+
+        $problemIds = [];
+
+        foreach ($problems as $problem)
+        {
+            $problemIds[] = $problem['id'];
+        }
+
+        $tagRelations = $this->tagRelationRepo->getIn('problem_id',$problemIds,['problem_id','tag_id','tag_title'])->toArray();
+
+        //组织题目标签信息
+
+        $tags = [];
+
+        foreach ($tagRelations as $tagRelation)
+        {
+            $tags[$tagRelation['problem_id']][] = $tagRelation;
+        }//合并
+
+        //组织用户解题情况
+        //注意：没有使用join的方法而是进行了3次查询 影响了效率
+
+        if($userId != -1)
+        {
+            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
+            $status = [];
+
+            foreach ($userStatuses as $userStatus)
+            {
+                $status[$userStatus['problem_id']] = $userStatus['result'];
+            }
+        }
+        if($userId == -1) {
+            foreach ($problems as &$problem) {
+                if (isset($tags[$problem['id']]))
+                    $problem['tags'] = $tags[$problem['id']];
+                else
+                    $problem['tags'] = null;
+            }
+        }else{
+            foreach ($problems as &$problem) {
+                if (isset($tags[$problem['id']]))
+                    $problem['tags'] = $tags[$problem['id']];
+                else
+                    $problem['tags'] = null;
+                if(isset($status[$problem['id']]))
+                    $problem['user_status'] = $status[$problem['id']]==4?'Y':'N';
+                else
+                    $problem['user_status'] = null;
+            }
+        }
+
+        return $problems;
+    }
+
+    //组织数据 转化md为markdown
+
+    public function getProblemById(int $problemId,array $columns = ['*'])
+    {
+        //join过的表不能再简单的用原表主键找   
+        $problems = $this->problemRepo->getBy('problems.id',$problemId,$columns)->toArray();
+        //拿到的全部的数据
+
+        if(count($problems) == 0)
+            return false;
+
+        //重新组装
+        $data = $problems[0];
+        $data['tags'] = [];
+
+        if(count($problems)>1)
+        {
+            foreach ($problems as $problem)
+                $data['tags'][] = [
+                    'tag_id' => $problem['tag_id'],
+                    'tag_title' => $problem['tag_title']
+                ];
+
+        }
+        else
+        {
+            if($data['tag_id']!=null)
+                $data['tags'][] = [
+                    'tag_id' => $data['tag_id'],
+                    'tag_title' => $data['tag_title']
+                ];
+        }
+        unset($data['tag_id']);
+        unset($data['tag_title']);
+
+        //转换markdown内容
+        $data['description'] = $this->converter->convertToHtml($data['description']);
+        $data['input'] = $this->converter->convertToHtml($data['input']);
+        $data['output'] = $this->converter->convertToHtml($data['output']);
+
+        return $data;
+    }
+
+    public function getProblemBy(string $param, $value,array $columns = ['*'])
+    {
+        $problems = $this->problemRepo->getBy($param,$value,$columns)->toArray();
+        //拿到的全部的数据
+
+        if(empty($problems))
+            return false;
+
+        //重新组装
+        $data = $problems[0];
+        $data['tags'] = [];
+
+        if(count($problems)>1)
+        {
+            foreach ($problems as $problem)
+                $data['tags'][] = [
+                    'tag_id' => $problem['tag_id'],
+                    'tag_title' => $problem['tag_title']
+                ];
+        }
+        else
+        {
+            if($data['tag_id']!=null)
+                $data['tags'] = [
+                    'tag_id' => $data['tag_id'],
+                    'tag_title' => $data['tag_title']
+                ];
+        }
+
+        unset($data['tag_id']);
+        unset($data['tag_title']);
+
+        return $data;
+    }
+
+    public function getProblemByMult(array $condition,array $columns = ['*'])
+    {
+        //缺少组装
+        return $this->problemRepo->getByMult($condition,$columns)->first()->toArray();
+    }
+
+    public function isProblemExist(int $problemId): bool
+    {
+        return $this->problemRepo->get($problemId,['id'])->first()!=null;
     }
 
     /**
      * 修改题目信息
      */
 
-    function updateProblem(int $problemId, array $problemData,array $testData):bool
+    public function updateProblem(int $problemId, array $problemData,array $testData):bool
     {
         //数据必须经过过滤 默认不更新testData（耗时）
         if($this->problemRepo->update($problemData,$problemId)!=1)
@@ -122,22 +280,191 @@ class ProblemService
     }
 
     /**
+     * 提交题目
+     */
+
+    public function submitProblem(int $problemId,array $data,int $problemNum = -1):int
+    {
+        //写入solution和source_code
+        //插入顺序必须是先插入source_code获取id然后再给solution不然一定会编译错误。
+        //提交成功后返回solution_id否则返回0
+        //题目组中的题目插入时附带题目编号，默认-1
+
+        $code = [
+            'source' => $data['source_code'],
+            'private' => $data['private']
+        ];
+
+        $solutionId = 0;
+
+        $solutionData = [
+            'problem_id' => $problemId,
+            'problem_num' => $problemNum,
+            'problem_group_id' => $data['problem_group_id'],
+            'user_id' => $data['user_id'],
+            'ip' => $data['ip'],
+            'language' => $data['language'],
+            'result' => 0,
+            'code_length' => $data['code_length']
+        ];
+
+        //开启事务处理
+
+        DB::transaction(function ()use(&$solutionId,$code,$solutionData){
+            //请注意！如果要在闭包里改变外部变量的值必须传引用
+            $solutionId = $this->sourceRepo->insertWithId($code);
+            $solutionData['id'] = $solutionId;
+            $this->solutionRepo->insert($solutionData);
+        });
+
+
+        return $solutionId;
+    }
+
+    /**
      * 删除题目（软删除并加入日志）
      */
 
-    function deleteProblem(User $user,int $problemId): bool
+    public function deleteProblem(User $user,int $problemId): bool
     {
+        $flag = true;
+
         //TODO: 删除一道题目会涉及到很多其他的表，随着以后系统的扩充慢慢完善这个方法的内容
+        DB::transaction(function () use($user,$problemId,&$flag){
+            //删除题目表
+            if($this->problemRepo->deleteWhere(['id'=>$problemId])!=1) $flag = false;
+            //创建删除日志的条目
+            $data = [
+                'table_name' => 'Problem',
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'key' => $problemId
+            ];
 
+            if(!$this->deletionService->createDeletion($data)) $flag = false;
+
+            //包装tag关系信息
+            $tagRelations = $this->tagRelationRepo->getBy('problem_id',$problemId,['id']);
+            //创建删除记录
+            if($tagRelations->count()>0)
+            {
+                $data = [];
+
+                foreach ($tagRelations as $tagRelation)
+                {
+                    array_push($data,[
+                        'table_name' => 'ProblemTagRelation',
+                        'user_id' => $user->id,
+                        'user_name' => $user->name,
+                        'key' => $tagRelation->id
+                    ]);
+                }
+
+                $this->deletionService->createDeletions($data);
+                //删除tag关系
+                $this->tagRelationRepo->deleteWhere(['problem_id' => $problemId]);
+            }
+
+        });
+
+        return $flag;
     }
 
-    function searchProblemsCount(string $likeName): int
+    /**
+     * 搜索
+     */
+
+    public function searchProblemsCount(string $likeName): int
     {
-        // TODO: Implement searchProblemsCount() method.
+       $pattern = "%".$likeName."%";
+       return $this->problemRepo->getWhereLikeCount($pattern);
     }
 
-    function searchProblems(string $likeName, int $start, int $size)
+    public function searchProblems(int $userId = -1,string $likeName, int $start, int $size)
     {
-        // TODO: Implement searchProblems() method.
+        $pattern = "%".$likeName."%";
+
+        $problems = $this->problemRepo->getWhereLike($pattern,$start,$size);
+
+        $problemIds = [];
+
+        foreach ($problems as $problem)
+        {
+            $problemIds[] = $problem['id'];
+        }
+
+        $tagRelations = $this->tagRelationRepo->getIn('problem_id',$problemIds,['problem_id','tag_id','tag_title'])->toArray();
+
+        //组织题目标签信息
+
+        $tags = [];
+
+        foreach ($tagRelations as $tagRelation)
+        {
+            $tags[$tagRelation['problem_id']][] = $tagRelation;
+        }//合并
+
+        //组织用户解题情况
+
+        if($userId != -1)
+        {
+            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
+            $status = [];
+
+            foreach ($userStatuses as $userStatus)
+            {
+                $status[$userStatus['problem_id']] = $userStatus['result'];
+            }
+        }
+        if($userId == -1) {
+            foreach ($problems as &$problem) {
+                if (isset($tags[$problem['id']]))
+                    $problem['tags'] = $tags[$problem['id']];
+                else
+                    $problem['tags'] = null;
+            }
+        }else{
+            foreach ($problems as &$problem) {
+                if (isset($tags[$problem['id']]))
+                    $problem['tags'] = $tags[$problem['id']];
+                else
+                    $problem['tags'] = null;
+                if(isset($status[$problem['id']]))
+                    $problem['user_status'] = $status[$problem['id']]==4?'Y':'N';
+                else
+                    $problem['user_status'] = null;
+            }
+        }
+
+        return $problems;
+    }
+
+    /**
+     * 以文件形式获取题解数据
+     */
+
+    public function getRunDataPath(int $problemId,string $name)
+    {
+        $path = $this->getPath($problemId);
+
+        if(File::isDirectory($path))
+        {
+            switch ($name)
+            {
+                case "test_in":
+                    return $path."test.in";
+                case "test_out":
+                    return $path."test.out";
+                case "sample_in":
+                    return $path."sample.in";
+                case "sample_out":
+                    return $path."sample.out";
+                default:
+                    return null;
+            }
+
+        }
+
+        return null;
     }
 }

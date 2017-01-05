@@ -23,15 +23,18 @@ class CreateProblemsTable extends Migration
 //            $table->text('output');
             $table->text('sample_input')->nullable();
             $table->text('sample_output');
+            $table->text('input')->nullable();
+            $table->text('output')->nullable();
             $table->string('spj',1);
             $table->text('hint')->nullable();
             $table->string('source',100)->nullable();
             $table->integer('time_limit');
             $table->integer('memory_limit');
-            $table->integer('accepted')->nullable();
-            $table->integer('submit')->nullable();
+            $table->integer('accepted')->default(0);
+            $table->integer('submit')->default(0);
             $table->boolean('is_public');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

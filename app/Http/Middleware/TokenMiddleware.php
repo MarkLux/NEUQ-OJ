@@ -41,7 +41,7 @@ class TokenMiddleware
 
         $token = $this->tokenRepository->getBy('token',$tokenStr)->first();
 
-        if($token == null)
+        if($token === null)
             throw new NeedLoginException();
 
         if($token->expires_at < $time)

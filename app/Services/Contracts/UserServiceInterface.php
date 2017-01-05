@@ -41,9 +41,11 @@ interface UserServiceInterface
     function isUserExist(array $data):bool;
     //内部使用一次Where查询
 
-    function register(array $data):bool;
+    function register(array $data):int;
 
     function login(array $data);
+
+    function loginUser(int $userId,string $ip);
 
     function getUserRole(int $userId);
 
