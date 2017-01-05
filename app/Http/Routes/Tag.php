@@ -13,5 +13,5 @@ Route::post('/tag/createProblemTag','TagsController@createProblemTag');
 Route::post('/tag/deleteProblemTag','TagsController@deleteProblemTag');
 Route::post('/tag/updateProblemTag','TagsController@updateProblemTag');
 Route::post('/tag/giveTagTo','TagsController@giveTagTo');
-Route::get('/tag/getSameTag/{page}/{size}/{tagId}','TagsController@getSameTag');
-Route::get('/tag/getSameTag/{page}/{size}/{S}','TagsController@getSameTag');
+Route::get('/tag/getSameTagProblem','TagsController@getSameTagProblem');
+Route::get('/tag/getSameSourceProblem','TagsController@getSameSourceProblem');

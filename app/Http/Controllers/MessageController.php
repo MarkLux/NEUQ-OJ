@@ -54,8 +54,24 @@ class MessageController extends Controller
                 ]
     );
     }
-    public function getUserMessages(MessageService $messageService,int $page,int $size,int $userId)
+    public function getUserMessages(Request $request ,MessageService $messageService)
     {
+        //表单认证
+        $validator = Validator::make($request->all(), [
+            'userId'=>'required',
+            'page' => 'integer|min:1',
+            'size'=>'integer|min:1',
+        ]);
+
+        if($validator->fails())
+        {
+            $data = $validator->getMessageBag()->all();
+            throw new FormValidatorException($data);
+        }
+
+        $userId = $request->input('userId');
+        $page = $request->input('page',1);
+        $size = $request->input('size',20);
 
         $message = null;
         //只取了发送人信息和标题
@@ -72,12 +88,27 @@ class MessageController extends Controller
 
     }
 
-    public function getUserUnreadMessages(Request $request,MessageService $messageService,int $page,int $size ,int $userId)
+    public function getUserUnreadMessages(Request $request,MessageService $messageService)
     {
 
+        //表单认证
+        $validator = Validator::make($request->all(), [
+            'userId'=>'required',
+            'page' => 'integer|min:1',
+            'size'=>'integer|min:1',
+        ]);
 
+        if($validator->fails())
+        {
+            $data = $validator->getMessageBag()->all();
+            throw new FormValidatorException($data);
+        }
+
+        $userId = $request->input('userId');
+        $page = $request->input('page',1);
+        $size = $request->input('size',20);
         $message =null;
-        $message = $messageService->getUnreadMessages($userId,$request->page,$request->size,
+        $message = $messageService->getUnreadMessages($userId,$page,$size,
             ['id','from_id','from_name','title','created_at']);
 
             return response()->json(
@@ -122,14 +153,29 @@ class MessageController extends Controller
         );
     }
 
-    public function deleteOwnMessage(MessageService $messageService,int $UserId,int $mId)
+    public function deleteOwnMessage(Request $request ,MessageService $messageService)
     {
 
+        //表单认证
+        $validator = Validator::make($request->all(), [
+            'userId' => 'integer|required',
+            'mId'=>'integer|required'
+        ]);
 
-        if (!($messageService->getUserMessagesByMult(['to_id'=>$UserId,'id'=>$mId],['id'])))
+        if($validator->fails())
+        {
+            $data = $validator->getMessageBag()->all();
+            throw new FormValidatorException($data);
+        }
+
+        $userId = $request->input('userId');
+        $mId = $request->input('mId');
+
+
+        if (!($messageService->getUserMessagesByMult(['to_id'=>$userId,'id'=>$mId],['id'])))
             throw new NoPermissionException();
 
-        if($messageService->deleteMessage($UserId,$mId))
+        if($messageService->deleteMessage($userId,$mId))
             return response()->json(
                 [
                     'code'=>0
@@ -137,9 +183,24 @@ class MessageController extends Controller
             );
     }
 
-    public function deleteMessage(MessageService $messageService,RoleService $roleService,int $operatorId ,int $userId,int $messageId)
+    public function deleteMessage(Request $request,MessageService $messageService,RoleService $roleService)
     {
+        //表单认证
+        $validator = Validator::make($request->all(), [
+            'userId' => 'integer|required',
+            'mId'=>'integer|required',
+            'operatorId'=>'integer|required',
+        ]);
 
+        if($validator->fails())
+        {
+            $data = $validator->getMessageBag()->all();
+            throw new FormValidatorException($data);
+        }
+
+        $messageId = $request->input('mId');
+        $userId = $request->input('userId');
+        $operatorId = $request->input('operatorId');
         //管理员才可以删除别人的消息
         if (!($roleService->hasRole($operatorId,'admin')))
             throw new NoPermissionException();

@@ -12,6 +12,7 @@ namespace NEUQOJ\Services;
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Exceptions\TagsExistExceptios;
 use NEUQOJ\Exceptions\TagsUnchangedExceptions;
+use NEUQOJ\Repository\Eloquent\ProblemRepository;
 use NEUQOJ\Repository\Eloquent\ProblemTagRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemTagRepository;
 use NEUQOJ\Services\Contracts\TagsServiceInterface;
@@ -21,9 +22,13 @@ class TagsService implements TagsServiceInterface
     private $problemTagRepo;
     private $problemTagRelationRepo;
     private $problemService;
+    private $problemRepo;
 
-    public function __construct(ProblemTagRepository $problemTagRepository,ProblemTagRelationRepository $problemTagRelationRepository,ProblemService $problemService)
+    public function __construct(ProblemTagRepository $problemTagRepository,
+                                ProblemTagRelationRepository $problemTagRelationRepository,
+                                ProblemService $problemService,ProblemRepository $problemRepository)
     {
+        $this->problemRepo = $problemRepository;
         $this->problemTagRepo = $problemTagRepository;
         $this->problemTagRelationRepo = $problemTagRelationRepository;
         $this->problemService = $problemService;
@@ -196,5 +201,9 @@ class TagsService implements TagsServiceInterface
         return $this->problemTagRelationRepo->paginate($page,$size,['tag_id'=>$tagId],['problem_id','problem_title','tag_title','tag_id']);
     }
 
-
+    public function getSameSourceProblemList(string $Source, int $page, int $size)
+    {
+        return $this->problemRepo->paginate($page,$size,['source'=>$Source],['problem_id','problem_title','source','submit','accepted'
+            ,'is_public','created_at','tags']);
+    }
 }

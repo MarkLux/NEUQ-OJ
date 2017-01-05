@@ -200,9 +200,9 @@ class TagsController extends Controller
     {
 
         $validator = Validator::make($request->all(),[
-            'tagId'=>'required',
-            'size'=>'required|min:1',
-            'page'=>'required|min:1'
+            'tagId'=>'integer|required',
+            'size'=>'integer|min:1',
+            'page'=>'integer|min:1'
         ]);
 
         if($validator->fails())
@@ -211,7 +211,11 @@ class TagsController extends Controller
             throw new FormValidatorException($data);
         }
 
-        if($data = $tagsService->getSameTagProblemList($request->tagId,$request->page,$request->size))
+        $tagId = $request->input('tagId');
+        $size = $request->input('size',20);
+        $page = $request->input('page',1);
+
+        if($data = $tagsService->getSameTagProblemList($tagId,$page,$size))
             return response()->json(
                 [
                     'code'=>0,
@@ -220,8 +224,31 @@ class TagsController extends Controller
             );
     }
 
-    public function getSameSourceProblem(TagsService $tagsService)
+    public function getSameSourceProblem(Request $request,TagsService $tagsService)
     {
+        $validator = Validator::make($request->all(),[
+            'source'=>'required',
+            'size'=>'integer|min:1',
+            'page'=>'integer|min:1'
+        ]);
+
+        if($validator->fails())
+        {
+            $data = $validator->getMessageBag()->all();
+            throw new FormValidatorException($data);
+        }
+
+        $source = $request->input('source');
+        $size = $request->input('size',20);
+        $page = $request->input('page',1);
+
+        if($data = $tagsService->getSameSourceProblemList($source,$page,$size))
+            return response()->json(
+                [
+                    'code'=>0,
+                    'data'=>$data
+                ]
+            );
 
     }
 }
