@@ -16,6 +16,7 @@ use NEUQOJ\Services\Contracts\ContestServiceInterface;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
+use Illuminate\Support\Facades\Redis;
 
 class ContestService implements ContestServiceInterface
 {
@@ -170,8 +171,6 @@ class ContestService implements ContestServiceInterface
 
         //TODO 使用redis缓存数据
 
-
-
         //正常mysql查询方法：
         $solutions = $this->solutionRepo->getRankList($groupId)->toArray();
 
@@ -201,7 +200,7 @@ class ContestService implements ContestServiceInterface
                     $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']] = strtotime($solution['created_at']) - strtotime($group->start_time);
                     $rank[$userCnt]['solved']++;
                 }
-                elseif($solution['result' > 4]) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
+                elseif($solution['result'] > 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
                     $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
 
                 //刷新总时间，注意所有时间全部以秒级正整数方式保存,错题的罚时只在题目成功ac之后才计算

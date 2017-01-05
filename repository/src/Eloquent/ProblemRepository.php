@@ -128,6 +128,7 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
             ->orWhere('problems.source','like',$pattern)
             ->orWhere('problems.creator_name','like',$pattern)
             ->orWhere('problem_tag_relations.tag_title','like',$pattern)
+            ->orWhere('problems.id','like',$pattern)
             ->get();
 
         if($problems->first() == null)
@@ -159,6 +160,7 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
                 ->where('problems.title','like',$pattern)
                 ->orWhere('problems.source','like',$pattern)
                 ->orWhere('problems.creator_name','like',$pattern)
+                ->orWhere('problems.id','like',$pattern)
                 ->orWhere('problem_tag_relations.tag_title','like',$pattern)
                 ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.accepted',
                     'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',

@@ -23,6 +23,23 @@ class SolutionRepository extends AbstractRepository
         return $this->model->all()->count();
     }
 
+    public function getAllSolutions(int $page = 1,int $size = 15,array $param = [],array $columns = ['*'])
+    {
+        if(!empty($param))
+            return $this->model
+                ->where($param)
+                ->orderBy('created_at','desc')
+                ->skip($size * --$page)
+                ->take($size)
+                ->get($columns);
+        else
+            return $this->model
+                ->orderBy('created_at','desc')
+                ->skip($size * --$page)
+                ->take($size)
+                ->get($columns);
+    }
+
     public function deleteWhereIn(string $param, array $data = [])
     {
         return $this->model->whereIn($param, $data)->delete();
