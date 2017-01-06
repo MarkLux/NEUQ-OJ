@@ -29,4 +29,17 @@ class Utils
         $patternMobile = '/(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}/';
         return preg_match($patternMobile, $str) == 1;
     }
+
+    //排行榜排序函数
+    public static function s_cmp_obj($A,$B)
+    {
+        if ($A->solved!=$B->solved) return $A->solved<$B->solved;
+        else return $A->time>$B->time;
+    }
+
+    public static function s_cmp_array($A,$B)
+    {
+        if ($A['solved']!=$B['solved']) return $A['solved']<$B['solved'];
+        else return $A['time']>$B['time'];
+    }
 }

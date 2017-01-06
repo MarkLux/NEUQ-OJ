@@ -26,11 +26,12 @@ class ContestService implements ContestServiceInterface
     private $problemAdmissionRepo;
     private $problemService;
     private $solutionRepo;
+    private $cacheService;
 
     public function __construct(
         ProblemGroupService $problemGroupService,ProblemGroupRepository $problemGroupRepository,
         ProblemGroupRelationRepository $problemGroupRelationRepository,ProblemGroupAdmissionRepository $problemGroupAdmissionRepository,
-        ProblemService $problemService,SolutionRepository $solutionRepository
+        ProblemService $problemService,SolutionRepository $solutionRepository,CacheService $cacheService
     )
     {
         $this->problemGroupRepo = $problemGroupRepository;
@@ -39,6 +40,7 @@ class ContestService implements ContestServiceInterface
         $this->problemAdmissionRepo = $problemGroupAdmissionRepository;
         $this->problemService = $problemService;
         $this->solutionRepo = $solutionRepository;
+        $this->cacheService = $cacheService;
     }
 
     function getContest(int $userId = -1, int $groupId)
@@ -169,7 +171,21 @@ class ContestService implements ContestServiceInterface
     {
         $group = $this->problemGroupService->getProblemGroup($groupId,['title','type','start_time','end_time','status']);
 
-        //TODO 使用redis缓存数据
+        if($group == null || $group->type!=1) return false;
+
+        //先检查是否存在缓存
+
+        $cacheKey = 'contest_'.$groupId;
+
+        if($this->cacheService->isCacheExist($cacheKey))
+        {
+            $ranks = $this->cacheService->getRankCache($cacheKey);
+            if(!empty($ranks))
+            {
+                usort($ranks,['NEUQOJ\Common\Utils','s_cmp_obj']);
+                return $ranks;
+            }
+        }
 
         //正常mysql查询方法：
         $solutions = $this->solutionRepo->getRankList($groupId)->toArray();
@@ -234,6 +250,9 @@ class ContestService implements ContestServiceInterface
                 }
             }
         }
+
+        usort($rank,['NEUQOJ\Common\Utils','s_cmp_array']);
+        $this->cacheService->setRankCache($cacheKey,$rank,60);
 
         return $rank;
     }
