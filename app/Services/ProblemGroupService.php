@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use NEUQOJ\Repository\Eloquent\ConfigRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
@@ -27,6 +28,8 @@ class ProblemGroupService implements ProblemGroupServiceInterface
     private $solutionRepo;
     private $sourceRepo;
     private $deletionService;
+    private $language_ext=["c", "cc", "pas", "java", "rb", "sh", "py", "php","pl", "cs","m","bas","scm","c","cc","lua","js"];
+
 
     public function __construct(
         ProblemGroupRepository $problemGroupRepository, ProblemGroupAdmissionRepository $admissionRepository,
@@ -63,6 +66,9 @@ class ProblemGroupService implements ProblemGroupServiceInterface
     {
         $id = -1;
         $flag = false;
+
+        //计算语言掩码
+        $data['langmask'] = $this->getLangMask($data['langmask']);
 
         DB::transaction(function()use($data,$problems,&$id,&$flag){
             $id = $this->problemGroupRepo->insertWithId($data);
@@ -219,5 +225,31 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         });
 
         return $flag;
+    }
+
+    /**
+     * 用于检查语言选择
+     */
+
+    private function getLangMask(array $language):int
+    {
+        //原版配置项,注意原oj上lang_ext数量比这个少，算出来的langmask不一样
+        //所以不再兼容老oj版本了
+
+        $langmask=0;
+        foreach($language as $t){
+            $langmask+=1<<$t;
+        }
+        $langmask=((1<<count($this->language_ext))-1)&(~$langmask);
+
+        return $langmask;
+    }
+
+    public function checkLang(int $langCode,int $langmask):bool
+    {
+        //检查语言源码 其实还可以设置oj全局语言源码来禁用语言，以后考虑添加上
+        $langCount = count($this->language_ext);
+        $lang=(~((int)$langmask))&((1<<($langCount))-1);
+        return $lang&(1<<$langCode);
     }
 }

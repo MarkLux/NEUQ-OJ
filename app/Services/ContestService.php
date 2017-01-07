@@ -11,6 +11,7 @@ namespace NEUQOJ\Services;
 
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Exceptions\NoPermissionException;
+use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Services\Contracts\ContestServiceInterface;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
@@ -288,12 +289,24 @@ class ContestService implements ContestServiceInterface
         return true;
     }
 
-    function submitProblem(int $groupId,int $problemNum,array $data):int
+    function submitProblem(int $userId,int $groupId,int $problemNum,array $data):int
     {
         //先检测用户能不能提交
-        if(!$this->canUserAccessContest($data['user_id'],$groupId))
-            throw new NoPermissionException();
+        $group = $this->problemGroupRepo->get($groupId,['private','type','langmask'])->first();
 
+        if($group == null || $group->private!=1) throw new NoPermissionException();
+
+        if($group->private != 0)
+        {
+            $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId,'problem_group_id'=>$groupId])->first();
+            if($admission == null) throw new NoPermissionException();
+        }
+
+        //检查语言
+        if(!$this->problemGroupService->checkLang($data['language'],$group->langmask))
+            throw new LanguageErrorException();
+
+        //获取题目id
         $relation = $this->problemGroupRelationRepo->getBy(['problem_group_id'=>$groupId,'problem_num'=>$problemNum],['problem_id'])->first();
 
         if($relation == null)

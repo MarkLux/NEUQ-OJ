@@ -167,8 +167,6 @@ class ContestController extends Controller
 
     }
 
-
-
     public function submitProblem(Request $request,int $contestId,int $problemNum)
     {
 

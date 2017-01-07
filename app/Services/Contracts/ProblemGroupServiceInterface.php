@@ -71,4 +71,6 @@ interface ProblemGroupServiceInterface
 
     function resetGroupAdmissions(int $groupId,array $newData):bool;
 
+    function checkLang(int $langCode,int $langmask):bool;
+
 }
