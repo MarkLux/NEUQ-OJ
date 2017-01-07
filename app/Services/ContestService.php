@@ -16,7 +16,6 @@ use NEUQOJ\Services\Contracts\ContestServiceInterface;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
-use Illuminate\Support\Facades\Redis;
 
 class ContestService implements ContestServiceInterface
 {
@@ -155,6 +154,8 @@ class ContestService implements ContestServiceInterface
             return false;
         else
             return $this->problemGroupService->updateProblemGroup($groupId,['password' => md5($password)]);
+
+        //之前已经通过密码加入的用户不进行处理了
     }
 
     function resetContestPermission(int $groupId,array $users):bool
@@ -164,7 +165,7 @@ class ContestService implements ContestServiceInterface
         if($group == null||$group->type!=1||$group->private!=1)
             return false;
 
-        //TODO: 考虑怎么实现去重
+        return $this->problemGroupService->resetGroupAdmissions($groupId,$users);
     }
 
     function getRankList(int $groupId)

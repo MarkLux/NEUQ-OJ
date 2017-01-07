@@ -28,12 +28,14 @@ class SolutionRepository extends AbstractRepository
         if(!empty($param))
             return $this->model
                 ->where($param)
+                ->where('problem_id','>','0')
                 ->orderBy('created_at','desc')
                 ->skip($size * --$page)
                 ->take($size)
                 ->get($columns);
         else
             return $this->model
+                ->where('problem_id','>','0')
                 ->orderBy('created_at','desc')
                 ->skip($size * --$page)
                 ->take($size)
