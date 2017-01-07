@@ -22,6 +22,8 @@ include 'Routes/DeletionLog.php';
 
 include 'Routes/Admin.php';
 
+include 'Routes/Discuss.php';
+
 Route::get('/', function () {
     return 'here is the main page!!';
 });
