@@ -34,7 +34,7 @@ interface ContestServiceInterface
 
     function searchContest(string $keyword,int $page,int $size);
 
-    function getStatus(int $groupId);
+    function getStatus(int $groupId,int $page,int $size);
 
     function isContestExist(int $groupId):bool;
 

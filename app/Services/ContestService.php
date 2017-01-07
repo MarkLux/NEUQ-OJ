@@ -44,7 +44,6 @@ class ContestService implements ContestServiceInterface
 
     function getContest(int $userId = -1, int $groupId)
     {
-
         //获取基本信息
         $contest = $this->problemGroupService->getProblemGroup($groupId,[
             'id','title','description','start_time','end_time',
@@ -98,10 +97,12 @@ class ContestService implements ContestServiceInterface
 
     function getAllContests(int $page, int $size)
     {
+        $totalCount = $this->problemGroupRepo->getProblemGroupCount(1);
+
         $groups = $this->problemGroupRepo->paginate($page,$size,
             ['type' => 1],['id','title','creator_id','creator_name','start_time','end_time','private','status']);
 
-        return $groups;
+        return ['data' => $groups,'total_count' => $totalCount];
     }
 
     //创建一个竞赛，如果成功，返回新创建的竞赛id，否则返回-1
@@ -262,18 +263,20 @@ class ContestService implements ContestServiceInterface
     {
         $pattern = '%'.$keyword.'%';
 
-        $totalCount = $this->problemGroupRepo->getContestCount($pattern);
+        $totalCount = $this->problemGroupRepo->getProblemGroupCountLike(1,$pattern);
 
-        $contests = $this->problemGroupRepo->searchContest($pattern,$page,$size);
+        $contests = $this->problemGroupRepo->searchProblemGroup(1,$pattern,$page,$size);
 
-        $data = ['total_count' => $totalCount,'contests' => $contests];
+        $data = ['total_count' => $totalCount,'data' => $contests];
 
         return $data;
     }
 
-    function getStatus(int $groupId)
+    function getStatus(int $groupId,int $page,int $size)
     {
-        //TODO 考虑是否使用缓存
+        $totalCount = $this->problemGroupService->getSolutionCount($groupId);
+        $data = $this->problemGroupService->getSolutions($groupId,$page,$size);
+        return ['data' => $data,'total_count' => $totalCount];
     }
 
     function isContestExist(int $groupId):bool

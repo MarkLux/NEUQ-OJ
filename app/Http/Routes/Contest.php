@@ -6,8 +6,13 @@
  * Time: 下午1:41
  */
 
-Route::group(['middleware' => 'user'],function (){
+Route::get('/contests','ContestController@getAllContests');
+Route::get('/contest/{id}/ranklist','ContestController@getRankList');
+Route::get('/contest/search','ContestController@searchContest');
+
+Route::group(['middleware' => 'user'],function(){
     Route::get('/contest/{id}','ContestController@getContestIndex');
     Route::get('/contest/{cid}/problem/{pnum}','ContestController@getProblem');
+    Route::get('/contest/{id}/status','ContestController@getStatus');
 });
 
