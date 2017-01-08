@@ -11,6 +11,7 @@ namespace NEUQOJ\Services;
 
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Exceptions\NoPermissionException;
+use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\ProblemGroup\ContestEndedException;
 use NEUQOJ\Exceptions\ProblemGroup\ContestNotAvailableException;
 use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
@@ -48,7 +49,7 @@ class ContestService implements ContestServiceInterface
     function getContest(int $userId = -1, int $groupId)
     {
         //检查权限
-        if(!$this->contestService->canUserAccessContest($userId,$groupId))
+        if(!$this->canUserAccessContest($userId,$groupId))
             throw new NoPermissionException();
 
         //获取基本信息
@@ -361,13 +362,16 @@ class ContestService implements ContestServiceInterface
 
     function getInContestByPassword(int $userId, int $groupId, string $password): bool
     {
-        $group = $this->problemGroupRepo->get($groupId,['private'])->first();
+        $group = $this->problemGroupRepo->get($groupId,['private','password','type'])->first();
 
-        if($group == null || $group->private!=1) return false;
+        if($group == null || $group->type!=1 || $group->private!=1) return false;
 
         $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId,'problem_group_id' => $groupId])->first();
 
         if($admission!=null) return true;//已经有权限了
+
+        if(md5($password) != $group->password)
+            throw new PasswordErrorException();
 
         return $this->problemAdmissionRepo->insert(['user_id' => $userId,'problem_group_id'=>$groupId]) == 1;
     }

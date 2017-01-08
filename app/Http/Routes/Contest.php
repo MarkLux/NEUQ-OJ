@@ -18,5 +18,7 @@ Route::group(['middleware' => 'user'],function(){
 
 Route::group(['middleware' => 'token'],function(){
     Route::post('/contest/{id}/problem/{pnum}/submit','ContestController@submitProblem');
+    Route::post('/contest/create','ContestController@createContest');
+    Route::post('/contest/{id}/join','ContestController@joinContest');
 });
 

@@ -70,6 +70,8 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         //计算语言掩码
         $data['langmask'] = $this->getLangMask($data['langmask']);
 
+        //合成题目数据
+
         DB::transaction(function()use($data,$problems,&$id,&$flag){
             $id = $this->problemGroupRepo->insertWithId($data);
             //重新填充数据

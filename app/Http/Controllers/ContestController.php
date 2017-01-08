@@ -175,7 +175,81 @@ class ContestController extends Controller
 
     public function joinContest(Request $request,int $contestId)
     {
+        $validator  = Validator::make($request->all(),[
+            'password' => 'required|string'
+        ]);
 
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        //拿到密码
+
+        if(!$this->contestService->getInContestByPassword($request->user->id,$contestId,$request->password))
+            throw new InnerError("Fail to join in Contest");
+
+        return response()->json([
+            'code' => 0,
+        ]);
+    }
+
+    public function createContest(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'title' => 'required|string|max:100',
+            'start_time' => 'required|date',
+            'end_time' => 'required|date',
+            'private' => 'required|min:0|max:2',
+            'password' => 'string',
+            'langmask' => 'array',
+            'problems' => 'required|array',
+            'users' => 'array'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        //TODO 检查权限
+
+        //组装数据
+
+        $contestData = [
+            'title' => $request->input('title'),
+            'description' => $request->input('description'),
+            'start_time' => $request->input('start_time'),
+            'end_time' => $request->input('end_time'),
+            'creator_id' => $request->user->id,
+            'creator_name' => $request->user->name,
+            'private' => $request->input('private'),
+            'password' => md5($request->input('password')),
+            'langmask' => $request->input('langmask')
+        ];
+
+        $problemIds = $request->input('problems');
+
+        $problems = [];
+
+        foreach ($problemIds as $problemId)
+        {
+            $problems[] = [
+                'problem_id' => $problemId
+            ];
+        }
+
+        $users = [];
+        if($request->input('users')!=null)
+            $users = $request->input('users');
+
+        $contestId = $this->contestService->createContest($contestData,$problems,$users);
+
+        if($contestId == -1)
+            throw new InnerError("Fail to create contest");
+
+        return response()->json([
+            'code' => 0,
+            'data' => [
+                'contest_id' => $contestId
+            ]
+        ]);
     }
 
     public function updateContest(Request $request,int $contestId)
