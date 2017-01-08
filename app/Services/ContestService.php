@@ -11,6 +11,8 @@ namespace NEUQOJ\Services;
 
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Exceptions\NoPermissionException;
+use NEUQOJ\Exceptions\ProblemGroup\ContestEndedException;
+use NEUQOJ\Exceptions\ProblemGroup\ContestNotAvailableException;
 use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Services\Contracts\ContestServiceInterface;
@@ -45,6 +47,10 @@ class ContestService implements ContestServiceInterface
 
     function getContest(int $userId = -1, int $groupId)
     {
+        //检查权限
+        if(!$this->contestService->canUserAccessContest($userId,$groupId))
+            throw new NoPermissionException();
+
         //获取基本信息
         $contest = $this->problemGroupService->getProblemGroup($groupId,[
             'id','title','description','start_time','end_time',
@@ -292,9 +298,21 @@ class ContestService implements ContestServiceInterface
     function submitProblem(int $userId,int $groupId,int $problemNum,array $data):int
     {
         //先检测用户能不能提交
-        $group = $this->problemGroupRepo->get($groupId,['private','type','langmask'])->first();
+        $group = $this->problemGroupRepo->get($groupId,['private','type','langmask','start_time','end_time'])->first();
 
-        if($group == null || $group->private!=1) throw new NoPermissionException();
+        //检查时间
+
+        $currentTime = time();
+
+        $startTime = strtotime($group->start_time);
+        $endTime = strtotime($group->end_time);
+
+        if($startTime > $currentTime)
+            throw new ContestNotAvailableException();
+        elseif($currentTime > $endTime)
+            throw new ContestEndedException();
+
+        if($group == null || $group->type!=1) throw new NoPermissionException();
 
         if($group->private != 0)
         {
@@ -307,19 +325,28 @@ class ContestService implements ContestServiceInterface
             throw new LanguageErrorException();
 
         //获取题目id
-        $relation = $this->problemGroupRelationRepo->getBy(['problem_group_id'=>$groupId,'problem_num'=>$problemNum],['problem_id'])->first();
+        $relation = $this->problemGroupRelationRepo->getByMult(['problem_group_id'=>$groupId,'problem_num'=>$problemNum],['problem_id'])->first();
 
         if($relation == null)
             return false;
 
         $data['problem_group_id'] = $groupId;
 
-        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_num);
+        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_id);
     }
 
     function canUserAccessContest(int $userId, int $groupId): bool
     {
-        $group = $this->problemGroupRepo->get($groupId,['private','type'])->first();
+        $group = $this->problemGroupRepo->get($groupId,['private','type','start_time'])->first();
+
+        //判断时间
+        $currentTime = time();
+
+        $startTime = strtotime($group->start_time);
+
+        //尚未开始的比赛
+        if($startTime > $currentTime)
+            throw new ContestNotAvailableException();
 
         if($group == null || $group->type!=1)//判断题目组类型
             return false;

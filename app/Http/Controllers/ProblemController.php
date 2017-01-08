@@ -145,8 +145,7 @@ class ProblemController extends Controller
         $validator = Validator::make($request->all(),[
             'source_code' => 'required|string|min:2',
             'private' => 'required|boolean',
-            'language' => 'required|integer|min:0|max:9',
-            'problem_group_id' => 'integer'
+            'language' => 'required|integer|min:0|max:17'
         ]);
 
         if($validator->fails())

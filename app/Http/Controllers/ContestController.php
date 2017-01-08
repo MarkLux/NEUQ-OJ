@@ -11,6 +11,7 @@ use NEUQOJ\Exceptions\ProblemGroup\ContestNotExistException;
 use NEUQOJ\Http\Requests;
 use NEUQOJ\Services\ContestService;
 use NEUQOJ\Exceptions\NoPermissionException;
+use NEUQOJ\Exceptions\InnerError;
 
 class ContestController extends Controller
 {
@@ -47,10 +48,6 @@ class ContestController extends Controller
             $userId = $request->user->id;
         else
             $userId = -1;
-
-        //检查权限
-        if(!$this->contestService->canUserAccessContest($userId,$contestId))
-            throw new NoPermissionException();
 
         $data = $this->contestService->getContest($userId,$contestId);
 
@@ -142,6 +139,40 @@ class ContestController extends Controller
 
     }
 
+    public function submitProblem(Request $request,int $contestId,int $problemNum)
+    {
+        $validator = Validator::make($request->all(),[
+            'source_code' => 'required|string|min:2',
+            'private' => 'required|boolean',
+            'language' => 'required|integer|min:0|max:17'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($request->getMessageBag()->all());
+
+        $data = [
+            'source_code' => $request->input('source_code'),
+            'private' => $request->input('private'),
+            'code_length' => strlen($request->input('source_code')),//好像有点问题
+            'ip' => $request->ip(),
+            'problem_group_id' => $contestId,
+            'language' => $request->input('language'),
+            'user_id' => $request->user->id
+        ];
+
+        $solutionId = $this->contestService->submitProblem($request->user->id,$contestId,$problemNum,$data);
+
+        if(!$solutionId)
+            throw new InnerError("Fail to Submit :contest ".$contestId." problem ".$problemNum);
+
+        return response()->json([
+            'code' => 0,
+            'data' => [
+                'solution_id' => $solutionId
+            ]
+         ]);
+    }
+
     public function joinContest(Request $request,int $contestId)
     {
 
@@ -167,10 +198,5 @@ class ContestController extends Controller
 
     }
 
-    public function submitProblem(Request $request,int $contestId,int $problemNum)
-    {
-
-    }
-
-
 }
+

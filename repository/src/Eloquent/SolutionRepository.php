@@ -69,7 +69,7 @@ class SolutionRepository extends AbstractRepository
             ->where('problem_num','>','0')
             ->leftJoin('users','users.id','=','solutions.user_id')
             ->select('users.id','users.name','solutions.result','solutions.created_at','solutions.problem_num')
-            //注意时间的选择标准，repo层维护的时间戳并不准确，这里先用judge_time来代替
+            //注意时间的选择标准，judge_time是批量更新的，应该根据创建时间来排序
             ->orderBy('users.id', 'desc')
             ->orderBy('solutions.created_at','desc')
             ->get();

@@ -16,3 +16,7 @@ Route::group(['middleware' => 'user'],function(){
     Route::get('/contest/{id}/status','ContestController@getStatus');
 });
 
+Route::group(['middleware' => 'token'],function(){
+    Route::post('/contest/{id}/problem/{pnum}/submit','ContestController@submitProblem');
+});
+
