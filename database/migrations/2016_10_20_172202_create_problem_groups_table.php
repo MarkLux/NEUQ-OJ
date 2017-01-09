@@ -17,7 +17,7 @@ class CreateProblemGroupsTable extends Migration
             $table->string('title',100);
             $table->bigInteger('user_group_id')->nullable();
             $table->integer('type');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->dateTime('start_time');
             $table->dateTime('end_time');
             $table->bigInteger('creator_id');

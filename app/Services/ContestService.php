@@ -114,15 +114,22 @@ class ContestService implements ContestServiceInterface
     }
 
     //创建一个竞赛，如果成功，返回新创建的竞赛id，否则返回-1
-    function createContest(array $data,array $problems,array $users=[]):int
+    function createContest(array $data,array $problemIds,array $users=[]):int
     {
         //根据私有性类别来创建
         $data['type'] = 1;
         $id = -1;
 
-        /**
-         * 传入的problems数组应该包含题目id、题目标题、题目编号
-         */
+
+        //传入的problems数组只包括id,初步组装数据格式
+
+        $problems  = [];
+
+        foreach ($problemIds as $problemId)
+        {
+            $problems[] = ['problem_id' => $problemId];
+        }
+
 
         DB::transaction(function()use($data,$problems,$users,&$id){
             $id = $this->problemGroupService->createProblemGroup($data,$problems);
@@ -338,7 +345,12 @@ class ContestService implements ContestServiceInterface
 
     function canUserAccessContest(int $userId, int $groupId): bool
     {
-        $group = $this->problemGroupRepo->get($groupId,['private','type','start_time'])->first();
+
+        $group = $this->problemGroupRepo->get($groupId,['private','type','start_time','creator_id'])->first();
+
+        //如果是创建者 直接可以获得权限，管理员也应该一样
+        if($userId = $group->creator_id) return true;
+        //TODO: 管理员权限检查
 
         //判断时间
         $currentTime = time();

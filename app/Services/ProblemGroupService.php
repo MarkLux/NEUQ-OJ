@@ -69,14 +69,30 @@ class ProblemGroupService implements ProblemGroupServiceInterface
 
         //计算语言掩码
         $data['langmask'] = $this->getLangMask($data['langmask']);
+        $data['problem_count'] = count($problems);
+        //$problems数组传入时只存放有problem_id
 
-        //合成题目数据
+        //合成题目id
+        $problemIds = [];
 
-        DB::transaction(function()use($data,$problems,&$id,&$flag){
+        foreach ($problems as $problem)
+            $problemIds[] = $problem['problem_id'];
+
+
+        DB::transaction(function()use($data,$problems,$problemIds,&$id,&$flag){
+
             $id = $this->problemGroupRepo->insertWithId($data);
+
+            $i=1;//题号从1开始
+
+            //请注意这个方法
+            $problemTitles = $this->problemRepo->getIn('id',$problemIds,['title'])->toArray();
+
             //重新填充数据
             foreach ($problems as &$problem){
                 $problem['problem_group_id'] = $id;
+                $problem['problem_num'] = $i++;
+                $problem['problem_title'] = $problemTitles[$i-2]['title'];
             }
 
             $this->problemGroupRelationRepo->insert($problems);
@@ -198,7 +214,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $this->solutionRepo->paginate($page,$size,['problem_group_id'=>$groupId]);
     }
 
-    public function isUserProblemOwner(int $userId,int $groupId): bool
+    public function isUserGroupCreator(int $userId,int $groupId): bool
     {
        $group = $this->getProblemGroup($groupId,['creator_id'])->first();
 

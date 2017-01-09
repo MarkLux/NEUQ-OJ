@@ -226,20 +226,12 @@ class ContestController extends Controller
 
         $problemIds = $request->input('problems');
 
-        $problems = [];
-
-        foreach ($problemIds as $problemId)
-        {
-            $problems[] = [
-                'problem_id' => $problemId
-            ];
-        }
 
         $users = [];
         if($request->input('users')!=null)
             $users = $request->input('users');
 
-        $contestId = $this->contestService->createContest($contestData,$problems,$users);
+        $contestId = $this->contestService->createContest($contestData,$problemIds,$users);
 
         if($contestId == -1)
             throw new InnerError("Fail to create contest");

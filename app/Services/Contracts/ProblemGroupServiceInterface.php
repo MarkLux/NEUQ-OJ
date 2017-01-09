@@ -25,7 +25,7 @@ interface ProblemGroupServiceInterface
      */
 
     function isProblemGroupExist(int $groupId):bool;
-    function isUserProblemOwner(int $userId,int $groupId):bool;
+    function isUserGroupCreator(int $userId,int $groupId):bool;
 
     /*
      * 创建
