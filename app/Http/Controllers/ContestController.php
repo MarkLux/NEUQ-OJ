@@ -244,17 +244,76 @@ class ContestController extends Controller
         ]);
     }
 
-    public function updateContest(Request $request,int $contestId)
+    //更新界面的面板信息（也是竞赛的详细信息页）,get方法
+    public function getUpdatePanel(Request $request,int $contestId)
     {
+        //先检查是否是创建者或者管理员
+        if(!$this->contestService->isUserContestCreator($request->user->id,$contestId))
+            throw new NoPermissionException();
+
+        //TODO：管理员检查
+
+        $data = $this->contestService->getContestDetail($contestId);
+
+        return response()->json([
+            'code' => 0,
+            'data' => $data
+        ]);
+    }
+
+    //更新基本信息
+
+    public function UpdateContestInfo(Request $request,int $contestId)
+    {
+        $validator = Validator::make($request->all(),[
+            'title' => 'string|max:100',
+            'start_time' => 'date',
+            'end_time' => 'date',
+            'langmask' => 'array'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        //检查是否是创建者或者管理员,考虑重新检测密码
+        if(!$this->contestService->isUserContestCreator($contestId,$request->user->id))
+            throw new NoPermissionException();
+
+        $title = $request->input('title',null);
+        $startTime = $request->input('start_time',null);
+        $endTime = $request->input('end_time',null);
+        $langmask = $request->input('langmask',null);
+
+        $newInfo = [];
+
+        if($title!=null) $newInfo['title'] = $title;
+        if($startTime!=null) $newInfo['start_time'] = $startTime;
+        if($endTime!=null) $newInfo['end_time'] = $endTime;
+        if($langmask!=null) $newInfo['langmask'] = $langmask;
+
+        if(!empty($newInfo))
+        {
+            if(!$this->contestService->updateContestInfo($contestId,$newInfo))
+                throw new InnerError("Fail to update contest :".$contestId);
+        }
+
+        return response()->json([
+            'code' => 0
+        ]);
+    }
+
+    //更新题目
+
+    public function AddProblemToContest(Request $request,int $contestId)
+    {
+        $validator = Validator::make($request->all(),[
+            'problems' => 'array'
+        ]);
+
 
     }
 
-    public function getContestAdmission(Request $request,int $contestId)
-    {
-
-    }
-
-    public function resetContestAdmission(Request $request,int $contestId)
+    public function RemoveProblemFromContest(Request $request,int $contestId)
     {
 
     }

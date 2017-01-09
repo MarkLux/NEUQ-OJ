@@ -22,9 +22,15 @@ interface ContestServiceInterface
 
     function createContest(array $data,array $problems,array $users=[]):int;
 
+    function addProblemToContest(int $groupId,array $problems):bool;
+
+    function removeProblemFromContest(int $groupId,array $problemNums):bool;
+
     function deleteContest(int $groupId):bool;
 
-    function updateContest(int $groupId,array $data):bool;
+    function getContestDetail(int $groupId);
+
+    function updateContestInfo(int $groupId,array $datas):bool;
 
     function resetContestPassword(int $groupId,string $password):bool;
 
@@ -41,4 +47,6 @@ interface ContestServiceInterface
     function submitProblem(int $userId,int $groupId,int $problemNum,array $data):int;
 
     function canUserAccessContest(int $userId,int $groupId):bool;
+
+    function isUserContestCreator(int $userId,int $groupId):bool;
 }

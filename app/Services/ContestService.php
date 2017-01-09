@@ -10,10 +10,12 @@ namespace NEUQOJ\Services;
 
 
 use Illuminate\Support\Facades\DB;
+use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\ProblemGroup\ContestEndedException;
 use NEUQOJ\Exceptions\ProblemGroup\ContestNotAvailableException;
+use NEUQOJ\Exceptions\ProblemGroup\ContestNotExistException;
 use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Services\Contracts\ContestServiceInterface;
@@ -96,6 +98,47 @@ class ContestService implements ContestServiceInterface
         return $data;
     }
 
+    function getContestDetail(int $groupId)
+    {
+       //用于获取竞赛的所有数据，用于更新
+        $contestInfo = $this->problemGroupService->getProblemGroup($groupId,['title','type','description','private','langmask']);
+
+        if($contestInfo == null || $contestInfo->type != 1) throw new ContestNotExistException();
+
+        if($contestInfo->langmask == null) $contestInfo->langmask = 0;
+
+        //根据计算出的掩码值  还原langmask
+        $langs = [];
+
+        $lang_count = count($this->problemGroupService->language_ext);
+
+        for($i=0;$i<$lang_count;$i++)
+        {
+            if ($contestInfo->langmask & (1 << $i))
+                $langs[] = $i;
+        }
+
+        $contestInfo['langmask'] = $langs;
+
+        //题目信息（竞赛中，只显示id，题号，标题，当前设计题号一但产生不可更改）
+
+        $problemInfo = $this->problemGroupRelationRepo->getBy('problem_group_id',$groupId,['problem_id','problem_num','problem_title']);
+
+        //权限信息，只显示当前加入到竞赛中的用户列表，不再取出密码
+
+        if($contestInfo->private != 0)
+            $admissionInfo = $this->problemAdmissionRepo->getBy('problem_group_id',$groupId,['user_id']);
+
+        //组装整个数组
+
+        $data['contest_info'] = $contestInfo;
+        $data['problems_info'] = $problemInfo;
+        if(isset($admissionInfo))
+            $data['user_ids'] = $problemInfo;
+
+        return $data;
+    }
+
     function getProblem(int $groupId, int $problemNum)
     {
         $problem =  $this->problemGroupService->getProblemByNum($groupId,$problemNum);
@@ -154,11 +197,38 @@ class ContestService implements ContestServiceInterface
         return false;
     }
 
-    function updateContest(int $groupId,array $data):bool
+    function updateContestInfo(int $groupId,array $data):bool
     {
-        if($this->isContestExist($groupId))
-            return $this->problemGroupService->updateProblemGroup($groupId,$data);
-        return false;
+        $group = $this->problemGroupService->getProblemGroup($groupId,['type','start_time','end_time']);
+
+        if($group==null|| $group->type!=1) throw new ContestNotExistException();
+
+        //检查比赛是否正在进行中，若已经开始，不允许再更改开始时间
+        $startTime = strtotime($group->start_time);
+        $endTime = strtotime($group->end_time);
+        $time = time();
+        if($startTime > $time||$time < $endTime)
+        {
+            if(isset($data['start_time'])) unset($data['start_time']);//直接无效索引
+        }
+
+        return $this->problemGroupService->updateProblemGroup($groupId,$data);
+    }
+
+    function addProblemToContest(int $groupId,array $problems):bool
+    {
+        if(!$this->isContestExist($groupId))
+            throw new ContestNotExistException();
+
+        return $this->problemGroupService->addProblem($groupId,$problems);
+    }
+
+    function removeProblemFromContest(int $groupId,array $problemNums):bool
+    {
+        if(!$this->isContestExist($groupId))
+            throw new ContestNotExistException();
+
+        return $this->problemGroupService->removeProblem($groupId,$problemNums);
     }
 
     function resetContestPassword(int $groupId,string $password):bool
@@ -341,6 +411,11 @@ class ContestService implements ContestServiceInterface
         $data['problem_group_id'] = $groupId;
 
         return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_id);
+    }
+
+    function isUserContestCreator(int $userId, int $groupId): bool
+    {
+        return $this->problemGroupService->isUserGroupCreator($userId,$groupId);
     }
 
     function canUserAccessContest(int $userId, int $groupId): bool

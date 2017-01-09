@@ -28,7 +28,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
     private $solutionRepo;
     private $sourceRepo;
     private $deletionService;
-    private $language_ext=["c", "cc", "pas", "java", "rb", "sh", "py", "php","pl", "cs","m","bas","scm","c","cc","lua","js"];
+    public $language_ext=["c", "cc", "pas", "java", "rb", "sh", "py", "php","pl", "cs","m","bas","scm","c","cc","lua","js"];
 
 
     public function __construct(
