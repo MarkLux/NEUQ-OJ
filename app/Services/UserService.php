@@ -78,7 +78,6 @@ class UserService implements UserServiceInterface
 
     public function getUsers(array $data)
     {
-        // TODO: Implement getUsers() method.
         $users = $this->userRepo->getByMult($data);
 
         if($users == null)
@@ -89,7 +88,6 @@ class UserService implements UserServiceInterface
 
     public function updateUserById(int $userId,array $data):bool
     {
-        // TODO: Implement updateUserById() method.
         if($this->userRepo->update($data,$userId))
             return true;
         else
@@ -98,7 +96,6 @@ class UserService implements UserServiceInterface
 
     public function updateUser(array $condition, array $data):bool
     {
-        // TODO: Implement updateUser() method.
         if($this->userRepo->updateWhere($condition,$data))
             return true;
         else
@@ -131,7 +128,6 @@ class UserService implements UserServiceInterface
 
     public function unlockUser(int $userId):bool
     {
-        // TODO: Implement unlockUser() method.
         $user = $this->userRepo->get($userId)->first();
 
         if($user == null)
@@ -176,7 +172,6 @@ class UserService implements UserServiceInterface
 
     public function login(array $data)
     {
-        // TODO: Implement login() method.
         //正则判断登录名类型
         if(Utils::IsMobile($data['identifier'])) {
             $user = $this->getUserBy('mobile',$data['identifier']);

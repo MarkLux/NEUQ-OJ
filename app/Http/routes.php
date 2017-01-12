@@ -22,6 +22,8 @@ include 'Routes/DeletionLog.php';
 
 include 'Routes/Admin.php';
 
+include 'Routes/Discuss.php';
+
 include 'Routes/Problem.php';
 
 include 'Routes/Status.php';
