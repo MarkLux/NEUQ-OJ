@@ -24,9 +24,9 @@ interface RoleServiceInterface
 
     function updateRole(array $condition,array $data);
 
-    function getRoleDetailById($roleId);
+    function getRoleDetailById(int $roleId,array $columns=['*']);
 
-    function getRoleDetailByName($name);
+    function getRoleDetailByName(string $name,array $columns=['*']);
 
-    function isRoleBelongTo($roleId);
+    function isRoleBelongTo(int $roleId);
 }

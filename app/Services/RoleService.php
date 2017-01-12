@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use Illuminate\Support\Facades\DB;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\RolePriRepository;
 use NEUQOJ\Repository\Eloquent\RoleRepository;
@@ -33,10 +34,12 @@ class RoleService implements RoleServiceInterface
         $this->PriRepo = $privilegeRepository;
     }
 
-    function hasRole(int $userId,string $role):bool
+    public function hasRole(int $userId,string $role):bool
     {
-        $arr = $this->UserRoleRepo->getBy('user_id',$userId);
-        $roleId = $this->RoleRepo->getBy('name',$role)->first()->id;
+
+        $arr = $this->UserRoleRepo->getBy('user_id',$userId,['role_id']);
+        $roleId = $this->RoleRepo->getBy('name',$role,['id'])->first();
+
 
         foreach ($arr as $item) {
             if($item['role_id'] ==$roleId)
@@ -49,59 +52,56 @@ class RoleService implements RoleServiceInterface
     /*
      * 创造角色
      * 对表Roles，role_privilege_relations 操作
+     * 返回值限定为角色的id，方法失败的话返回-1
      */
-    function createRole(array $data)
+   public function createRole(array $data):int
     {
-        /*
-         * 将角色名和描述 插入 Roles表
-         */
+
         $role = [
             'name'=>$data['role'],
             'description'=>$data['description'],
         ];
-        if(!($this->RoleRepo->insert($role)))
-            return false;
 
-        /*
-         * 获取role_id ,privilege_id
-         */
-        $arr = $this->getRoleDetailByName($data['role']);
-        $roleId = $arr->id;
 
-        /*
-             * 遍历权限数组 循环将角色 权限插入
-              */
-        foreach ($data['privilege'] as $item){
+        $rid = -1;
 
-            $privilege = array(
-                'name'=>$item['pri'],
-                'description'=>$item['description']
-            );
+        //检查输入合法性
+        $privileges = $this->PriRepo->getIn('id',$data['privilege']);
+        if(count($data['privilege']!=count($privileges)))
+            return $rid;
 
-            if(!($this->PriRepo->insert($privilege)))
-                return false;
 
-            $priId = $this->PriSer->getPrivilegeDetailByName($item['pri'])->id;
-            $rolePrRelation = array(
-              'role_id' => $roleId,
-                'privilege_id'=>$priId,
-                'role'=>$data['role'],
-            );
-            if(!($this->RolePrRepo->insert($rolePrRelation)))
-                return false;
-        }
+        //创建事件，对数据库操作的有哪项失败的话就自动回滚
+        DB::transaction(
+            function ()use($role,$data,$rid)
+            {
+                $rid = $this->RoleRepo->insertWithId($role);
 
-        return true;
+                $relations = [];
 
+                foreach ($data['privilege'] as $pid)
+                {
+                    array_push($relations,[
+                        'role_id' => $rid,
+                        'privilege_id' => $pid,
+                        'role' => $role['name']
+                    ]);
+                }
+
+                $this->RolePrRepo->insert($relations);
+            }
+        );
+
+        return $rid;
     }
     /*
      * 找到role 对应role_id
      * 将user_id role_id 插入user_role_relations表
      * 再　填充　user_pri_re
      */
-    function giveRoleTo(int $userId,string $role)
+    public function giveRoleTo(int $userId,string $role)
     {
-        $roleData = $this->getRoleDetailByName($role);
+        $roleData = $this->getRoleDetailByName($role,['id']);
 
         $roleId = $roleData->id;
 
@@ -119,16 +119,14 @@ class RoleService implements RoleServiceInterface
         return true;
     }
 
-    function roleExisted(string $role)
+    public function roleExisted(string $role)
     {
          return $this->getRoleDetailByName($role);
     }
     /*
      * 删除角色 roles表 user_role_relations表 role_privilege_relations表
      */
-    function deleteRole($roleId){
-        $PrivilegeData = $this->PriSer->getRolePrivilege($roleId);
-
+    public function deleteRole($roleId){
         $role = array(
             'id'=>$roleId
         );
@@ -137,74 +135,55 @@ class RoleService implements RoleServiceInterface
             'role_id'=>$roleId
         );
 
-
-        /*
-         * 哪个用户有这个角色 就删关系
-         */
-        if($this->isRoleBelongTo($roleId))
-            if(!($this->UserRoleRepo->deleteWhere($rolePr)))
-                return false;
+        $flag = -1;
 
 
-        if(!($this->RoleRepo->deleteWhere($role)))
-             return false;
+        DB::transation(
+            function ()use($role,$rolePr,$roleId)
+            {
+                if($this->isRoleBelongTo($roleId))
+                {
+                    $this->UserRoleRepo->deleteWhere($rolePr);
+                }
+                $this->RoleRepo->deleteWhere($role);
 
+                $this->RolePrRepo->deleteWhere($rolePr);
 
-        if (!($this->RolePrRepo->deleteWhere($rolePr)))
-            return false;
-
-
-
-        foreach ($PrivilegeData as $item)
-        {
-
-            $pri = array(
-                'id'=>$item->privilege_id
-            );
-
-            /*
-             * 查找对应权限对应的角色数组
-             */
-            $arr = $this->RolePrRepo->getBy('privilege_id',$item->privilege_id);
-
-
-            /*
-             * 对应的角色数组 元素 个数等于0 表示当前权限是这个角色独有的 删除角色后 用户对应权限也被剥夺 否则用户仍具有该权限
-             */
-
-            if(count($arr)==0) {
-                if (!($this->PriSer->deletePrivilege($pri)))
-                    return false;
             }
-            else
-                continue;
+        );
 
-        }
-        return true;
+        $flag = 1;
+        return $flag;
     }
 
-    function updateRole(array $condition,array $data)
+    public function updateRole(array $condition,array $data)
     {
-        $this->RoleRepo->updateWhere($condition,$data);
+        if($this->RoleRepo->updateWhere($condition,$data))
+            return true;
+        else
+            return false;
     }
 
-    function updateRolePri(array $condition,array $data)
+    public function updateRolePri(array $condition,array $data)
     {
-        $this->RolePrRepo->updateWhere($condition,$data);
+        if($this->RolePrRepo->updateWhere($condition,$data))
+            return true;
+        else
+            return false;
     }
-    function getRoleDetailById($roleId)
+    public function getRoleDetailById(int $roleId,array $columns=['*'])
     {
-        return $this->RoleRepo->get($roleId)->first();
-    }
-
-    function getRoleDetailByName($name)
-    {
-        return $this->RoleRepo->getBy('name',$name)->first();
+        return $this->RoleRepo->get($roleId,$columns)->first();
     }
 
-    function isRoleBelongTo($roleId):bool
+    public function getRoleDetailByName(string $name,array $columns=['*'])
     {
-        if($this->UserRoleRepo->getBy('role_id',$roleId)->first())
+        return $this->RoleRepo->getBy('name',$name,$columns)->first();
+    }
+
+    public function isRoleBelongTo(int $roleId):bool
+    {
+        if($this->UserRoleRepo->getBy('role_id',$roleId,['user_id'])->first())
             return true;
         else return false;
     }

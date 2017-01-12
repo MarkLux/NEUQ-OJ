@@ -8,6 +8,7 @@
 
 namespace NEUQOJ\Services;
 
+use Illuminate\Support\Facades\DB;
 use NEUQOJ\Exceptions\PrivilegeNotExistException;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\RolePriRepository;
@@ -26,17 +27,17 @@ class PrivilegeService
         $this->userPriRepo = $usrPriRepository;
     }
 
-    public function getPrivilegeDetailByName(string $name)
+    public function getPrivilegeDetailByName(string $name,array $columns = ['*'])
     {
-        return $this->priRepo->getBy('name',$name)->first();
+        return $this->priRepo->getBy('name',$name,$columns)->first();
     }
 
     /*
      * 获取角色对应的权利
      */
-    public function getRolePrivilege($roleId)
+    public function getRolePrivilege(int $roleId,array $columns = ['*'])
     {
-        return $this->rolePriRepo->getBy('role_id',$roleId);
+        return $this->rolePriRepo->getBy('role_id',$roleId,$columns);
     }
 
     /*
@@ -44,24 +45,35 @@ class PrivilegeService
      */
     public function givePrivilegeTo($userId,$roleId)
     {
-        $arr = $this->getRolePrivilege($roleId);
+
+        $privilege = $this->userPriRepo->getBy('user_id',$userId,['privilege_id']);
+
+        $arr = $this->getRolePrivilege($roleId,['privilege_id']);
+
+        $content = [];
         foreach ($arr as $item)
         {
-            $content = array(
+            foreach ($privilege as $pitem)
+            {
+
+                if($pitem['privilege_id'] == $item['privilege_id'])
+                    continue;
+
+            }
+            /*
+           * 给予的新角色含有原有的权限 就跳过这次插入
+           */
+            array_push($content,[
                 'user_id'=>$userId,
                 'privilege_id'=>$item['privilege_id']
-            );
-
-            /*
-             * 给予的新角色含有原有的权限 就跳过这次插入
-             */
-            if($this->userPriRepo->get($content))
-                continue;
-
-            elseif(!($this->userPriRepo->insert($content)))
-               return false;
+            ]);
 
         }
+
+
+        if(!($this->userPriRepo->insert($content)))
+            return false;
+
         return true;
     }
     /*
@@ -100,4 +112,6 @@ class PrivilegeService
     {
         return $this->priRepo->deleteWhere($data);
     }
+
+
 }

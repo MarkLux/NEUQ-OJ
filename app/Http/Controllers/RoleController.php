@@ -47,6 +47,7 @@ class RoleController extends Controller
             throw new FormValidatorException($data);
         }
 
+        
         /*
          * 判断要增加的角色是否存在
          */
@@ -68,7 +69,7 @@ class RoleController extends Controller
         );
         if($roleService->createRole($data))
             return response()->json([
-                'code' => '0'
+                'code' => 0
             ]);
     }
 
@@ -104,7 +105,7 @@ class RoleController extends Controller
 
         if($roleService->deleteRole($roleId))
             return response()->json([
-                'code' => '0'
+                'code' => 0
             ]);
     }
 
@@ -156,6 +157,11 @@ class RoleController extends Controller
 
     public function updateRole(Request $request,RoleService $roleService)
     {
-        //
+        if($roleService->updateRole(['id'=>$request->id],['name'=>$request->name,'description'=>$request->description]))
+            return response()->json(
+                ['code'=>0]
+            );
     }
+
+
 }

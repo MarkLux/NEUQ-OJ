@@ -1,23 +1,18 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: lumin
- * Date: 16-12-21
- * Time: 下午1:07
+ * User: yz
+ * Date: 16-12-15
+ * Time: 下午7:43
  */
 
 namespace NEUQOJ\Repository\Eloquent;
 
 
-use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
-use NEUQOJ\Repository\Traits\SoftDeletionTrait;
-
-class ProblemTagRelationRepository extends AbstractRepository implements SoftDeletionInterface
+class ProblemTagRelationRepository extends AbstractRepository
 {
-    public function model()
+    function model()
     {
         return "NEUQOJ\Repository\Models\ProblemTagRelation";
     }
-
-    use SoftDeletionTrait;
 }

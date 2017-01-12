@@ -36,4 +36,5 @@ trait InsertWithIdTrait{
 
         return $this->model->insertGetId($data);
     }
+
 }
