@@ -86,7 +86,7 @@ class NoticeController extends Controller
             throw new NoPermissionException();
 
 
-        if(!$this->userGroupService->addNotice($request->gid,['content'=>$request->content]))
+        if(!$this->userGroupService->addNotice($request->gid,['content'=>$request->input('content')]))
             throw new InnerError("Fail to add notice");
 
         return response()->json([
@@ -111,7 +111,7 @@ class NoticeController extends Controller
         if(!$this->userGroupService->isUserGroupOwner($request->user->id,$request->gid))
             throw new NoPermissionException();
 
-        if(!$this->userGroupService->updateNotice($noticeId,['content' => $request->content]))
+        if(!$this->userGroupService->updateNotice($noticeId,['content' => $request->input('content')]))
             throw new InnerError("Fail to update Notice");
 
         return response()->json([

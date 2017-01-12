@@ -118,4 +118,14 @@ class TokenService implements TokenServiceInterface
 
         return -1;
     }
+
+    public function getUserIdByToken(string $tokenStr):int
+    {
+        $token = $this->tokenRepo->getBy('token',$tokenStr)->first();
+
+        $time = Utils::createTimeStamp();
+
+        if($token == null || $token->expires_at < $time) return -1;
+        else return $token->user_id;
+    }
 }

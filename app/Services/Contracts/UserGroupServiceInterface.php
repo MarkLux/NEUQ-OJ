@@ -18,11 +18,15 @@ interface UserGroupServiceInterface
   *基本信息部分
   */
 
-    function getGroupById(int $id);
+    function getGroupById(int $id,array $columns = ['*']);
 
-    function getGroupBy(string $param,string $value);
+    function getGroupBy(string $param,string $value,array $columns = ['*']);
 
-    function getGroupByMult(array $condition);
+    function getGroupByMult(array $condition,array $columns = ['*']);
+
+    function getGroups(int $page,int $size,array $columns=['*']);
+
+    function getGroupCount():int;
 
     //有可能改成private
     function isGroupExistByName(int $ownerId,string $name):bool;
@@ -57,7 +61,7 @@ interface UserGroupServiceInterface
 
     function deleteUserFromGroup(int $userId,int $groupId):bool;
 
-    function deleteGroup(int $groupId);
+    function deleteGroup(User $user,int $groupId);
 
     function changeGroupOwner(int $groupId,int $newOwnerId):bool;
 

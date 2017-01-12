@@ -24,6 +24,4 @@ interface RepositoryInterface
     function delete(int $id);
 
     function paginate(int $page = 1, int $size = 15, array $params = [], array $columns = ['*']);
-
-    //Abstract Repo实现了这个接口 但是同时也进行了扩充 TODO 考虑是否要更改接口与实现一致
 }

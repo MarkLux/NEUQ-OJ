@@ -11,6 +11,7 @@ use NEUQOJ\Http\Requests;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Services\TokenService;
 use NEUQOJ\Services\UserService;
+use Illuminate\Support\Facades\Response;
 
 class UserController extends Controller
 {
@@ -29,12 +30,13 @@ class UserController extends Controller
             throw new FormValidatorException($error);
         }
 
-        $data = $request->all();
+        $userId = $userService->register($request->all());
 
-        if(!$userService->register($data))
-            throw new RegisterErrorException();
+        $data = $userService->loginUser($userId,$request->ip());
+
         return response()->json([
-            'code' => '0',
+            'code' => 0,
+            'data' => $data
         ]);
     }
 
@@ -55,11 +57,19 @@ class UserController extends Controller
         $tokenStr = $tokenService->makeToken($user->id,$request->ip());
 
         return response()->json([
-            'code' => '0',
+            'code' => 0,
             'data' => [
                 'user' => $user,
                 'token' => $tokenStr
             ]
+        ]);
+    }
+
+    public function getUserInfo(Request $request)
+    {
+        return response()->json([
+            'code' => 0,
+            'data' => $request->user
         ]);
     }
 
@@ -86,7 +96,7 @@ class UserController extends Controller
             $user = $userService->getUserByMult($request->all());
 
         return response()->json([
-            'code' => '0',
+            'code' => 0,
             'user' => $user
         ]);
     }
@@ -95,7 +105,7 @@ class UserController extends Controller
     {
         $users = $userService->getUsers($request->all());
         return response()->json([
-            'code' => '0',
+            'code' => 0,
             'users' => $users
         ]);
     }
@@ -131,9 +141,25 @@ class UserController extends Controller
 
         if($flag) {
             return response()->json([
-                'code' => '0',
+                'code' => 0,
             ]);
         }
+    }
+
+    public function lockUser(UserService $userService,$id)
+    {
+        if($userService->lockUser($id))
+            return response()->json([
+                'code' => 0
+            ]);
+    }
+
+    public function unlockUser(UserService $userService,$id)
+    {
+        if($userService->unlockUser($id))
+            return response()->json([
+                'code' => 0
+            ]);
     }
 
     public function logout(Request $request,TokenService $tokenService)
@@ -141,7 +167,7 @@ class UserController extends Controller
         $tokenService->destoryToken($request->user->id);
 
         return response()->json([
-            'code' => '0'
+            'code' => 0
         ]);
     }
 }

@@ -33,7 +33,7 @@ class ApplyController extends Controller
 
         //$this->handelApply($request,$applyService,$userRepository);
         return response()->json([
-            'code' => '0'
+            'code' => 0
         ]);
     }
     /*

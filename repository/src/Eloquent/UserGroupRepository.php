@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
+use NEUQOJ\Repository\Traits\InsertWithIdTrait;
+use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 
 class UserGroupRepository extends AbstractRepository implements SoftDeletionInterface
 {
@@ -20,10 +22,7 @@ class UserGroupRepository extends AbstractRepository implements SoftDeletionInte
         return "NEUQOJ\Repository\Models\UserGroup";
     }
 
-    function insertWithId(array $data)
-    {
-        return $this->model->insertGetId($data);
-    }
+    use InsertWithIdTrait;
 
     function getWhereLikeCount(string $pattern):int
     {
@@ -51,20 +50,27 @@ class UserGroupRepository extends AbstractRepository implements SoftDeletionInte
         }
     }
 
-    function doDeletion(int $id): bool
+    function getTotalCount()
     {
-        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
-
-        if($item == null)
-            return false;
-        return $item->forceDelete();
+        return $this->model->all()->count();
     }
 
-    function undoDeletion(int $id): bool
-    {
-        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
-        if($item == null)
-            return false;
-        return $item->restore();
-    }
+//    function doDeletion(int $id): bool
+//    {
+//        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
+//
+//        if($item == null)
+//            return false;
+//        return $item->forceDelete();
+//    }
+//
+//    function undoDeletion(int $id): bool
+//    {
+//        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
+//        if($item == null)
+//            return false;
+//        return $item->restore();
+//    }
+
+    use SoftDeletionTrait;
 }

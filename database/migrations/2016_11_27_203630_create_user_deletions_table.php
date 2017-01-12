@@ -14,8 +14,9 @@ class CreateUserDeletionsTable extends Migration
     {
         Schema::create('user_deletions', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('gid');
-            $table->timestamp('table_name',100);
+            $table->bigInteger('user_id');
+            $table->string('user_name',100);
+            $table->string('table_name',100);
             $table->bigInteger('key');
             $table->timestamps();
         });

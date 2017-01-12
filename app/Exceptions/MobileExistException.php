@@ -10,6 +10,6 @@ namespace NEUQOJ\Exceptions;
 
 class MobileExistException extends BaseException
 {
-    protected $code = 1001;
+    protected $code = 1002;
     protected $data = "The mobile number is exist";
 }

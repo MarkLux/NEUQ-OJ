@@ -13,10 +13,10 @@ class CreateSourceCodesTable extends Migration
     public function up()
     {
         Schema::create('source_codes', function (Blueprint $table) {
-            $table->bigInteger('solution_id')->primary();
+            $table->bigIncrements('solution_id');
             $table->text('source');
             $table->boolean('private');
-            $table->string('password',45);
+            $table->string('password',255);
             $table->timestamps();
         });
     }

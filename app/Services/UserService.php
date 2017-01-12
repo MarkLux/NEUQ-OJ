@@ -24,15 +24,18 @@ use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
 use NEUQOJ\Repository\Eloquent\UsrPriRepository;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Services\Contracts\UserServiceInterface;
+use NEUQOJ\Services\TokenService;
 
 
 class UserService implements UserServiceInterface
 {
     private $userRepo;
+    private $tokenService;
 
-    public function __construct(UserRepository $userRepository)
+    public function __construct(UserRepository $userRepository,TokenService $tokenService)
     {
         $this->userRepo = $userRepository;
+        $this->tokenService = $tokenService;
     }
 
     public function isUserExist(array $data):bool
@@ -75,6 +78,7 @@ class UserService implements UserServiceInterface
 
     public function getUsers(array $data)
     {
+        // TODO: Implement getUsers() method.
         $users = $this->userRepo->getByMult($data);
 
         if($users == null)
@@ -85,6 +89,7 @@ class UserService implements UserServiceInterface
 
     public function updateUserById(int $userId,array $data):bool
     {
+        // TODO: Implement updateUserById() method.
         if($this->userRepo->update($data,$userId))
             return true;
         else
@@ -93,6 +98,7 @@ class UserService implements UserServiceInterface
 
     public function updateUser(array $condition, array $data):bool
     {
+        // TODO: Implement updateUser() method.
         if($this->userRepo->updateWhere($condition,$data))
             return true;
         else
@@ -101,7 +107,8 @@ class UserService implements UserServiceInterface
 
     public function createUser(array $data):bool
     {
-        if($this->userRepo->insert($data))
+        // TODO 要修改 这个方法主要用于不通过注册来（批量）生成用户
+        if($this->userRepo->insert($data)==1)
             return true;
         else
             return false;
@@ -124,6 +131,7 @@ class UserService implements UserServiceInterface
 
     public function unlockUser(int $userId):bool
     {
+        // TODO: Implement unlockUser() method.
         $user = $this->userRepo->get($userId)->first();
 
         if($user == null)
@@ -137,7 +145,7 @@ class UserService implements UserServiceInterface
         return true;
     }
 
-    public function register(array $data):bool
+    public function register(array $data):int
     {
         //检查手机号
         if(!Utils::IsMobile($data['mobile']))
@@ -161,20 +169,22 @@ class UserService implements UserServiceInterface
             'school' => $data['school'] ? $data['school'] : "Unknown",
         ];
 
-        $this->createUser($user);
+        $id = $this->userRepo->insertWithId($user);
 
-        return true;
+        return $id;
     }
 
     public function login(array $data)
     {
+        // TODO: Implement login() method.
         //正则判断登录名类型
         if(Utils::IsMobile($data['identifier'])) {
             $user = $this->getUserBy('mobile',$data['identifier']);
         } elseif(Utils::IsEmail($data['identifier'])) {
             $user = $this->getUserBy('email',$data['identifier']);
         } else {
-            throw new FormValidatorException(["Invalid Identifier Format"]);
+            //添加用户名登陆方式
+            $user = $this->getUserBy('name',$data['identifier']);
         }
 
         if($user == null)
@@ -184,6 +194,20 @@ class UserService implements UserServiceInterface
             throw new PasswordErrorException();
 
         return $user;
+    }
+
+    public function loginUser(int $userId,string $ip)
+    {
+        $user = $this->userRepo->get($userId)->first();
+        if($user==null)
+            throw new UserNotExistException();
+        $token = $this->tokenService->makeToken($userId,$ip);
+
+        $data = [];
+        $data['user'] = $user;
+        $data['token'] = $token;
+
+        return $data;
     }
 
     public function getUserRole(int $userId)

@@ -9,7 +9,10 @@
 namespace NEUQOJ\Repository\Eloquent;
 
 
-class UserGroupRelationRepository extends AbstractRepository
+use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
+use NEUQOJ\Repository\Traits\SoftDeletionTrait;
+
+class UserGroupRelationRepository extends AbstractRepository implements SoftDeletionInterface
 {
     function model()
     {
@@ -20,4 +23,6 @@ class UserGroupRelationRepository extends AbstractRepository
     {
         return $this->model->where('group_id',$groupId)->count();
     }
+
+    use SoftDeletionTrait;
 }
