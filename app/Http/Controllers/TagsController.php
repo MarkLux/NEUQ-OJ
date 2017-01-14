@@ -13,16 +13,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\TagNotExistException;
 use NEUQOJ\Exceptions\TagsExistExceptios;
 use NEUQOJ\Exceptions\TagsUnchangedExceptions;
 use NEUQOJ\Services\TagsService;
 
 class TagsController extends Controller
 {
-    public function __construct()
-    {
-
-    }
 
     public function createTag(Request $request,TagsService $tagsService)
     {
@@ -66,6 +63,9 @@ class TagsController extends Controller
             $data = $validator->getMessageBag()->all();
             throw new FormValidatorException($data);
         }
+        //判断要删除的tag是否存在
+        if ($tagsService->getTagById($request->tagId)==null)
+            throw new TagNotExistException();
 
         if($tagsService->deleteTags($request->tagId))
             return response()->json(
@@ -117,6 +117,10 @@ class TagsController extends Controller
             throw new FormValidatorException($data);
         }
 
+        //判断要删除的tag是否存在
+        if ($tagsService->getTagById($request->tagId)==null)
+            throw new TagNotExistException();
+
         //判断要修改的tag内容是否存在,或者未改变
         $tagId = $tagsService->tagsExisted($request->name);
         if($tagId != -1)
@@ -144,6 +148,10 @@ class TagsController extends Controller
             $data = $validator->getMessageBag()->all();
             throw new FormValidatorException($data);
         }
+
+        //判断要删除的tag是否存在
+        if ($tagsService->getTagById($request->tagId)==null)
+            throw new TagNotExistException();
 
 
         if(($tagsService->updateProblemTag($request->tagId,$request->problemId,$request->tags)))

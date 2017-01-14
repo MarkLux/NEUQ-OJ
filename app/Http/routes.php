@@ -13,8 +13,7 @@
 
 
 include 'Routes/UserGroup.php';
-
-include 'Routes/Test.php';
+include 'Routes/Tag.php';
 
 include 'Routes/User.php';
 
