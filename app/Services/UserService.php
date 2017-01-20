@@ -48,9 +48,9 @@ class UserService implements UserServiceInterface
             return true;
     }
 
-    public function getUserById(int $userId)
+    public function getUserById(int $userId,array $columns = ['*'])
     {
-        $user = $this->userRepo->get($userId)->first();
+        $user = $this->userRepo->get($userId,$columns)->first();
         if($user == null)
             throw new UserNotExistException();
         else
@@ -58,29 +58,29 @@ class UserService implements UserServiceInterface
 
     }
 
-    public function getUserBy(string $param, $value)
+    public function getUserBy(string $param, $value,array $columns = ['*'])
     {
-        $user = $this->userRepo->getBy($param,$value)->first();
+        $user = $this->userRepo->getBy($param,$value,$columns)->first();
         if($user == null)
             throw new UserNotExistException();
         else
             return $user;
     }
 
-    public function getUserByMult(array $condition)
+    public function getUserByMult(array $condition,array $columns = ['*'])
     {
-        $user = $this->userRepo->getByMult($condition)->first();
+        $user = $this->userRepo->getByMult($condition,$columns)->first();
         if($user == null)
             throw new UserNotExistException();
         else
             return $user;
     }
 
-    public function getUsers(array $data)
+    public function getUsers(array $data,array $columns = ['*'])
     {
-        $users = $this->userRepo->getByMult($data);
+        $users = $this->userRepo->getByMult($data,$columns);
 
-        if($users == null)
+        if(empty($users))
             throw new UserNotExistException();
         else
             return $users;

@@ -17,14 +17,14 @@ interface UserServiceInterface
     /*
     *NOTICE:有关取出模型的方法不一定需要限定返回的类型，可能会找不到而返回null
     */
-    function getUserById(int $userId);
+    function getUserById(int $userId,array $columns = ['*']);
 
-    function getUserBy(string $param,$value);
+    function getUserBy(string $param,$value,array $columns = ['*']);
 
-    function getUserByMult(array $condition);
+    function getUserByMult(array $condition,array $columns = ['*']);
     //使用where方法
 
-    function getUsers(array $data);
+    function getUsers(array $data,array $columns = ['*']);
 
     function updateUserById(int $userId,array $data):bool;
 

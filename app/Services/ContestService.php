@@ -48,7 +48,13 @@ class ContestService implements ContestServiceInterface
         $this->cacheService = $cacheService;
     }
 
-    function getContest(int $userId = -1, int $groupId)
+    function getContest(int $contestId,array $columns = ['*'])
+    {
+        //使用这个方法前请先检查contest是否存在。
+        return $this->problemGroupService->getProblemGroup($contestId,$columns);
+    }
+
+    function getContestIndex(int $userId = -1, int $groupId)
     {
         //检查权限
         if(!$this->canUserAccessContest($userId,$groupId))

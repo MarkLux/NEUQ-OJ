@@ -5,21 +5,26 @@ namespace NEUQOJ\Http\Controllers;
 use Illuminate\Cache\Repository;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\ProblemGroup\ContestNotExistException;
 use NEUQOJ\Http\Requests;
 use NEUQOJ\Services\ContestService;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\InnerError;
+use NEUQOJ\Services\UserService;
 
 class ContestController extends Controller
 {
     private $contestService;
+    private $userService;
 
-    public function __construct(ContestService $contestService)
+    public function __construct(ContestService $contestService,UserService $userService)
     {
         $this->contestService = $contestService;
+        $this->userService = $userService;
     }
 
     public function getAllContests(Request $request)
@@ -49,7 +54,7 @@ class ContestController extends Controller
         else
             $userId = -1;
 
-        $data = $this->contestService->getContest($userId,$contestId);
+        $data = $this->contestService->getContestIndex($userId,$contestId);
 
         return response()->json([
             'code' => 0,
@@ -275,7 +280,7 @@ class ContestController extends Controller
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        //检查是否是创建者或者管理员,考虑重新检测密码
+        //TODO 检查是否是创建者或者管理员,考虑重新检测密码
         if(!$this->contestService->isUserContestCreator($contestId,$request->user->id))
             throw new NoPermissionException();
 
@@ -302,25 +307,82 @@ class ContestController extends Controller
         ]);
     }
 
-    //更新题目
+    //更新题目，考虑到比赛可能正在进行，因此把 添加 和 移除操作 分开，逻辑更加清晰一些
 
     public function AddProblemToContest(Request $request,int $contestId)
     {
         $validator = Validator::make($request->all(),[
             'problems' => 'array'
+            //表单验证的内容是 题目信息。
         ]);
 
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        //组装数据，这里对数据格式有所要求。
+        $problems = $request->problems;
+        //调用服务
+        if(!$this->contestService->addProblemToContest($contestId,$problems))
+            throw new InnerError("Fail to add problem");
+
+        return response()->json([
+           'code' => 0
+        ]);
 
     }
 
     public function RemoveProblemFromContest(Request $request,int $contestId)
     {
+        $validator = Validator::make($request->all(),[
+            'problemNums' => 'array'
+            //输入数据只有题号。
+        ]);
 
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $problemNums = $request->problemNums;
+
+        if(!$this->contestService->removeProblemFromContest($contestId,$problemNums))
+            throw new InnerError("Fail to remove problems");
+
+        return response()->json([
+            'code' => 0
+        ]);
     }
 
     public function deleteContest(Request $request,int $contestId)
     {
+        $validator = Validator::make($request->all(),[
+           'password' => 'required'
+        ]);
 
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        //TODO 设置管理员权限
+
+        if(!$this->contestService->isContestExist($contestId))
+            throw new ContestNotExistException();
+
+        //检查是否为管理员，这里没有使用服务内置方法，可以减少一次查询
+        $group = $this->contestService->getContest($contestId,['creator_id']);
+
+        if($group->creator_id != $request->user->id)
+            throw new NoPermissionException();
+
+        $user = $this->userService->getUserById($group->creator_id,['password']);
+
+        //验证密码
+        if(!Hash::check($request->input('password'),$user->password))
+            throw new PasswordErrorException();
+
+        if(!$this->contestService->deleteContest($contestId))
+            throw new InnerError("Fail to delete Contest");
+
+        return response()->json([
+            'code' => 0
+        ]);
     }
 
 }

@@ -145,6 +145,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         //判断数据合理性
         $group = $this->problemGroupRepo->get($groupId,['problem_count'])->first();
         if($group == null) return false;
+        //根据提供的题目id检查
         $problemIdArray = $this->problemRepo->getIn('id',$problemIds,['id'])->toArray();
         if(count($problemIdArray)!=count($problems)) return false;//存在题号不存在的题目
         $relations = $this->problemGroupRelationRepo->getRelationsByIds($groupId,$problemIds,['id']);

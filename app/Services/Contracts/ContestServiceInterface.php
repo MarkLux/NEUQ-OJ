@@ -14,7 +14,9 @@ interface ContestServiceInterface
 {
     function getAllContests(int $page,int $size);
 
-    function getContest(int $userId,int $groupId);
+    function getContest(int $contestId,array $columns = ['*']);
+
+    function getContestIndex(int $userId,int $groupId);
 
     function getProblem(int $groupId,int $problemNum);
 
