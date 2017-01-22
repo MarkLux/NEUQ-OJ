@@ -205,6 +205,46 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $flag;
     }
 
+    public function updateProblems(int $groupId,array $problems):bool
+    {
+        //更新整体的题目关系，problems数组要求是多维数组,带有title,如果没有score的话加上设定为null或者0，不能没有该索引
+        //整体上看虽然逻辑比较清晰但是感觉设计不太合理，效率低
+
+        if(!$this->isProblemGroupExist($groupId)) return false;
+
+        $problemIds = [];
+        $i = 0;
+
+        //抽取出所有的题目id并重新修改题号
+        foreach($problems as &$problem)
+        {
+            $problemIds[] = $problem['problem_id'];
+            $problem['problem_num'] = $i++;
+            $problem['problem_group_id'] = $groupId;
+        }
+
+        DB::transaction(function()use($groupId,$problems){
+            //先把原来的solution中的num全部标记为-1（相当于删除）
+            $this->solutionRepo->updateWhere(['problem_group_id' => $groupId],['problem_num' => -1]);
+
+            //删除原关系表
+            $this->problemGroupRelationRepo->deleteWhere(['problem_group_id' => $groupId]);
+
+            //重新插入新关系表
+            $this->problemGroupRelationRepo->insert($problems);
+
+            //恢复没有失效的题解（有效率问题）
+            foreach ($problems as $problem)
+            {
+                $this->problemGroupRelationRepo->updateWhere(['problem_group_id'=>$groupId,'problem_id'=>$problem['problem_id']],
+                    ['problem_num'=>$problem['problem_num'],'problem_score'=>$problem['problem_score']]);
+            }
+        });
+
+        return true;
+
+    }
+
     public function getSolutionCount(int $groupId): int
     {
         return $this->solutionRepo->getWhereCount(['problem_group_id' => $groupId]);

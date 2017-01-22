@@ -55,6 +55,8 @@ interface ProblemGroupServiceInterface
 
     function addProblem(int $groupId,array $problems):bool;
 
+    function updateProblems(int $groupId,array $problems):bool;
+
     /*
      * 核心部分
      */
