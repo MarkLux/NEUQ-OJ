@@ -48,13 +48,13 @@ class ContestService implements ContestServiceInterface
         $this->cacheService = $cacheService;
     }
 
-    function getContest(int $contestId,array $columns = ['*'])
+    public function getContest(int $contestId,array $columns = ['*'])
     {
         //使用这个方法前请先检查contest是否存在。
         return $this->problemGroupService->getProblemGroup($contestId,$columns);
     }
 
-    function getContestIndex(int $userId = -1, int $groupId)
+    public function getContestIndex(int $userId = -1, int $groupId)
     {
         //检查权限
         if(!$this->canUserAccessContest($userId,$groupId))
@@ -67,6 +67,7 @@ class ContestService implements ContestServiceInterface
         ]);
 
         $problemInfo = $this->problemGroupRelationRepo->getProblemInfoInGroup($groupId);
+
         $problemIds = [];
 
         //消除null值
@@ -104,7 +105,7 @@ class ContestService implements ContestServiceInterface
         return $data;
     }
 
-    function getContestDetail(int $groupId)
+    public function getContestDetail(int $groupId)
     {
        //用于获取竞赛的所有数据，用于更新
         $contestInfo = $this->problemGroupService->getProblemGroup($groupId,['title','type','description','private','langmask']);
@@ -140,19 +141,19 @@ class ContestService implements ContestServiceInterface
         $data['contest_info'] = $contestInfo;
         $data['problems_info'] = $problemInfo;
         if(isset($admissionInfo))
-            $data['user_ids'] = $problemInfo;
+            $data['user_ids'] = $admissionInfo;
 
         return $data;
     }
 
-    function getProblem(int $groupId, int $problemNum)
+    public function getProblem(int $groupId, int $problemNum)
     {
         $problem =  $this->problemGroupService->getProblemByNum($groupId,$problemNum);
 
         return $problem;
     }
 
-    function getAllContests(int $page, int $size)
+    public function getAllContests(int $page, int $size)
     {
         $totalCount = $this->problemGroupRepo->getProblemGroupCount(1);
 
@@ -163,7 +164,7 @@ class ContestService implements ContestServiceInterface
     }
 
     //创建一个竞赛，如果成功，返回新创建的竞赛id，否则返回-1
-    function createContest(array $data,array $problemIds,array $users=[]):int
+    public function createContest(array $data,array $problemIds,array $users=[]):int
     {
         //根据私有性类别来创建
         $data['type'] = 1;
@@ -196,14 +197,14 @@ class ContestService implements ContestServiceInterface
         return $id;
     }
 
-    function deleteContest(int $groupId):bool
+    public function deleteContest(int $groupId):bool
     {
         if($this->isContestExist($groupId))
             return $this->problemGroupService->deleteProblemGroup($groupId);
         return false;
     }
 
-    function updateContestInfo(int $groupId,array $data):bool
+    public function updateContestInfo(int $groupId,array $data):bool
     {
         $group = $this->problemGroupService->getProblemGroup($groupId,['type','start_time','end_time']);
 
@@ -221,7 +222,20 @@ class ContestService implements ContestServiceInterface
         return $this->problemGroupService->updateProblemGroup($groupId,$data);
     }
 
-    function addProblemToContest(int $groupId,array $problems):bool
+    //批量重置竞赛中的题目
+    public function updateContestProblem(int $contestId,array $problemIds):bool
+    {
+        //重新组装题目
+        $problems = [];
+        foreach ($problemIds as $problemId)
+        {
+            $problems[] = ['problem_id' => $problemId,'problem_score' => null];
+        }
+
+        return $this->problemGroupService->updateProblems($contestId,$problems);
+    }
+
+    public function addProblemToContest(int $groupId,array $problems):bool
     {
         if(!$this->isContestExist($groupId))
             throw new ContestNotExistException();
@@ -229,7 +243,7 @@ class ContestService implements ContestServiceInterface
         return $this->problemGroupService->addProblem($groupId,$problems);
     }
 
-    function removeProblemFromContest(int $groupId,array $problemNums):bool
+    public function removeProblemFromContest(int $groupId,array $problemNums):bool
     {
         if(!$this->isContestExist($groupId))
             throw new ContestNotExistException();
@@ -237,7 +251,7 @@ class ContestService implements ContestServiceInterface
         return $this->problemGroupService->removeProblem($groupId,$problemNums);
     }
 
-    function resetContestPassword(int $groupId,string $password):bool
+    public function resetContestPassword(int $groupId,string $password):bool
     {
         //获取组基本信息
         $group = $this->problemGroupRepo->get($groupId,['type','private'])->first();
@@ -250,7 +264,7 @@ class ContestService implements ContestServiceInterface
         //之前已经通过密码加入的用户不进行处理了
     }
 
-    function resetContestPermission(int $groupId,array $users):bool
+    public function resetContestPermission(int $groupId,array $users):bool
     {
         $group = $this->problemGroupRepo->get($groupId,['type','private'])->first();
         //同上
@@ -260,7 +274,7 @@ class ContestService implements ContestServiceInterface
         return $this->problemGroupService->resetGroupAdmissions($groupId,$users);
     }
 
-    function getRankList(int $groupId)
+    public function getRankList(int $groupId)
     {
         $group = $this->problemGroupService->getProblemGroup($groupId,['title','type','start_time','end_time','status']);
 
@@ -350,7 +364,7 @@ class ContestService implements ContestServiceInterface
         return $rank;
     }
 
-    function searchContest(string $keyword,int $page,int $size)
+    public function searchContest(string $keyword,int $page,int $size)
     {
         $pattern = '%'.$keyword.'%';
 
@@ -363,14 +377,14 @@ class ContestService implements ContestServiceInterface
         return $data;
     }
 
-    function getStatus(int $groupId,int $page,int $size)
+    public function getStatus(int $groupId,int $page,int $size)
     {
         $totalCount = $this->problemGroupService->getSolutionCount($groupId);
         $data = $this->problemGroupService->getSolutions($groupId,$page,$size);
         return ['data' => $data,'total_count' => $totalCount];
     }
 
-    function isContestExist(int $groupId):bool
+    public function isContestExist(int $groupId):bool
     {
         $group = $this->problemGroupRepo->get($groupId,['type'])->first();
 
@@ -379,7 +393,7 @@ class ContestService implements ContestServiceInterface
         return true;
     }
 
-    function submitProblem(int $userId,int $groupId,int $problemNum,array $data):int
+    public function submitProblem(int $userId,int $groupId,int $problemNum,array $data):int
     {
         //先检测用户能不能提交
         $group = $this->problemGroupRepo->get($groupId,['private','type','langmask','start_time','end_time'])->first();
@@ -419,12 +433,12 @@ class ContestService implements ContestServiceInterface
         return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_id);
     }
 
-    function isUserContestCreator(int $userId, int $groupId): bool
+    public function isUserContestCreator(int $userId, int $groupId): bool
     {
         return $this->problemGroupService->isUserGroupCreator($userId,$groupId);
     }
 
-    function canUserAccessContest(int $userId, int $groupId): bool
+    public function canUserAccessContest(int $userId, int $groupId): bool
     {
 
         $group = $this->problemGroupRepo->get($groupId,['private','type','start_time','creator_id'])->first();
@@ -453,7 +467,7 @@ class ContestService implements ContestServiceInterface
         return !($admission==null);
     }
 
-    function getInContestByPassword(int $userId, int $groupId, string $password): bool
+    public function getInContestByPassword(int $userId, int $groupId, string $password): bool
     {
         $group = $this->problemGroupRepo->get($groupId,['private','password','type'])->first();
 

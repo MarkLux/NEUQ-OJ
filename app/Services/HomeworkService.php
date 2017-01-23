@@ -59,11 +59,18 @@ class HomeworkService implements HomeworkServiceInterface
         return $homework;
     }
 
-    //获取一个用户组（班级）内的全部作业，考虑到规模暂时没有做分页。
+    //获取一个用户组（班级）内的全部作业列表，考虑到规模暂时没有做分页。
     public function getHomeworksInGroup(int $groupId)
     {
         $columns = ['id','title','start_time','end_time','status',''];
-        $homeworks = $this->problemGroupService->getProblemGroupBy('user_group_id',$groupId);
+        $homeworks = $this->problemGroupService->getProblemGroupBy('user_group_id',$groupId,$columns);
+        return $homeworks;
+    }
+
+    //用户获取作业的基本面板，
+    public function getHomeworkIndex(int $userId = -1, int $homeworkId)
+    {
+
     }
 
     public function isHomeworkExist(int $homeworkId): bool

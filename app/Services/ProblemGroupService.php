@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
 use NEUQOJ\Repository\Eloquent\ConfigRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
@@ -81,18 +82,18 @@ class ProblemGroupService implements ProblemGroupServiceInterface
 
         DB::transaction(function()use($data,$problems,$problemIds,&$id,&$flag){
 
+            $confirmProblemIds = $this->problemRepo->getIn('id',$problemIds,['id'])->toArray();
+            //检测是否有不存在的题目id
+            if(count($confirmProblemIds)!=count($problemIds)) throw new ProblemNotExistException();
+
             $id = $this->problemGroupRepo->insertWithId($data);
 
-            $i=1;//题号从1开始
-
-            //请注意这个方法
-            $problemTitles = $this->problemRepo->getIn('id',$problemIds,['title'])->toArray();
+            $i=0;//题号从0开始
 
             //重新填充数据
             foreach ($problems as &$problem){
                 $problem['problem_group_id'] = $id;
                 $problem['problem_num'] = $i++;
-                $problem['problem_title'] = $problemTitles[$i-2]['title'];
             }
 
             $this->problemGroupRelationRepo->insert($problems);
@@ -215,13 +216,19 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         $problemIds = [];
         $i = 0;
 
-        //抽取出所有的题目id并重新修改题号
+        //抽取出所有的题目id
         foreach($problems as &$problem)
         {
             $problemIds[] = $problem['problem_id'];
-            $problem['problem_num'] = $i++;
             $problem['problem_group_id'] = $groupId;
+            $problem['problem_num'] = $i++;
         }
+
+        //排序可能会出bug，因为没有orderBy
+        $confirmProblemIds = $this->problemRepo->getIn('id',$problemIds,['id'])->toArray();
+
+        if(count($confirmProblemIds)!=count($problemIds))//有 不存在的题目
+            throw new ProblemNotExistException();
 
         DB::transaction(function()use($groupId,$problems){
             //先把原来的solution中的num全部标记为-1（相当于删除）
@@ -257,7 +264,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
 
     public function isUserGroupCreator(int $userId,int $groupId): bool
     {
-       $group = $this->getProblemGroup($groupId,['creator_id'])->first();
+       $group = $this->getProblemGroup($groupId,['creator_id']);
 
        if($group == null ||$group->creator_id != $userId) return false;
        return true;

@@ -49,6 +49,9 @@ class ContestController extends Controller
 
     public function getContestIndex(Request $request,int $contestId)
     {
+        if(!$this->contestService->isContestExist($contestId))
+            throw new ContestNotExistException();
+
         if(isset($request->user))
             $userId = $request->user->id;
         else
@@ -268,7 +271,7 @@ class ContestController extends Controller
 
     //更新基本信息
 
-    public function UpdateContestInfo(Request $request,int $contestId)
+    public function updateContestInfo(Request $request,int $contestId)
     {
         $validator = Validator::make($request->all(),[
             'title' => 'string|max:100',
@@ -301,6 +304,29 @@ class ContestController extends Controller
             if(!$this->contestService->updateContestInfo($contestId,$newInfo))
                 throw new InnerError("Fail to update contest :".$contestId);
         }
+
+        return response()->json([
+            'code' => 0
+        ]);
+    }
+
+    public function updateContestProblem(Request $request,int $contestId)
+    {
+        $validator = Validator::make($request->all(),[
+            'problem_ids' => 'required|array'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        //TODO 检查管理员权限
+
+        if(!$this->contestService->isUserContestCreator($request->user->id,$contestId))
+            throw new NoPermissionException();
+
+        //拿到的是所有题目id的集合
+        if(!$this->contestService->updateContestProblem($contestId,$request->problem_ids))
+            throw new InnerError("Fail to update Problems in contest ".$contestId);
 
         return response()->json([
             'code' => 0
