@@ -51,10 +51,6 @@ interface ProblemGroupServiceInterface
      * 题目部分
      */
 
-    function removeProblem(int $groupId,array $problemNums):bool;
-
-    function addProblem(int $groupId,array $problems):bool;
-
     function updateProblems(int $groupId,array $problems):bool;
 
     /*
