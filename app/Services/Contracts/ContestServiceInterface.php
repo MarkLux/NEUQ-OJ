@@ -24,9 +24,7 @@ interface ContestServiceInterface
 
     function createContest(array $data,array $problems,array $users=[]):int;
 
-    function addProblemToContest(int $groupId,array $problems):bool;
-
-    function removeProblemFromContest(int $groupId,array $problemNums):bool;
+    function updateContestProblem(int $groupId,array $problemIds):bool;
 
     function deleteContest(int $groupId):bool;
 

@@ -16,7 +16,6 @@ class CreateProblemGroupRelationsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('problem_group_id');
             $table->bigInteger('problem_id');
-            $table->string('problem_title',100);
             $table->integer('problem_score')->nullable();
             $table->integer('problem_num');
             $table->timestamps();

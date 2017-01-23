@@ -235,22 +235,6 @@ class ContestService implements ContestServiceInterface
         return $this->problemGroupService->updateProblems($contestId,$problems);
     }
 
-    public function addProblemToContest(int $groupId,array $problems):bool
-    {
-        if(!$this->isContestExist($groupId))
-            throw new ContestNotExistException();
-
-        return $this->problemGroupService->addProblem($groupId,$problems);
-    }
-
-    public function removeProblemFromContest(int $groupId,array $problemNums):bool
-    {
-        if(!$this->isContestExist($groupId))
-            throw new ContestNotExistException();
-
-        return $this->problemGroupService->removeProblem($groupId,$problemNums);
-    }
-
     public function resetContestPassword(int $groupId,string $password):bool
     {
         //获取组基本信息
