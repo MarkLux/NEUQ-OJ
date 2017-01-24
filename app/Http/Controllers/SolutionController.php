@@ -30,23 +30,36 @@ class SolutionController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'page' => 'integer|min:1',
-            'size' => 'integer|min:1'
+            'size' => 'integer|min:1',
+            'problem_id' => 'integer',
+            'result' => 'integer',
+            'language' => 'integer',
+            'user_id' => 'integer'
         ]);
 
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
         $page = $request->input('page',1);
-        $size = $request->input('size',15);
+        $size = $request->input('size',20);
+        $problemId = $request->input('problem_id',-1);
+        $result = $request->input('result',-1);
+        $language = $request->input('language',-1);
+        $userId = $request->input('user_id',-1);
 
-        $data = $this->solutionService->getAllSolutions($page,$size);
+        $condition = [];
+        if($problemId != -1) $condition['problem_id'] = $problemId;
+        if($result!=-1) $condition['result'] = $result;
+        if($language!=-1) $condition['language'] = $language;
+        if($userId!=-1) $condition['user_id'] = $userId;
+
+        $data = $this->solutionService->getAllSolutions($page,$size,$condition);
 //        $total_count = $this->solutionService->getSolutionCount();
         //数据量太大，如果统计数据总数会导致严重延迟
 
         return response()->json([
             'code' => 0,
             'data' => $data
-//            'total_count' => $total_count
         ]);
     }
 

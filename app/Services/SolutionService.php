@@ -33,9 +33,9 @@ class SolutionService implements SolutionServiceInterface
         $this->sourceCodeRepo = $sourceCodeRepository;
     }
 
-    public function getAllSolutions(int $page, int $size)
+    public function getAllSolutions(int $page, int $size,array $condition)
     {
-        return $this->solutionRepo->paginate($page,$size,[],[
+        return $this->solutionRepo->getAllSolutions($page,$size,$condition,[
             'id','problem_id','user_id','time','memory','result','language','code_length','created_at'
         ]);
     }

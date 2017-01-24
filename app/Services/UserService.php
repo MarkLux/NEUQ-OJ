@@ -40,7 +40,6 @@ class UserService implements UserServiceInterface
 
     public function isUserExist(array $data):bool
     {
-        // TODO: Implement isUserExist() method.
         $user = $this->userRepo->getByMult($data)->first();
 
         if($user == null)
@@ -49,10 +48,9 @@ class UserService implements UserServiceInterface
             return true;
     }
 
-    public function getUserById(int $userId)
+    public function getUserById(int $userId,array $columns = ['*'])
     {
-        // TODO: Implement getUserById() method.
-        $user = $this->userRepo->get($userId)->first();
+        $user = $this->userRepo->get($userId,$columns)->first();
         if($user == null)
             throw new UserNotExistException();
         else
@@ -60,32 +58,29 @@ class UserService implements UserServiceInterface
 
     }
 
-    public function getUserBy(string $param, $value)
+    public function getUserBy(string $param, $value,array $columns = ['*'])
     {
-        // TODO: Implement getUserBy() method.
-        $user = $this->userRepo->getBy($param,$value)->first();
+        $user = $this->userRepo->getBy($param,$value,$columns)->first();
         if($user == null)
             throw new UserNotExistException();
         else
             return $user;
     }
 
-    public function getUserByMult(array $condition)
+    public function getUserByMult(array $condition,array $columns = ['*'])
     {
-        // TODO: Implement getUserByMult() method.
-        $user = $this->userRepo->getByMult($condition)->first();
+        $user = $this->userRepo->getByMult($condition,$columns)->first();
         if($user == null)
             throw new UserNotExistException();
         else
             return $user;
     }
 
-    public function getUsers(array $data)
+    public function getUsers(array $data,array $columns = ['*'])
     {
-        // TODO: Implement getUsers() method.
-        $users = $this->userRepo->getByMult($data);
+        $users = $this->userRepo->getByMult($data,$columns);
 
-        if($users == null)
+        if(empty($users))
             throw new UserNotExistException();
         else
             return $users;
@@ -93,7 +88,6 @@ class UserService implements UserServiceInterface
 
     public function updateUserById(int $userId,array $data):bool
     {
-        // TODO: Implement updateUserById() method.
         if($this->userRepo->update($data,$userId))
             return true;
         else
@@ -102,7 +96,6 @@ class UserService implements UserServiceInterface
 
     public function updateUser(array $condition, array $data):bool
     {
-        // TODO: Implement updateUser() method.
         if($this->userRepo->updateWhere($condition,$data))
             return true;
         else
@@ -120,7 +113,6 @@ class UserService implements UserServiceInterface
 
     public function lockUser(int $userId):bool
     {
-       // TODO: Implement lockUser() method.
         $user = $this->userRepo->get($userId)->first();
 
         if($user == null)
@@ -136,7 +128,6 @@ class UserService implements UserServiceInterface
 
     public function unlockUser(int $userId):bool
     {
-        // TODO: Implement unlockUser() method.
         $user = $this->userRepo->get($userId)->first();
 
         if($user == null)
@@ -181,7 +172,6 @@ class UserService implements UserServiceInterface
 
     public function login(array $data)
     {
-        // TODO: Implement login() method.
         //正则判断登录名类型
         if(Utils::IsMobile($data['identifier'])) {
             $user = $this->getUserBy('mobile',$data['identifier']);

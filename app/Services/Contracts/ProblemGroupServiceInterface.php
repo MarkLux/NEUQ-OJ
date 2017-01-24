@@ -25,7 +25,7 @@ interface ProblemGroupServiceInterface
      */
 
     function isProblemGroupExist(int $groupId):bool;
-    function isUserProblemOwner(int $userId,int $groupId):bool;
+    function isUserGroupCreator(int $userId,int $groupId):bool;
 
     /*
      * 创建
@@ -51,9 +51,7 @@ interface ProblemGroupServiceInterface
      * 题目部分
      */
 
-    function removeProblem(int $groupId,array $problemNums):bool;
-
-    function addProblem(int $groupId,array $problems):bool;
+    function updateProblems(int $groupId,array $problems):bool;
 
     /*
      * 核心部分
@@ -70,5 +68,7 @@ interface ProblemGroupServiceInterface
     function getGroupAdmissions(int $groupId);
 
     function resetGroupAdmissions(int $groupId,array $newData):bool;
+
+    function checkLang(int $langCode,int $langmask):bool;
 
 }

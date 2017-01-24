@@ -9,6 +9,8 @@
 namespace NEUQOJ\Services;
 
 
+use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
+use NEUQOJ\Repository\Eloquent\ConfigRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
@@ -27,6 +29,8 @@ class ProblemGroupService implements ProblemGroupServiceInterface
     private $solutionRepo;
     private $sourceRepo;
     private $deletionService;
+    public $language_ext=["c", "cc", "pas", "java", "rb", "sh", "py", "php","pl", "cs","m","bas","scm","c","cc","lua","js"];
+
 
     public function __construct(
         ProblemGroupRepository $problemGroupRepository, ProblemGroupAdmissionRepository $admissionRepository,
@@ -64,11 +68,32 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         $id = -1;
         $flag = false;
 
-        DB::transaction(function()use($data,$problems,&$id,&$flag){
+        //计算语言掩码
+        $data['langmask'] = $this->getLangMask($data['langmask']);
+        $data['problem_count'] = count($problems);
+        //$problems数组传入时只存放有problem_id
+
+        //合成题目id
+        $problemIds = [];
+
+        foreach ($problems as $problem)
+            $problemIds[] = $problem['problem_id'];
+
+
+        DB::transaction(function()use($data,$problems,$problemIds,&$id,&$flag){
+
+            $confirmProblemIds = $this->problemRepo->getIn('id',$problemIds,['id'])->toArray();
+            //检测是否有不存在的题目id
+            if(count($confirmProblemIds)!=count($problemIds)) throw new ProblemNotExistException();
+
             $id = $this->problemGroupRepo->insertWithId($data);
+
+            $i=0;//题号从0开始
+
             //重新填充数据
             foreach ($problems as &$problem){
                 $problem['problem_group_id'] = $id;
+                $problem['problem_num'] = $i++;
             }
 
             $this->problemGroupRelationRepo->insert($problems);
@@ -108,76 +133,50 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return !($problemGroup == null);
     }
 
-    //支持多个题目的添加 若存在题号不存在的题目或者已经存在的题目将会返回错误,题目的特定信息应该提前组织在problems数组里
-    public function addProblem(int $groupId,array $problems): bool
+    public function updateProblems(int $groupId,array $problems):bool
     {
+        //更新整体的题目关系，problems数组要求是多维数组,带有title,如果没有score的话加上设定为null或者0，不能没有该索引
+        //整体上看虽然逻辑比较清晰但是感觉设计不太合理，效率低
+
+        if(!$this->isProblemGroupExist($groupId)) return false;
+
         $problemIds = [];
-        //重新组织数据
-        foreach ($problems as $problem)
+        $i = 0;
+
+        //抽取出所有的题目id
+        foreach($problems as &$problem)
         {
             $problemIds[] = $problem['problem_id'];
-        }
-
-        //判断数据合理性
-        $group = $this->problemGroupRepo->get($groupId,['problem_count'])->first();
-        if($group == null) return false;
-        $problemIdArray = $this->problemRepo->getIn('id',$problemIds,['id'])->toArray();
-        if(count($problemIdArray)!=count($problems)) return false;//存在题号不存在的题目
-        $relations = $this->problemGroupRelationRepo->getRelationsByIds($groupId,$problemIds,['id']);
-
-
-        if(count($relations) > 0) return false;//存在已经在竞赛的题目
-        //组装relations
-        $count = $group->problem_count;
-
-        foreach ($problems as &$problem)
-        {
             $problem['problem_group_id'] = $groupId;
-            $problem['problem_num'] = ++$count;
+            $problem['problem_num'] = $i++;
         }
 
-        $flag = false;
+        //排序可能会出bug，因为没有orderBy
+        $confirmProblemIds = $this->problemRepo->getIn('id',$problemIds,['id'])->toArray();
 
-        DB::transaction(function()use($problems,&$flag,$count,$groupId){
+        if(count($confirmProblemIds)!=count($problemIds))//有 不存在的题目
+            throw new ProblemNotExistException();
+
+        DB::transaction(function()use($groupId,$problems){
+            //先把原来的solution中的num全部标记为-1（相当于删除）
+            $this->solutionRepo->updateWhere(['problem_group_id' => $groupId],['problem_num' => -1]);
+
+            //删除原关系表
+            $this->problemGroupRelationRepo->deleteWhere(['problem_group_id' => $groupId]);
+
+            //重新插入新关系表
             $this->problemGroupRelationRepo->insert($problems);
-            //更新题号
-            $this->problemGroupRepo->update(['problem_count'=>$count],$groupId);
 
-            $flag = true;
+            //恢复没有失效的题解（有效率问题）
+            foreach ($problems as $problem)
+            {
+                $this->problemGroupRelationRepo->updateWhere(['problem_group_id'=>$groupId,'problem_id'=>$problem['problem_id']],
+                    ['problem_num'=>$problem['problem_num'],'problem_score'=>$problem['problem_score']]);
+            }
         });
 
-        return $flag;
-    }
+        return true;
 
-    //支持多个题目的删除，如果题号不存在则自动忽略
-    public function removeProblem(int $groupId, array $problemNums): bool
-    {
-        //判断数据合理性
-        $group = $this->problemGroupRepo->get($groupId,['problem_count'])->first();
-        $relationIds= $this->problemGroupRelationRepo->getRelationsByNums($groupId,$problemNums,['id','problem_id'])->toArray();
-        if($group==null||count($relationIds)==0) return false;
-
-        $problemIds = [];
-
-        //重新组装数据
-        foreach ($relationIds as &$relation)
-        {
-            $problemIds[] = $relation['problem_id'];
-            unset($relation['problem_id']);
-        }
-
-        $flag = false;
-        $solutionIds = $this->solutionRepo->getSolutionsIn('problem_group_id',$groupId,'problem_id',$problemIds)->toArray();
-
-        DB::transaction(function()use($groupId,$problemIds,&$flag,$solutionIds,$relationIds){
-            $this->problemGroupRelationRepo->deleteWhereIn('id',$relationIds);
-            $this->solutionRepo->deleteWhereIn('id',$solutionIds);
-            $this->sourceRepo->deleteWhereIn('solution_id',$solutionIds);
-            //删除相关的所有数据
-            $flag = true;
-        });
-
-        return $flag;
     }
 
     public function getSolutionCount(int $groupId): int
@@ -190,9 +189,9 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $this->solutionRepo->paginate($page,$size,['problem_group_id'=>$groupId]);
     }
 
-    public function isUserProblemOwner(int $userId,int $groupId): bool
+    public function isUserGroupCreator(int $userId,int $groupId): bool
     {
-       $group = $this->getProblemGroup($groupId,['creator_id'])->first();
+       $group = $this->getProblemGroup($groupId,['creator_id']);
 
        if($group == null ||$group->creator_id != $userId) return false;
        return true;
@@ -219,5 +218,31 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         });
 
         return $flag;
+    }
+
+    /**
+     * 用于检查语言选择
+     */
+
+    private function getLangMask(array $language):int
+    {
+        //原版配置项,注意原oj上lang_ext数量比这个少，算出来的langmask不一样
+        //所以不再兼容老oj版本了
+
+        $langmask=0;
+        foreach($language as $t){
+            $langmask+=1<<$t;
+        }
+        $langmask=((1<<count($this->language_ext))-1)&(~$langmask);
+
+        return $langmask;
+    }
+
+    public function checkLang(int $langCode,int $langmask):bool
+    {
+        //检查语言源码 其实还可以设置oj全局语言源码来禁用语言，以后考虑添加上
+        $langCount = count($this->language_ext);
+        $lang=(~((int)$langmask))&((1<<($langCount))-1);
+        return $lang&(1<<$langCode);
     }
 }

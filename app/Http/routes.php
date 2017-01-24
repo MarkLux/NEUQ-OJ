@@ -13,11 +13,16 @@
 
 
 include 'Routes/UserGroup.php';
-include 'Routes/Tag.php';
+
+//include 'Routes/Test.php';
 
 include 'Routes/User.php';
 
 include 'Routes/DeletionLog.php';
+
+include 'Routes/Admin.php';
+
+include 'Routes/Discuss.php';
 
 include 'Routes/Problem.php';
 

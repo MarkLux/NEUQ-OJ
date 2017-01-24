@@ -10,7 +10,7 @@ namespace NEUQOJ\Services\Contracts;
 
 interface SolutionServiceInterface
 {
-    function getAllSolutions(int $page,int $size);
+    function getAllSolutions(int $page,int $size,array $condition);
 
     function getSolutionBy(string $param,$value,array $columns = ['*']);
 
