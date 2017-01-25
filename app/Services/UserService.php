@@ -161,7 +161,7 @@ class UserService implements UserServiceInterface
             'name' => $data['name'],
             'email' => $data['email'],
             'mobile' => $data['mobile'],
-            'password' => bcrypt($data['password']),
+            'password' => Utils::pwGen($data['password']),
             'school' => $data['school'] ? $data['school'] : "Unknown",
         ];
 
@@ -178,19 +178,20 @@ class UserService implements UserServiceInterface
         } elseif(Utils::IsEmail($data['identifier'])) {
             $user = $this->getUserBy('email',$data['identifier']);
         } else {
-            //添加用户名登陆方式
-            $user = $this->getUserBy('name',$data['identifier']);
+            //旧用户登录查找
+            $user = $this->getUserBy('login_name',$data['identifier']);
         }
 
         if($user == null)
             throw new UserNotExistException();
 
-        if(!Hash::check($data['password'],$user->password))
+        if(!Utils::pwCheck($data['password'],$user->password))
             throw new PasswordErrorException();
 
         return $user;
     }
 
+    //非普通登录
     public function loginUser(int $userId,string $ip)
     {
         $user = $this->userRepo->get($userId)->first();

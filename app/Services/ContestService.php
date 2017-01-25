@@ -57,7 +57,7 @@ class ContestService implements ContestServiceInterface
     public function getContestIndex(int $userId = -1, int $groupId)
     {
         //检查权限
-        if(!$this->canUserAccessContest($userId,$groupId))
+        if($userId!=-1&&!$this->canUserAccessContest($userId,$groupId))
             throw new NoPermissionException();
 
         //获取基本信息

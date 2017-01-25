@@ -14,7 +14,7 @@ use NEUQOJ\Exceptions\ProblemGroup\HomeworkNotExistException;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Services\Contracts\HomeworkServiceInterface;
 
-class HomeworkService implements HomeworkServiceInterface
+class HomeworkService
 {
     private $problemGroupService;
     private $userGroupService;

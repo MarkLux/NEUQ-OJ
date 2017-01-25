@@ -19,4 +19,9 @@ class UserRepository extends AbstractRepository
     }
 
     use InsertWithIdTrait;
+
+    public function deleteWhereIn(string $param,array $data)
+    {
+        return $this->model->whereIn($param,$data)->delete();
+    }
 }
