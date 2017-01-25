@@ -11,7 +11,9 @@ use NEUQOJ\Repository\Models\User;
 
 interface HomeworkServiceInterface
 {
+    function getProblem(int $groupId,int $problemNum);
     //基本获取函数
+    function getAllHomework(int $page,int $size);
     function getHomework(int $id,array $columns=['*']);
 
     function getHomeworkBy(string $param,string $value,array $columns=['*']);
@@ -28,7 +30,7 @@ interface HomeworkServiceInterface
     //修改
     function updateHomeworkInfo(int $homeworkId,array $data):bool;
 
-    //修改题目，请注意这里题目数组的格式，并非只有id，还包含有score字段，注意处理
+    //修改题目，请注意这里题目数组的格式， 并非只有id，还包含有score字段，注意处理
     function updateHomeworkProblem(int $homeworkId,array $problems):bool;
 
     function deleteHomework(User $user,int $homeworkId):bool;
@@ -47,4 +49,6 @@ interface HomeworkServiceInterface
     //切记 这个rank的组织和contest不同，用户信息方面应该join上他们的组内名片信息。
     //这意味着redis缓存部分的对象要重新写。
     function getHomeworkRank(int $homeworkId);
+
+    function submitProblem(int $userId,int $groupId,int $problemNum,array $data):int;
 }
