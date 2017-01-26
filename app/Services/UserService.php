@@ -154,6 +154,8 @@ class UserService implements UserServiceInterface
         //检查邮箱
         if(!Utils::IsEmail($data['email']))
             throw new FormValidatorException(['Email address Error']);
+        if(!Utils::isEmailAvailable($data['email']))
+            throw new FormValidatorException(['Email address is not Available']);
 
         if($this->isUserExist(['mobile' => $data['mobile']]))
             throw new MobileExistException();

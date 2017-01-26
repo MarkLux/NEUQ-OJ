@@ -19,6 +19,8 @@ use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Services\Contracts\HomeworkServiceInterface;
 use NEUQOJ\Repository\Models\User;
+use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
+
 class HomeworkService implements HomeworkServiceInterface
 {
     private $problemGroupService;
