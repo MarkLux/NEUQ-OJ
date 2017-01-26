@@ -20,7 +20,18 @@ use NEUQOJ\Services\VerifyService;
 
 class UserController extends Controller
 {
-    public function register(Request $request,UserService $userService,VerifyService $verifyService)
+    private $userService;
+    private $verifyService;
+    private $tokenService;
+
+    public function __construct(UserService $userService,VerifyService $verifyService,TokenService $tokenService)
+    {
+        $this->userService = $userService;
+        $this->verifyService = $verifyService;
+        $this->tokenService = $tokenService;
+    }
+
+    public function register(Request $request)
     {
         $validator = Validator::make($request->all(),[
             'name' => 'required|max:100',
@@ -35,11 +46,11 @@ class UserController extends Controller
             throw new FormValidatorException($error);
         }
 
-        $userId = $userService->register($request->all());
+        $userId = $this->userService->register($request->all());
 
-        $user = $userService->getUserById($userId,['id','name','email']);
+        $user = $this->userService->getUserById($userId,['id','name','email']);
 
-        $verifyService->sendVerifyEmail($user);
+        $this->verifyService->sendVerifyEmail($user);
 
         return response()->json([
             'code' => 0,
@@ -47,7 +58,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function active(Request $request,UserService $userService,VerifyService $verifyService)
+    public function active(Request $request)
     {
         $validator = Validator::make($request->all(),[
             'verify_code' => 'required',
@@ -57,10 +68,10 @@ class UserController extends Controller
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        if(!$verifyService->activeUserByEmailCode($request->user_id,$request->verify_code))
+        if(!$this->verifyService->activeUserByEmailCode($request->user_id,$request->verify_code))
             throw new InnerError("Fail to active User: ".$request->user_id);
 
-        $data = $userService->loginUser($request->user_id,$request->ip());
+        $data = $this->userService->loginUser($request->user_id,$request->ip());
 
         return response()->json([
             'code' => 0,
@@ -68,7 +79,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function resendActiveMail(Request $request,UserService $userService,VerifyService $verifyService)
+    public function resendActiveMail(Request $request)
     {
         //重新发送邮件，应该检测上次发送邮件的时长，防止有人恶意重复访问此接口损耗服务器性能
 
@@ -79,13 +90,13 @@ class UserController extends Controller
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $user = $userService->getUserById($request->user_id,['id','name','status','email']);
+        $user = $this->userService->getUserById($request->user_id,['id','name','status','email']);
 
         if($user == null) throw new UserNotExistException();
         elseif($user->status == -1) throw new UserLockedException();
         elseif($user->status == 1) throw new UserIsActivatedException();
 
-        if(!$verifyService->sendVerifyEmail($user))
+        if(!$this->verifyService->sendVerifyEmail($user))
             throw new InnerError('Fail to Send Email');
 
         return response()->json([
@@ -93,7 +104,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function login(Request $request,UserService $userService,TokenService $tokenService)
+    public function login(Request $request)
     {
         $validator = Validator::make($request->all(),[
             'identifier' => 'required|max:100',
@@ -105,9 +116,9 @@ class UserController extends Controller
             throw new FormValidatorException($error);
         }
 
-        $user = $userService->login($request->all());
+        $user = $this->userService->login($request->all());
 
-        $tokenStr = $tokenService->makeToken($user->id,$request->ip());
+        $tokenStr = $this->tokenService->makeToken($user->id,$request->ip());
 
         return response()->json([
             'code' => 0,
@@ -126,7 +137,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function getUser(Request $request,UserService $userService)
+    public function getUser(Request $request)
     {
         $validator = Validator::make($request->all(),[
             'id' => 'integer|max:20',
@@ -144,9 +155,9 @@ class UserController extends Controller
         $id = $request->get('id');
 
         if($id != null)
-            $user = $userService->getUserById($id);
+            $user = $this->userService->getUserById($id);
         else
-            $user = $userService->getUserByMult($request->all());
+            $user = $this->userService->getUserByMult($request->all());
 
         return response()->json([
             'code' => 0,
@@ -154,16 +165,16 @@ class UserController extends Controller
         ]);
     }
 
-    public function getUsers(Request $request,UserService $userService)
+    public function getUsers(Request $request)
     {
-        $users = $userService->getUsers($request->all());
+        $users = $this->userService->getUsers($request->all());
         return response()->json([
             'code' => 0,
             'users' => $users
         ]);
     }
 
-    public function updateUser(Request $request,UserService $userService)
+    public function updateUser(Request $request)
     {
         $validator = Validator::make($request->all(),[
             'id' => 'integer',
@@ -187,9 +198,9 @@ class UserController extends Controller
         ];
 
         if($id != null) {
-            $flag = $userService->updateUserById($id,$data);
+            $flag = $this->userService->updateUserById($id,$data);
         } elseif ($email != null) {
-            $flag = $userService->updateUser(['email' => $email],$data);
+            $flag = $this->userService->updateUser(['email' => $email],$data);
         }
 
         if($flag) {
@@ -199,20 +210,68 @@ class UserController extends Controller
         }
     }
 
-    public function lockUser(UserService $userService,$id)
+    public function resetPasswordByOld(Request $request)
     {
-        if($userService->lockUser($id))
-            return response()->json([
-                'code' => 0
-            ]);
+        $validator = Validator::make($request->all(),[
+            'user_id' => 'required',
+            'old_password' => 'required',
+            'new_password' => 'required|confirmed|string|min:6|max:20'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        if(!$this->userService->resetPasswordByOldPass($request->user_id,$request->old_password,$request->new_password))
+            throw new InnerError("Fail to reset password");
+
+        return response()->json([
+            'code' => 0
+        ]);
     }
 
-    public function unlockUser(UserService $userService,$id)
+    public function sendForgotPasswordEmail(Request $request)
     {
-        if($userService->unlockUser($id))
-            return response()->json([
-                'code' => 0
-            ]);
+        $validator = Validator::make($request->all(),[
+            'email' => 'required|email'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $user = $this->userService->getUserBy('email',$request->email,['id','name','email','status']);
+
+        if($user == null) throw new UserNotExistException();
+        if($user->status == -1) throw new UserLockedException();
+
+        if(!$this->verifyService->sendCheckEmail($user))
+            throw new InnerError("Fail to send check email");
+
+        return response()->json([
+            'code' => 0
+        ]);
+    }
+
+    public function resetPasswordByVerifyCode(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'email' => 'required|email',
+            'new_password' => 'required|string|min:6|max:20|confirmed',
+            'verify_code' => 'required|string|min:6|max:6'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $user = $this->userService->getUserBy('email',$request->email,['id','name','status']);
+        if($user == null) throw new UserNotExistException();
+        if($user->status == -1) throw new UserLockedException();
+
+        if(!$this->userService->resetPasswordByVerifyCode($user->id,$request->verify_code,$request->new_password))
+            throw new InnerError('Reset Failed!');
+
+        return response()->json([
+            'code' => 0
+        ]);
     }
 
     public function logout(Request $request,TokenService $tokenService)

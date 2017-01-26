@@ -45,6 +45,12 @@ interface UserServiceInterface
 
     function login(array $data);
 
+    function resetPasswordByOldPass(int $userId,string $oldPass,string $newPass):bool;
+
+    function sendForgotPasswordEmail(int $userId):bool;
+
+    function resetPasswordByVerifyCode(int $userId,string $verifyCode,string $newPass):bool;
+
     function loginUser(int $userId,string $ip);
 
     function getUserRole(int $userId);

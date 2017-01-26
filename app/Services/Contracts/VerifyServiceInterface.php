@@ -14,4 +14,8 @@ interface VerifyServiceInterface
     function sendVerifyEmail(User $user):bool;
 
     function activeUserByEmailCode(int $userId,string $verifyCode):bool;
+
+    function sendCheckEmail(User $user):bool;
+
+    function checkUserByEmailCode(int $userId,string $verifyCode):bool;
 }

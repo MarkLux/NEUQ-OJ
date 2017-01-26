@@ -8,6 +8,7 @@
 
 namespace NEUQOJ\Services;
 
+use Hamcrest\Util;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Common\Utils;
@@ -20,6 +21,7 @@ use NEUQOJ\Exceptions\UserExistedException;
 use NEUQOJ\Exceptions\UserLockedException;
 use NEUQOJ\Exceptions\UserNotActivatedException;
 use NEUQOJ\Exceptions\UserNotExistException;
+use NEUQOJ\Exceptions\VerifyCodeErrorException;
 use NEUQOJ\Http\Requests\Request;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Repository\Eloquent\PrivilegeRepository;
@@ -33,11 +35,13 @@ class UserService implements UserServiceInterface
 {
     private $userRepo;
     private $tokenService;
+    private $verifyService;
 
-    public function __construct(UserRepository $userRepository,TokenService $tokenService)
+    public function __construct(UserRepository $userRepository,TokenService $tokenService,VerifyService $verifyService)
     {
         $this->userRepo = $userRepository;
         $this->tokenService = $tokenService;
+        $this->verifyService = $verifyService;
     }
 
     public function isUserExist(array $data):bool
@@ -196,6 +200,40 @@ class UserService implements UserServiceInterface
             throw new PasswordErrorException();
 
         return $user;
+    }
+
+    public function resetPasswordByOldPass(int $userId, string $oldPass, string $newPass): bool
+    {
+        $user = $this->userRepo->get($userId,['password'])->first();
+
+        if($user == null) throw new UserNotExistException();
+
+        if(!Utils::pwCheck($oldPass,$user->password))
+            throw new PasswordErrorException();
+
+        $newPass = Utils::pwGen($newPass);
+
+        return $this->userRepo->update(['password' => $newPass],$userId) == 1;
+    }
+
+    public function resetPasswordByVerifyCode(int $userId, string $verifyCode,string $newPass):bool
+    {
+        if(!$this->verifyService->checkUserByEmailCode($userId,$verifyCode))
+            return false;
+
+        if($this->userRepo->update(['password' => Utils::pwGen($newPass)],$userId) == 1)
+            return true;
+        else return false;
+    }
+
+    public function sendForgotPasswordEmail(int $userId):bool
+    {
+        $user = $this->userRepo->get($userId,['id','email','name','status'])->first();
+
+        if($user == null) throw new UserNotExistException();
+        if($user->status == -1) throw new UserLockedException();
+
+        return $this->verifyService->sendCheckEmail($user);
     }
 
     //非普通登录
