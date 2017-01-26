@@ -17,6 +17,8 @@ use NEUQOJ\Exceptions\MobileExistException;
 use NEUQOJ\Exceptions\NameExistException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserExistedException;
+use NEUQOJ\Exceptions\UserLockedException;
+use NEUQOJ\Exceptions\UserNotActivatedException;
 use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Http\Requests\Request;
 use NEUQOJ\Repository\Eloquent\UserRepository;
@@ -55,7 +57,6 @@ class UserService implements UserServiceInterface
             throw new UserNotExistException();
         else
             return $user;
-
     }
 
     public function getUserBy(string $param, $value,array $columns = ['*'])
@@ -134,7 +135,7 @@ class UserService implements UserServiceInterface
             throw new UserNotExistException();
 
         $data = [
-            'status' => 0
+            'status' => 1
         ];
         $this->userRepo->update($data,$user['id']);
 
@@ -163,6 +164,7 @@ class UserService implements UserServiceInterface
             'mobile' => $data['mobile'],
             'password' => Utils::pwGen($data['password']),
             'school' => $data['school'] ? $data['school'] : "Unknown",
+            'status' => 0
         ];
 
         $id = $this->userRepo->insertWithId($user);
@@ -184,6 +186,11 @@ class UserService implements UserServiceInterface
 
         if($user == null)
             throw new UserNotExistException();
+
+        if($user->status == 0)
+            throw new UserNotActivatedException();
+        elseif($user->status == -1)
+            throw new UserLockedException();
 
         if(!Utils::pwCheck($data['password'],$user->password))
             throw new PasswordErrorException();

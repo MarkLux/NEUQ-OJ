@@ -16,8 +16,7 @@ class CreateVerifyCodesTable extends Migration
             $table->bigInteger('user_id');
             $table->integer('type');
             $table->integer('device');
-            $table->string('moblie',45);
-            $table->string('email',45);
+            $table->tinyInteger('via');
             $table->string('code',100);
             $table->bigInteger('created_at');
             $table->bigInteger('updated_at');

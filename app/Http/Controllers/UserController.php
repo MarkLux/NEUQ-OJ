@@ -6,16 +6,21 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\RegisterErrorException;
+use NEUQOJ\Exceptions\UserIsActivatedException;
+use NEUQOJ\Exceptions\UserLockedException;
+use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Http\Requests;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Services\TokenService;
 use NEUQOJ\Services\UserService;
 use Illuminate\Support\Facades\Response;
+use NEUQOJ\Services\VerifyService;
 
 class UserController extends Controller
 {
-    public function register(Request $request,UserService $userService)
+    public function register(Request $request,UserService $userService,VerifyService $verifyService)
     {
         $validator = Validator::make($request->all(),[
             'name' => 'required|max:100',
@@ -32,11 +37,59 @@ class UserController extends Controller
 
         $userId = $userService->register($request->all());
 
-        $data = $userService->loginUser($userId,$request->ip());
+        $user = $userService->getUserById($userId,['id','name','email']);
+
+        $verifyService->sendVerifyEmail($user);
+
+        return response()->json([
+            'code' => 0,
+            'user_id' => $userId
+        ]);
+    }
+
+    public function active(Request $request,UserService $userService,VerifyService $verifyService)
+    {
+        $validator = Validator::make($request->all(),[
+            'verify_code' => 'required',
+            'user_id' => 'required'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        if(!$verifyService->activeUserByEmailCode($request->user_id,$request->verify_code))
+            throw new InnerError("Fail to active User: ".$request->user_id);
+
+        $data = $userService->loginUser($request->user_id,$request->ip());
 
         return response()->json([
             'code' => 0,
             'data' => $data
+        ]);
+    }
+
+    public function resendActiveMail(Request $request,UserService $userService,VerifyService $verifyService)
+    {
+        //重新发送邮件，应该检测上次发送邮件的时长，防止有人恶意重复访问此接口损耗服务器性能
+
+        $validator = Validator::make($request->all(),[
+            'user_id' => 'required'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $user = $userService->getUserById($request->user_id,['id','name','status','email']);
+
+        if($user == null) throw new UserNotExistException();
+        elseif($user->status == -1) throw new UserLockedException();
+        elseif($user->status == 1) throw new UserIsActivatedException();
+
+        if(!$verifyService->sendVerifyEmail($user))
+            throw new InnerError('Fail to Send Email');
+
+        return response()->json([
+            'code' => 0
         ]);
     }
 

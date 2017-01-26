@@ -12,6 +12,10 @@ Route::post('/user/register','UserController@register');
 
 Route::post('/user/login','UserController@login');
 
+Route::get('/user/active','UserController@active');
+
+Route::get('/user/active-mail/send','UserController@resendActiveMail');
+
 Route::group(['middleware' => 'token'], function() {
 
     Route::group(['prefix' => 'user'], function() {

@@ -12,6 +12,8 @@ namespace NEUQOJ\Services;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use NEUQOJ\Common\Utils;
+use NEUQOJ\Exceptions\UserGroup\OperationTooQuickException;
+use NEUQOJ\Exceptions\UserIsActivatedException;
 use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Exceptions\VerifyCodeErrorException;
 use NEUQOJ\Exceptions\VerifyCodeExpiresException;
@@ -58,6 +60,10 @@ class VerifyService implements VerifyServiceInterface
         }
         else
         {
+            //判断发送间隔是否太短(60s)
+            if($now - $preVerifyCode->updated_at < 60000)
+                throw new OperationTooQuickException();
+
             if($this->verifyCodeRepo->updateWhere(['user_id' => $user->id,'type' => 1,'via' => 1],
                 ['code' => $code,'updated_at'=>$now,'expires_at'=>$now+3600000])!=1)
                 return false;
@@ -73,6 +79,11 @@ class VerifyService implements VerifyServiceInterface
 
     public function activeUserByEmailCode(int $userId, string $verifyCode): bool
     {
+        $user = $this->userRepo->get($userId,['status'])->first();
+
+        if($user!=null&&$user->status !=0)
+            throw new UserIsActivatedException();
+
         $realCode = $this->verifyCodeRepo->getByMult(['user_id'=>$userId,'type'=>1,'via'=>1])->first();
 
         if($realCode == null)
