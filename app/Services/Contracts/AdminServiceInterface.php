@@ -12,7 +12,4 @@ interface AdminServiceInterface
 {
     //利用一个前缀批量生成竞赛、考试账号
     function generateUsersByPrefix(string $prefix,int $num,array $names=[]);
-
-    //完全自定义的用户列表
-    function generateUsers(array $users);
 }

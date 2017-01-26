@@ -16,6 +16,7 @@ class CreateUsersTable extends Migration
             $table->bigIncrements('id');
             $table->string('email',100);
             $table->string('mobile',45);
+            $table->string('login_name',100)->nullable()->unique();
             $table->integer('submit')->default('0');
             $table->integer('solved')->default('0');
             $table->string('password',255);

@@ -36,7 +36,7 @@ class AdminService implements AdminServiceInterface
         for($i = 1;$i <= $num;$i++)
         {
             $email = $prefix.($i<10?'0'.$i:$i).'@neuqoj.com';
-            $password = strtoupper(substr(MD5($email.rand(0,9999999)),0,10));
+            $password = strtoupper(substr(MD5($prefix.($i<10?'0'.$i:$i).rand(0,9999999)),0,10));
 
             $users[] = [
                 'email' => $email,
@@ -47,26 +47,19 @@ class AdminService implements AdminServiceInterface
             $passwords[] = $password;
         }
 
-        //检查有没有重复的
-        $preUsers = $this->userRepo->getIn('email',$emails,'id');
-        if(count($preUsers) > 0)
-            $this->userRepo->deleteWhereIn('email',$emails);//删除掉重复的
+
+        $this->userRepo->deleteWhereIn('email',$emails);//删除掉重复的
 
         //插入新的
         $this->userRepo->insert($users);
 
-        $newUsers = $this->userRepo->getIn('email',$emails,['id','name','email']);
+        $newUsers = $this->userRepo->getIn('email',$emails,['id','name','email'])->toArray();
 
         for($i=0;$i<count($newUsers);$i++)
         {
-            $newUsers['password'] = $passwords[$i];
+            $newUsers[$i]['password'] = $passwords[$i];
         }
 
         return $newUsers;
-    }
-
-    public function generateUsers(array $users): bool
-    {
-        // TODO: Implement generateUsers() method.
     }
 }

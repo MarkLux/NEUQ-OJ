@@ -146,15 +146,15 @@ class UserService implements UserServiceInterface
         //检查手机号
         if(!Utils::IsMobile($data['mobile']))
             throw new FormValidatorException(['Mobile Number Error']);
+        //检查邮箱
+        if(!Utils::IsEmail($data['email']))
+            throw new FormValidatorException(['Email address Error']);
 
         if($this->isUserExist(['mobile' => $data['mobile']]))
             throw new MobileExistException();
 
         if($this->isUserExist(['email' => $data['email']]))
             throw new EmailExistException();
-
-        if($this->isUserExist(['name'=>$data['name']]))
-            throw new NameExistException();
 
 
         $user = [
