@@ -10,13 +10,14 @@ namespace NEUQOJ\Services;
 
 
 use Illuminate\Support\Facades\DB;
-use League\Flysystem\Exception;
+use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\ProblemGroup\HomeworkNotAvailableException;
 use NEUQOJ\Exceptions\ProblemGroup\HomeworkNotExistException;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
+use NEUQOJ\Repository\Eloquent\UserGroupRelationRepository;
 use NEUQOJ\Services\Contracts\HomeworkServiceInterface;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
@@ -31,12 +32,14 @@ class HomeworkService implements HomeworkServiceInterface
     private $problemGroupRepo;
     private $solutionRepo;
     private $cacheService;
+    private $userGroupRelationRepo;
 
     public function __construct(
         ProblemGroupService $problemGroupService,UserGroupService $userGroupService,
         ProblemGroupRelationRepository $problemGroupRelationRepository,ProblemService $problemService,
         ProblemGroupAdmissionRepository $problemGroupAdmissionRepository,
-        ProblemGroupRepository $problemGroupRepository,SolutionRepository $solutionRepository,CacheService $cacheService
+        ProblemGroupRepository $problemGroupRepository,SolutionRepository $solutionRepository,CacheService $cacheService,
+        UserGroupRelationRepository $userGroupRelationRepository
     )
     {
         $this->problemGroupRelationRepo = $problemGroupRelationRepository;
@@ -47,6 +50,7 @@ class HomeworkService implements HomeworkServiceInterface
         $this->problemGroupRepo = $problemGroupRepository;
         $this->solutionRepo = $solutionRepository;
         $this->cacheService = $cacheService;
+        $this->userGroupRelationRepo = $userGroupRelationRepository;
     }
 
     public function getProblem(int $groupId, int $problemNum)
@@ -56,15 +60,6 @@ class HomeworkService implements HomeworkServiceInterface
         return $problem;
     }
 
-    public function getAllHomework(int $page,int $size)
-    {
-        $totalCount = $this->problemGroupRepo->getProblemGroupCount(2);
-
-        $groups = $this->problemGroupRepo->paginate($page,$size,
-            ['type' => 2],['id','title','creator_id','creator_name','start_time','end_time','private','status']);
-
-        return ['data' => $groups,'total_count' => $totalCount];
-    }
     public function getHomework(int $id, array $columns = ['*'])
     {
         //为了判断类型，必须要加入一个'type'字段
@@ -73,7 +68,7 @@ class HomeworkService implements HomeworkServiceInterface
 
         $homework = $this->problemGroupService->getProblemGroup($id,$columns);
 
-        if($homework == null|| $homework->type!=2)
+        if($homework == null|| $homework->type != 2)
             throw new HomeworkNotExistException();
 
         return $homework;
@@ -92,28 +87,25 @@ class HomeworkService implements HomeworkServiceInterface
         return $homework;
     }
 
-    //获取一个用户组（班级）内的全部作业列表，考虑到规模暂时没有做分页。
-    public function getHomeworksInGroup(int $groupId)
+    //获取一个用户组（班级）内的全部作业列表
+    public function getHomeworksInGroup(int $groupId,int $page,int $size)
     {
-        $columns = ['id','title','start_time','end_time','status',''];
-        $homeworks = $this->problemGroupService->getProblemGroupBy('user_group_id',$groupId,$columns);
-        return $homeworks;
+        $columns = ['id','title','end_time','status',''];
+        $totalCount = $this->problemGroupRepo->getProblemGroupCount(2);
+        $homeworks = $this->problemGroupRepo->paginate($page,$size,['user_group_id' => $groupId],$columns);
+        return ['total_count' => $totalCount,'homeworks' => $homeworks];
     }
 
 
-    public function getHomeworkIndex(int $userId = -1, int $homeworkId)
+    public function getHomeworkIndex(int $userId, int $homeworkId)
     {
-        //没有传用户ID的话，无法查看作业
-        if($userId == -1)
-            throw new NoPermissionException();
-
         //检查权限
         if(!$this->canUserAccessHomework($userId,$homeworkId))
             throw new NoPermissionException();
 
         //获取基本信息
         $homework = $this->problemGroupService->getProblemGroup($homeworkId,[
-            'id','title','description','start_time','end_time',
+            'id','title','description','end_time',
             'creator_id','creator_name', 'status','langmask'
         ]);
 
@@ -143,7 +135,7 @@ class HomeworkService implements HomeworkServiceInterface
             else
                 $info->user_status = null;
         }
-        $data['contest_info'] = $homework;
+        $data['homework_info'] = $homework;
         $data['problem_info'] = $problemInfo;
 
         return $data;
@@ -151,49 +143,35 @@ class HomeworkService implements HomeworkServiceInterface
 
     public function addHomework(User $user, int $userGroupId, array $data, array $problems):int
     {
+        if(!$this->userGroupService->isUserGroupOwner($user->id,$userGroupId))
+            throw new NoPermissionException();
+
         $data['type'] = 2;
-        $id = -1;
 
-        //传入的problems数组只包括id,初步组装数据格式
-        $problem = [];
-        foreach ($problems as $problemId)
-        {
-            $problem[] = ['problem_id'=> $problemId];
-        }
+        //传入的problems数组应该包括id和score
+        //同时这里避免userGroupId和start_time带来的混乱，在controller层组织数据时要小心
 
-        $id = $this->problemGroupService->createProblemGroup($data,$problem);
+        $id = $this->problemGroupService->createProblemGroup($data,$problems);
 
         return $id;
     }
+
+
     public function updateHomeworkInfo(int $homeworkId, array $data):bool
     {
-        $group = $this->problemGroupService->getProblemGroup($homeworkId,['type','start_time','end_time']);
+        $group = $this->problemGroupService->getProblemGroup($homeworkId,['type','end_time']);
 
         if($group==null|| $group->type!=2) throw new HomeworkNotExistException();
 
-        //检查比赛是否正在进行中，若已经开始，不允许再更改开始时间
-        $startTime = strtotime($group->start_time);
-        $endTime = strtotime($group->end_time);
-        $time = time();
-        if($startTime > $time||$time < $endTime)
-        {
-            if(isset($data['start_time'])) unset($data['start_time']);//直接无效索引
-        }
-
         return $this->problemGroupService->updateProblemGroup($homeworkId,$data);
     }
+
     public function updateHomeworkProblem(int $homeworkId, array $problems):bool
     {
-        //重新组装题目
-        $problemData = [];
-        foreach ($problems as $problem)
-        {
-            $problemData[] = ['problem_id' => $problem->id,'problem_score' => $problem->sorce];
-        }
-
         return $this->problemGroupService->updateProblems($homeworkId,$problems);
     }
-    public function deleteHomework(User $user, int $homeworkId):bool
+
+    public function deleteHomework(int $homeworkId):bool
     {
         $flag =false;
         if($this->isHomeworkExist($homeworkId))
@@ -216,62 +194,47 @@ class HomeworkService implements HomeworkServiceInterface
 
         return true;
     }
+
     public function isUserHomeworkOwner(int $userId, int $homeworkId):bool
     {
         return $this->problemGroupService->isUserGroupCreator($userId,$homeworkId);
     }
+
     public function canUserAccessHomework(int $userId, int $homeworkId):bool
     {
         $group = $this->problemGroupRepo->get($homeworkId,['user_group_id','type','start_time','creator_id'])->first();
+
+        //判断是否为作业
+        if ($group == null || $group->type !=2 || $group->user_group_id == null)
+            return false;
+
         //如果是创建者 直接可以获得权限，管理员也应该一样
         if($userId = $group->creator_id) return true;
         //TODO: 管理员权限检查
 
-        //判断是否为作业
-        if ($group == null || $group->type !=2)
-            return false;
-
         //判断用户是否在该组里
         if(!($this->userGroupService->isUserInGroup($userId,$group->user_group_id)))
             return false;
-        //判断时间
-        $currentTime = time();
 
-        $startTime = strtotime($group->start_time);
-
-        //尚未开始的比赛
-        if($startTime > $currentTime)
-            throw new HomeworkNotAvailableException();
+        //作业没有开始时间，只有结束时间(一旦创建随时都可以看)
 
         return true;
     }
 
-    public function getHomeworkStatus(int $userId, int $homeworkId)
+    public function getHomeworkStatus(int $homeworkId,int $page,int $size)
     {
         $totalCount = $this->problemGroupService->getSolutionCount($homeworkId);
-        $data = $this->problemGroupService->getSolutions($homeworkId);
+        $data = $this->problemGroupService->getSolutions($homeworkId,$page,$size);
 
-        $group = $this->problemGroupRepo->get($homeworkId,['user_group_id','type','start_time','creator_id'])->first();
-
-        if($userId = $group->creator_id)
-            return ['data' => $data,'total_count' => $totalCount]; ;
-
-        $homeworkstatus =[];
-        //只是在组里的学生
-        foreach ($data as $item)
-        {
-            if($item['user_id']==$userId)
-                array_push($homeworkstatus,$item);
-        }
-        $totalCount = count($homeworkstatus);
-        return ['data'=>$homeworkstatus,'total_count'=>$totalCount];
+        return ['solutions' => $data,'total_count' => $totalCount];
     }
+
+
     public function getHomeworkRank(int $homeworkId)
     {
-        $group = $this->problemGroupService->getProblemGroup($homeworkId,['title','type','start_time','end_time','status']);
+        $group = $this->problemGroupService->getProblemGroup($homeworkId,['title','type','end_time','status','user_group_id']);
 
         if($group == null || $group->type!=2) return false;
-
 
         //先检查是否存在缓存
 
@@ -282,13 +245,32 @@ class HomeworkService implements HomeworkServiceInterface
             $ranks = $this->cacheService->getRankCache($cacheKey);
             if(!empty($ranks))
             {
-                usort($ranks,['NEUQOJ\Common\Utils','s_cmp_obj']);
+                usort($ranks,function($A,$B){
+                    if ($A->score!=$B->score) return $A->score<$B->score;
+                    else return $A->solved < $B->solved;
+                });
                 return $ranks;
             }
         }
 
         //正常mysql查询方法：
         $solutions = $this->solutionRepo->getRankList($homeworkId)->toArray();
+        $userRelations = $this->userGroupRelationRepo->getBy('group_id',$group->user_group_id,['user_id','user_code','user_tag'])->toArray();
+        $problemRelations = $this->userGroupRelationRepo->getBy('problem_group_id',$homeworkId,['problem_num','problem_score'])->toArray();
+
+        //补充查询用户名片和题目分数
+
+        $userTags = [];
+        $problemScores = [];
+        foreach ($userRelations as $userRelation)
+        {
+            $userTags[$userRelation['user_id']] = ['user_code' => $userRelation['user_code'],'user_tag' => $userRelation['user_tag']];
+        }
+
+        foreach ($problemRelations as $problemRelation)
+        {
+            $problemScores[$problemRelation['problem_num']] = $problemRelation['problem_score'];
+        }
 
         $rank = [];//最终保存总数据的数组
         $userCnt = -1;//计算用户总数
@@ -303,25 +285,22 @@ class HomeworkService implements HomeworkServiceInterface
                 $rank[++$userCnt] = [
                     'user_id' => $solution['id'],
                     'user_name' => $solution['name'],
-                    'time' => 0,
+                    'user_code' => $userTags[$solution['id']]['user_code'],
+                    'user_tag' => $userTags[$solution['id']]['user_tag'],
+                    'score' => 0,
                     'solved' => 0,
-                    'problem_wa_num' => [],
-                    'problem_ac_sec' => []
+                    'problem_wa_num' => []
                 ];
 
                 //判断第一个数据
 
                 if($solution['result'] == 4)
                 {
-                    $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']] = strtotime($solution['created_at']) - strtotime($group->start_time);
                     $rank[$userCnt]['solved']++;
+                    $rank[$userCnt]['score'] += $problemScores[$solution['problem_num']];
                 }
                 elseif($solution['result'] > 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
                     $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
-
-                //刷新总时间，注意所有时间全部以秒级正整数方式保存,错题的罚时只在题目成功ac之后才计算
-                if($solution['result'] ==4)
-                    $rank[$userCnt]['time'] += (strtotime($solution['created_at'])-strtotime($group->start_time));
 
                 $userId = $solution['id'];//标记用户
             }
@@ -333,10 +312,6 @@ class HomeworkService implements HomeworkServiceInterface
                     if(!isset($rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]))//之前还没有ac过对应的题目
                     {
                         $rank[$userCnt]['solved'] ++;//解题数目+1
-                        $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]  = strtotime($solution['created_at']) - strtotime($group->start_time);
-                        //计算题目总罚时
-                        if(isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
-                            $rank[$userCnt]['time'] += 1200*$rank[$userCnt]['problem_wa_num'][$solution['problem_num']];
                     }
                     //如果已经ac过这个题目，不再考虑
                 }
@@ -351,28 +326,28 @@ class HomeworkService implements HomeworkServiceInterface
             }
         }
 
-        usort($rank,['NEUQOJ\Common\Utils','s_cmp_array']);
+        usort($rank,function($A,$B){
+            if ($A['score']!=$B['score']) return $A['score']<$B['score'];
+            else return $A['solved']<$B['solved'];
+        });
         $this->cacheService->setRankCache($cacheKey,$rank,60);
 
         return $rank;
 
     }
+
     public function submitProblem(int $userId, int $groupId, int $problemNum, array $data):int
     {
+        if(!$this->canUserAccessHomework($userId,$groupId)) throw new NoPermissionException();
         //先检测用户能不能提交
-        $group = $this->problemGroupRepo->get($groupId,['private','type','langmask','start_time','end_time'])->first();
+        $group = $this->problemGroupRepo->get($groupId,['private','type','langmask','end_time'])->first();
 
         //检查时间
-
         $currentTime = time();
 
-        $startTime = strtotime($group->start_time);
         $endTime = strtotime($group->end_time);
-
-        if($startTime > $currentTime)
-            throw new ContestNotAvailableException();
-        elseif($currentTime > $endTime)
-            throw new ContestEndedException();
+        if($currentTime > $endTime)
+            throw new HomeworkNotAvailableException();
 
         if($group == null || $group->type!=2) throw new NoPermissionException();
 

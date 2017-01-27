@@ -36,7 +36,7 @@ class Utils
         return preg_match($patternMobile, $str) == 1;
     }
 
-    //排行榜排序函数
+    //竞赛排行榜排序函数
     public static function s_cmp_obj($A,$B)
     {
         if ($A->solved!=$B->solved) return $A->solved<$B->solved;

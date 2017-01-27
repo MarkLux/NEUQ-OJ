@@ -70,7 +70,6 @@ class ProblemGroupService implements ProblemGroupServiceInterface
 
         //计算语言掩码
         $data['langmask'] = $this->getLangMask($data['langmask']);
-        $data['problem_count'] = count($problems);
         //$problems数组传入时只存放有problem_id
 
         //合成题目id

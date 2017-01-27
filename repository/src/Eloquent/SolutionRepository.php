@@ -66,7 +66,7 @@ class SolutionRepository extends AbstractRepository
     {
         return $this->model
             ->where('problem_group_id',$groupId)
-            ->where('problem_num','>','0')
+            ->where('problem_num','>=','0')
             ->leftJoin('users','users.id','=','solutions.user_id')
             ->select('users.id','users.name','solutions.result','solutions.created_at','solutions.problem_num')
             //注意时间的选择标准，judge_time是批量更新的，应该根据创建时间来排序
@@ -74,4 +74,5 @@ class SolutionRepository extends AbstractRepository
             ->orderBy('solutions.created_at','desc')
             ->get();
     }
+
 }
