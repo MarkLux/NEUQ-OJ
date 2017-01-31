@@ -333,50 +333,6 @@ class ContestController extends Controller
         ]);
     }
 
-    //更新题目，考虑到比赛可能正在进行，因此把 添加 和 移除操作 分开，逻辑更加清晰一些
-
-    public function AddProblemToContest(Request $request,int $contestId)
-    {
-        $validator = Validator::make($request->all(),[
-            'problems' => 'array'
-            //表单验证的内容是 题目信息。
-        ]);
-
-        if($validator->fails())
-            throw new FormValidatorException($validator->getMessageBag()->all());
-
-        //组装数据，这里对数据格式有所要求。
-        $problems = $request->problems;
-        //调用服务
-        if(!$this->contestService->addProblemToContest($contestId,$problems))
-            throw new InnerError("Fail to add problem");
-
-        return response()->json([
-           'code' => 0
-        ]);
-
-    }
-
-    public function RemoveProblemFromContest(Request $request,int $contestId)
-    {
-        $validator = Validator::make($request->all(),[
-            'problemNums' => 'array'
-            //输入数据只有题号。
-        ]);
-
-        if($validator->fails())
-            throw new FormValidatorException($validator->getMessageBag()->all());
-
-        $problemNums = $request->problemNums;
-
-        if(!$this->contestService->removeProblemFromContest($contestId,$problemNums))
-            throw new InnerError("Fail to remove problems");
-
-        return response()->json([
-            'code' => 0
-        ]);
-    }
-
     public function deleteContest(Request $request,int $contestId)
     {
         $validator = Validator::make($request->all(),[

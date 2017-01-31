@@ -21,6 +21,11 @@ Route::post('/user/reset-password/verify','UserController@resetPasswordByVerifyC
 Route::get('/user/active-mail/send','UserController@resendActiveMail');
 
 Route::group(['middleware' => 'token'], function() {
+    Route::get('/token-verify',function (){
+        return response()->json([
+            'code' => 0
+        ]);
+    });
 
     Route::group(['prefix' => 'user'], function() {
         Route::get('/info','UserController@getUserInfo');
