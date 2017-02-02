@@ -31,6 +31,14 @@ class ProblemGroupRepository extends AbstractRepository
             ->count();
     }
 
+    public function getHomeworkCount(int $groupId)
+    {
+        return $this->model
+            ->where('type',2)
+            ->where('user_group_id',$groupId)
+            ->count();
+    }
+
     public function getProblemGroupCountLike(int $type,string $pattern)
     {
         return $this->model

@@ -44,7 +44,7 @@ interface HomeworkServiceInterface
     function canUserAccessHomework(int $userId,int $homeworkId):bool;
 
     //状态
-    function getHomeworkStatus(int $homewrokId,int $page,int $size);
+    function getHomeworkStatus(int $homewrokId,int $page,int $size,array $conditions=[]);
 
     //切记 这个rank的组织和contest不同，用户信息方面应该join上他们的组内名片信息。
     //这意味着redis缓存部分的对象要重新写。

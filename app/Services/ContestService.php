@@ -361,11 +361,10 @@ class ContestService implements ContestServiceInterface
         return $data;
     }
 
-    public function getStatus(int $groupId,int $page,int $size)
+    public function getStatus(int $groupId,int $page,int $size,array $conditions=[])
     {
-        $totalCount = $this->problemGroupService->getSolutionCount($groupId);
-        $data = $this->problemGroupService->getSolutions($groupId,$page,$size);
-        return ['data' => $data,'total_count' => $totalCount];
+        $data = $this->problemGroupService->getSolutions($groupId,$page,$size,$conditions);
+        return ['data' => $data];
     }
 
     public function isContestExist(int $groupId):bool
@@ -414,7 +413,7 @@ class ContestService implements ContestServiceInterface
 
         $data['problem_group_id'] = $groupId;
 
-        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_id);
+        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_num);
     }
 
     public function isUserContestCreator(int $userId, int $groupId): bool

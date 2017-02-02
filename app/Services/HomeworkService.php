@@ -9,7 +9,9 @@
 namespace NEUQOJ\Services;
 
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\ProblemGroup\HomeworkNotAvailableException;
@@ -91,7 +93,7 @@ class HomeworkService implements HomeworkServiceInterface
     public function getHomeworksInGroup(int $groupId,int $page,int $size)
     {
         $columns = ['id','title','end_time','status',''];
-        $totalCount = $this->problemGroupRepo->getProblemGroupCount(2);
+        $totalCount = $this->problemGroupRepo->getHomeworkCount($groupId);
         $homeworks = $this->problemGroupRepo->paginate($page,$size,['user_group_id' => $groupId],$columns);
         return ['total_count' => $totalCount,'homeworks' => $homeworks];
     }
@@ -147,6 +149,10 @@ class HomeworkService implements HomeworkServiceInterface
             throw new NoPermissionException();
 
         $data['type'] = 2;
+        $data['creator_id'] = $user->id;
+        $data['creator_name'] = $user->name;
+
+        $data['start_time'] = Carbon::now();
 
         //传入的problems数组应该包括id和score
         //同时这里避免userGroupId和start_time带来的混乱，在controller层组织数据时要小心
@@ -221,12 +227,11 @@ class HomeworkService implements HomeworkServiceInterface
         return true;
     }
 
-    public function getHomeworkStatus(int $homeworkId,int $page,int $size)
+    public function getHomeworkStatus(int $homeworkId,int $page,int $size,array $conditions=[])
     {
-        $totalCount = $this->problemGroupService->getSolutionCount($homeworkId);
-        $data = $this->problemGroupService->getSolutions($homeworkId,$page,$size);
+        $data = $this->problemGroupService->getSolutions($homeworkId,$page,$size,$conditions);
 
-        return ['solutions' => $data,'total_count' => $totalCount];
+        return ['solutions' => $data];
     }
 
 
@@ -351,8 +356,6 @@ class HomeworkService implements HomeworkServiceInterface
 
         if($group == null || $group->type!=2) throw new NoPermissionException();
 
-
-
         //检查语言
         if(!$this->problemGroupService->checkLang($data['language'],$group->langmask))
             throw new LanguageErrorException();
@@ -365,7 +368,7 @@ class HomeworkService implements HomeworkServiceInterface
 
         $data['problem_group_id'] = $groupId;
 
-        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_id);
+        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_num);
     }
 
 }

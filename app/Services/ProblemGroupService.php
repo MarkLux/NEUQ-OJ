@@ -183,9 +183,10 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return $this->solutionRepo->getWhereCount(['problem_group_id' => $groupId]);
     }
 
-    public function getSolutions(int $groupId,int $page=1,int $size=15)
+    public function getSolutions(int $groupId,int $page=1,int $size=15,array $conditions=[])
     {
-        return $this->solutionRepo->paginate($page,$size,['problem_group_id'=>$groupId]);
+        $conditions[] = ['problem_group_id'=>$groupId];
+        return $this->solutionRepo->paginate($page,$size,$conditions);
     }
 
     public function isUserGroupCreator(int $userId,int $groupId): bool

@@ -29,8 +29,11 @@ Route::group(['middleware' => 'token'],function (){
             Route::post('/delete/{id}','UserGroup\NoticeController@deleteNotice');
             Route::post('update/{id}','UserGroup\NoticeController@updateNotice');
         });
+
+        Route::post('{id}/add-homework','HomeworkController@addHomework');
     });
 });
+
 
 //Route::group(['middleware' => 'token'],function(){
 //    Route::resource('user-groups','UserGroupController',

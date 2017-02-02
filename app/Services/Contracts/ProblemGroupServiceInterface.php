@@ -59,7 +59,7 @@ interface ProblemGroupServiceInterface
 
     function getSolutionCount(int $groupId):int;
 
-    function getSolutions(int $groupId,int $page,int $size);
+    function getSolutions(int $groupId,int $page,int $size,array $conditions=[]);
 
     /*
      * 权限部分
