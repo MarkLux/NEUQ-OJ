@@ -439,33 +439,4 @@ class UserGroupService implements UserGroupServiceInterface
         return $this->getSingleNotice($noticeId)!=null;
     }
 
-    /**
-     * 作业
-     */
-
-    public function getGroupHomeworksCount(int $groupId):int
-    {
-        // TODO: Implement getGroupHomeworksCount() method.
-    }
-
-    public function getGroupHomeworks(int $groupId, int $start, int $size):array
-    {
-        // TODO: Implement getGroupHomeworks() method.
-    }
-
-    /**
-     * 考试
-     */
-    public function getGroupExamsCount(int $groupId):int
-    {
-        // TODO: Implement getGroupExamsCount() method.
-    }
-
-    public function getGroupExams(int $groupId, int $start, int $size):array
-    {
-        // TODO: Implement getGroupExams() method.
-    }
-
-
-
 }

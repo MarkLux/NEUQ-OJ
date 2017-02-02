@@ -31,6 +31,7 @@ Route::group(['middleware' => 'token'],function (){
         });
 
         Route::post('{id}/add-homework','HomeworkController@addHomework');
+        Route::get('{id}/homeworks','HomeworkController@getHomeworks');
     });
 });
 
