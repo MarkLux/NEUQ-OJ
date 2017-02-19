@@ -64,7 +64,7 @@ class UserController extends Controller
 
         $user = $this->userService->getUserById($userId,['id','name','email']);
 
-        $this->verifyService->sendVerifyEmail($user);
+//        $this->verifyService->sendVerifyEmail($user);
 
         return response()->json([
             'code' => 0,
@@ -220,14 +220,20 @@ class UserController extends Controller
         }
 
         $id = $request->user->id;
-        $data = [
-            'name' => $request->input('mobile','null'),
-            'school' => $request->input('school','null'),
-            'signature' => $request->input('signature','null')
-        ];
 
-        if(!$this->userService->updateUserById($id,$data))
-            throw new InnerError("Fail to update User");
+        $name = $request->input('mobile',null);
+        $school = $request->input('school',null);
+        $signature = $request->input('signature',null);
+
+        $data = [];
+
+        if($name!=null) $data[] = ['name' => $name];
+        if($school!=null) $data[] = ['school' => $school];
+        if($signature!=null) $data[] = ['signature'=>$signature];
+
+        if(!empty($data))
+            if(!$this->userService->updateUserById($id,$data))
+                throw new InnerError("Fail to update User");
 
         return response()->json([
             'code' => 0
@@ -252,6 +258,8 @@ class UserController extends Controller
             'code' => 0
         ]);
     }
+
+    //TODO 考虑这里是否需要验证码防止机器人攻击⬇
 
     public function sendForgotPasswordEmail(Request $request)
     {

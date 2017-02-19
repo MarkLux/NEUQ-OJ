@@ -60,6 +60,7 @@ class UserGroupController extends Controller
 
     /**
      * 创建新用户组
+     * TODO:用户权限检查
      */
     public function createNewGroup(Request $request)
     {
@@ -80,7 +81,7 @@ class UserGroupController extends Controller
             'description' => $request->description,
             'max_size' => $request->max_size,
             'password' => $request->password?bcrypt($request->password):null,
-            'is_closed' => $request->is_closed
+            'is_closed' => $request->input('is_closed',0)
         ];
 
         $groupId = $this->userGroupService->createUserGroup($request->user,$data);
