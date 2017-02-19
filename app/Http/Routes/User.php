@@ -28,10 +28,11 @@ Route::group(['middleware' => 'token'], function() {
     });
 
     Route::group(['prefix' => 'user'], function() {
-        Route::get('/info','UserController@getUserInfo');
+        Route::get('/{id}/info','UserController@getUserInfo');
+        Route::get('/me','UserController@getCurrentUserInfo');
         Route::get('/logout/', 'UserController@logout');
-        Route::post('/getinfo', 'UserController@getUser');
-        Route::post('/getinfos', 'UserController@getUsers');
+//        Route::post('/getinfo', 'UserController@getUser');
+//        Route::post('/getinfos', 'UserController@getUsers');
         Route::post('/update', 'UserController@updateUser');
         Route::post('/reset-password','UserController@resetPasswordByOld');
     });

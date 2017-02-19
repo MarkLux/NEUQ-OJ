@@ -31,6 +31,8 @@ class UserController extends Controller
         $this->tokenService = $tokenService;
     }
 
+
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(),[
@@ -108,7 +110,7 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'identifier' => 'required|max:100',
-            'password' => 'required|min:6'
+            'password' => 'required|min:6|max:20'
         ]);
 
         if($validator->fails()) {
@@ -129,7 +131,9 @@ class UserController extends Controller
         ]);
     }
 
-    public function getUserInfo(Request $request)
+    //获取当前登录用户的资料
+
+    public function getCurrentUserInfo(Request $request)
     {
         return response()->json([
             'code' => 0,
@@ -137,51 +141,65 @@ class UserController extends Controller
         ]);
     }
 
-    public function getUser(Request $request)
+    //获取指定用户的资料
+
+    public function getUserInfo(Request $request,int $id)
     {
-        $validator = Validator::make($request->all(),[
-            'id' => 'integer|max:20',
-            'name' => 'string|max:100',
-            'email' => 'email|max:100',
-            'mobile' =>'string|max：45',
-            'school' =>'string|max:100',
-        ]);
+        $user = $this->userService->getUserById($id,['id','email','mobile','submit','solved','password','name','school','signature','created_at']);
 
-        if($validator->fails()) {
-            $error = $validator->getMessageBag()->all();
-            throw new FormValidatorException($error);
-        }
-
-        $id = $request->get('id');
-
-        if($id != null)
-            $user = $this->userService->getUserById($id);
-        else
-            $user = $this->userService->getUserByMult($request->all());
+        if($user == null) throw new UserNotExistException();
 
         return response()->json([
             'code' => 0,
-            'user' => $user
+            'data' => $user
         ]);
     }
 
-    public function getUsers(Request $request)
-    {
-        $users = $this->userService->getUsers($request->all());
-        return response()->json([
-            'code' => 0,
-            'users' => $users
-        ]);
-    }
+//    public function getUser(Request $request)
+//    {
+//        $validator = Validator::make($request->all(),[
+//            'id' => 'integer|max:20',
+//            'name' => 'string|max:100',
+//            'email' => 'email|max:100',
+//            'mobile' =>'string|max:45',
+//            'school' =>'string|max:100',
+//        ]);
+//
+//        if($validator->fails()) {
+//            $error = $validator->getMessageBag()->all();
+//            throw new FormValidatorException($error);
+//        }
+//
+//        $id = $request->get('id');
+//
+//        if($id != null)
+//            $user = $this->userService->getUserById($id);
+//        else
+//            $user = $this->userService->getUserByMult($request->all());
+//
+//        return response()->json([
+//            'code' => 0,
+//            'user' => $user
+//        ]);
+//    }
+//
+//    public function getUsers(Request $request)
+//    {
+//        $users = $this->userService->getUsers($request->all());
+//        return response()->json([
+//            'code' => 0,
+//            'users' => $users
+//        ]);
+//    }
+
+    //当前用户更新自己个人资料的接口
 
     public function updateUser(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'id' => 'integer',
-            'email' => 'email|max:100',
-            'mobile' => 'string|max:50',
-            'school' =>'string|max:100',
-            'signature' => 'string|max:512',
+            'name' => 'string|min:0|max:100',
+            'school' =>'string|min:0|max:100',
+            'signature' => 'string|min:0|max:512',
         ]);
 
         if($validator->fails()) {
@@ -189,25 +207,19 @@ class UserController extends Controller
             throw new FormValidatorException($error);
         }
 
-        $id = $request->get('id');
-        $email = $request->get('email');
+        $id = $request->user->id;
         $data = [
-            'mobile' => $request->get('mobile'),
-            'school' => $request->get('school'),
-            'signature' => $request->get('signature')
+            'name' => $request->input('mobile','null'),
+            'school' => $request->input('school','null'),
+            'signature' => $request->input('signature','null')
         ];
 
-        if($id != null) {
-            $flag = $this->userService->updateUserById($id,$data);
-        } elseif ($email != null) {
-            $flag = $this->userService->updateUser(['email' => $email],$data);
-        }
+        if(!$this->userService->updateUserById($id,$data))
+            throw new InnerError("Fail to update User");
 
-        if($flag) {
-            return response()->json([
-                'code' => 0,
-            ]);
-        }
+        return response()->json([
+            'code' => 0
+        ]);
     }
 
     public function resetPasswordByOld(Request $request)
