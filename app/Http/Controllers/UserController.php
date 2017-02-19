@@ -5,6 +5,7 @@ namespace NEUQOJ\Http\Controllers;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
+use Mews\Captcha\Facades\Captcha;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\RegisterErrorException;
@@ -31,8 +32,18 @@ class UserController extends Controller
         $this->tokenService = $tokenService;
     }
 
+    //获取验证码
+    public function getCaptcha(Request $request)
+    {
+        $url = Captcha::src();
 
+        return response()->json([
+            'code' => 0,
+            'url' => $url
+        ]);
+    }
 
+    //验证码的注册必须让前端带上cookie才能保持同一个会话
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(),[
@@ -40,7 +51,8 @@ class UserController extends Controller
             'email' => 'required|email|max:100',
             'mobile' => 'required|max:45',
             'password' => 'required|confirmed|min:6|max:20',
-            'school' => 'string|max:100'
+            'school' => 'string|max:100',
+            'captcha' => 'required|captcha'
         ]);
 
         if($validator->fails()) {

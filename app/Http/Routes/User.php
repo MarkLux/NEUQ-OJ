@@ -9,6 +9,7 @@
 
 
 Route::post('/user/register','UserController@register');
+Route::get('/user/register','UserController@getCaptcha');
 
 Route::post('/user/login','UserController@login');
 

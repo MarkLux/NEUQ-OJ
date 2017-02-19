@@ -149,6 +149,11 @@ return [
         Illuminate\View\ViewServiceProvider::class,
 
         /*
+         * Captcha ServiceProvider
+         */
+        Mews\Captcha\CaptchaServiceProvider::class,
+
+        /*
          * Application Service Providers...
          */
         NEUQOJ\Providers\AppServiceProvider::class,
@@ -204,6 +209,7 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'Captcha' => Mews\Captcha\Facades\Captcha::class
 
     ],
 
