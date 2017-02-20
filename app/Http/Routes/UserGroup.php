@@ -29,7 +29,7 @@ Route::group(['middleware' => 'token'],function (){
             Route::get('/show/{id}','UserGroup\NoticeController@getNotice');
             Route::get('/get','UserGroup\NoticeController@getGroupNotices');
             Route::post('/delete/{id}','UserGroup\NoticeController@deleteNotice');
-            Route::post('update/{id}','UserGroup\NoticeController@updateNotice');
+            Route::post('/update/{id}','UserGroup\NoticeController@updateNotice');
         });
 
         Route::post('{id}/add-homework','HomeworkController@addHomework');

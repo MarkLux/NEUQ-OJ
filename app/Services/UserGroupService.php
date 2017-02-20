@@ -450,7 +450,7 @@ class UserGroupService implements UserGroupServiceInterface
             $groupIds[] = $relation->group_id;
         }
 
-        $groups = $this->userGroupRepo->getIn('id',$groupIds,['owner_name','owner_id','id','is_closed','password','name','created_at']);
+        $groups = $this->userGroupRepo->getIn('id',$groupIds,['owner_name','owner_id','name','created_at']);
 
         return $groups;
     }

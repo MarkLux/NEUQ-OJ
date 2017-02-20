@@ -140,6 +140,50 @@ class ProblemController extends Controller
         ]);
     }
 
+    public function updateProblem(Request $request,int $problemId)
+    {
+        //表单验证
+        $validator = Validator::make($request->all(),$this->getValidateRules());
+
+        //  TODO:  权限验证
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $problem = $this->problemService->getProblemById($problemId,['creator_id']);
+
+        if($problem == null) throw new ProblemNotExistException();
+        elseif($problem->creator_id != $request->user->id) throw new NoPermissionException();
+
+        //重新组装数据
+
+        $problemData = [
+            'title' => $request->input('title'),
+            'description' => $request->input('description'),
+            'difficulty' => $request->input('difficulty'),
+            'sample_input'=> $request->input('sample_input'),
+            'sample_output' => $request->input('sample_output'),
+            'source' => $request->input('source'),
+            'time_limit' => $request->input('time_limit'),
+            'memory_limit' => $request->input('memory_limit'),
+            'hint'=>$request->input('hint'),
+            'spj' => $request->input('spj'),
+            'is_public' => $request->input('is_public')
+        ];
+
+        $testData = [
+            'input' => $request->input('test_input'),
+            'output' => $request->input('test_output')
+        ];
+
+        if(!$this->problemService->updateProblem($problemId,$problemData,$testData))
+            throw new InnerError("fail to update problem");
+
+        return response()->json([
+            'code' => 0
+        ]);
+    }
+
     public function submitProblem(Request $request,int $problemId)
     {
         $validator = Validator::make($request->all(),[
@@ -217,7 +261,7 @@ class ProblemController extends Controller
 
         $keyword = $request->input('keyword');
         $page = $request->input('page',1);
-        $size = $request->input('size',15);
+        $size = $request->input('size',20);
 
         $total_count = $this->problemService->searchProblemsCount($keyword);
 

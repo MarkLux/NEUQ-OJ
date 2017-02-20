@@ -98,21 +98,29 @@ class NoticeController extends Controller
     public function updateNotice(Request $request,int $noticeId)
     {
         $validator = Validator::make($request->all(),[
-            'content' => 'required|min:6|max:2048',
+            'title' => 'string|min:1|max:100',
+            'content' => 'string|min:6|max:2048',
             'gid' => 'required|integer'
         ]);
 
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        if(!$this->userGroupService->isGroupExistById($request->gid))
-            throw new UserGroupNotExistException();
+        //标题和内容不能都没有
+        $title = $request->input('title',null);
+        $content = $request->input('content',null);
+
+        if($title == null&&$content==null)
+            throw new FormValidatorException(['title and content cant be empty meanwhile']);
+
+        if(!$this->userGroupService->isNoticeBelongToGroup($noticeId,$request->gid))
+            throw new NoticeNotBelongToGroupException();
 
         //权限检查
         if(!$this->userGroupService->isUserGroupOwner($request->user->id,$request->gid))
             throw new NoPermissionException();
 
-        if(!$this->userGroupService->updateNotice($noticeId,['content' => $request->input('content')]))
+        if(!$this->userGroupService->updateNotice($noticeId,['content' => $content,'title'=>$title]))
             throw new InnerError("Fail to update Notice");
 
         return response()->json([
