@@ -11,6 +11,8 @@ Route::get('/user-groups','UserGroup\UserGroupController@getGroups');
 
 Route::group(['middleware' => 'token'],function (){
 
+    Route::get('/user/groups','UserGroup\UserGroupController@getGroupsUserIn');
+
     Route::group(['prefix' => 'user-group'],function(){
         Route::post('/create','UserGroup\UserGroupController@createNewGroup');
         Route::get('/{id}','UserGroup\UserGroupController@getIndex');

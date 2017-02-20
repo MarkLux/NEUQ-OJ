@@ -5,6 +5,7 @@ namespace NEUQOJ\Http\Controllers\UserGroup;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
+use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
@@ -35,7 +36,7 @@ class UserGroupController extends Controller
 
         $total_count = $this->userGroupService->getGroupCount();
 
-        $size = $request->input('size',10);
+        $size = $request->input('size',20);
         $page = $request->input('page',1);
 
         $groups = $this->userGroupService->getGroups($page,$size,['owner_name','owner_id','id','is_closed','password','name','created_at'])->toArray();
@@ -139,14 +140,14 @@ class UserGroupController extends Controller
         $total_count = $this->userGroupService->getGroupMembersCount($groupId);
 
         $validator = Validator::make($request->all(),[
-            'size' => 'integer|min:1|max:50',
-            'page' => 'integer|min:1|max:500'
+            'size' => 'integer|min:1',
+            'page' => 'integer|min:1'
         ]);
 
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $size = $request->input('size',10);
+        $size = $request->input('size',20);
         $page = $request->input('page',1);
 
 
@@ -167,7 +168,7 @@ class UserGroupController extends Controller
     public function searchGroups(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'size' => 'integer|min:1|max:50',
+            'size' => 'integer|min:1',
             'page' => 'integer|min:1',
             'keyword' => 'required|max:30'
         ]);
@@ -175,7 +176,7 @@ class UserGroupController extends Controller
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $size = $request->input('size',10);
+        $size = $request->input('size',20);
         $page = $request->input('page',1);
 
         $total_count = $this->userGroupService->searchGroupsCount($request->keyword);
@@ -232,10 +233,14 @@ class UserGroupController extends Controller
             throw new NoPermissionException();
 
         //检查密码
-        if(!Hash::check($request->password,$request->user->password))
+        if(!Utils::pwCheck($request->password,$request->user->password))
             throw new PasswordErrorException();
 
-        if(!$this->userGroupService->changeGroupOwner($request->user->id))
+        //检查当前登录用户是否是组的拥有者
+        if(!$this->userGroupService->isUserGroupOwner($request->user->id,$groupId))
+            throw new NoPermissionException();
+
+        if(!$this->userGroupService->changeGroupOwner($groupId,$request->newOwnerId))
             throw new InnerError("Fail to change owner");
 
         return response()->json([
@@ -326,5 +331,18 @@ class UserGroupController extends Controller
             'code' => 0
         ]);
 
+    }
+
+    //获取当前登录用户所参加的小组列表
+    public function getGroupsUserIn(Request $request)
+    {
+        $groups = $this->userGroupService->getGroupsUserIn($request->user->id);
+
+        if(empty($groups)) $groups = null;//？
+
+        return response()->json([
+            'code' => 0,
+            'data' => $groups
+        ]);
     }
 }

@@ -398,7 +398,7 @@ class UserGroupService implements UserGroupServiceInterface
 
     public function getGroupNotices(int $groupId, int $page, int $size)
     {
-        return $this->noticeRepo->paginate($page,$size,['group_id' => $groupId]);
+        return $this->noticeRepo->paginate($page,$size,['group_id' => $groupId],['title','created_at']);
     }
 
     public function addNotice(int $groupId,array $data):bool
@@ -437,6 +437,22 @@ class UserGroupService implements UserGroupServiceInterface
     public function isNoticeExist(int $noticeId): bool
     {
         return $this->getSingleNotice($noticeId)!=null;
+    }
+
+    public function getGroupsUserIn(int $userId)
+    {
+        $relations = $this->relationRepo->getBy('user_id',$userId,['group_id']);
+
+        $groupIds = [];
+
+        foreach ($relations as $relation)
+        {
+            $groupIds[] = $relation->group_id;
+        }
+
+        $groups = $this->userGroupRepo->getIn('id',$groupIds,['owner_name','owner_id','id','is_closed','password','name','created_at']);
+
+        return $groups;
     }
 
 }

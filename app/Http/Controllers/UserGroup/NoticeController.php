@@ -52,7 +52,7 @@ class NoticeController extends Controller
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $size = $request->input('size',10);
+        $size = $request->input('size',20);
         $page = $request->input('page',1);
 
         if(!empty($total_count))
@@ -70,6 +70,7 @@ class NoticeController extends Controller
     public function addNotice(Request $request)
     {
         $validator = Validator::make($request->all(),[
+            'title' => 'required|string|min:1|max:100',
             'content' => 'required|min:6|max:2048',
             'gid' => 'required|integer'
         ]);
@@ -86,7 +87,7 @@ class NoticeController extends Controller
             throw new NoPermissionException();
 
 
-        if(!$this->userGroupService->addNotice($request->gid,['content'=>$request->input('content')]))
+        if(!$this->userGroupService->addNotice($request->gid,['title'=>$request->input('title'),'content'=>$request->input('content')]))
             throw new InnerError("Fail to add notice");
 
         return response()->json([

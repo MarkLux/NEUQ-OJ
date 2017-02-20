@@ -15,6 +15,7 @@ class CreateGroupNoticesTable extends Migration
         Schema::create('group_notices', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('group_id');
+            $table->string('title',100);
             $table->text('content');
             $table->timestamps();
         });
