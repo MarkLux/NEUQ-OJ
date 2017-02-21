@@ -70,7 +70,7 @@ class SolutionController extends Controller
         if($compileInfo==null)
             throw new CompileInfoNotExistException();
 
-        return response()->josn([
+        return response()->json([
             'code' => 0,
             'data' => $compileInfo
         ]);
@@ -83,7 +83,7 @@ class SolutionController extends Controller
         if($runtimeInfo==null)
             throw new RuntimeInfoNotExistException();
 
-        return response()->josn([
+        return response()->json([
             'code' => 0,
             'data' => $runtimeInfo
         ]);
