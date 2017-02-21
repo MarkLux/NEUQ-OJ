@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use Hamcrest\Util;
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\NoPermissionException;
@@ -460,7 +461,7 @@ class ContestService implements ContestServiceInterface
 
         if($admission!=null) return true;//已经有权限了
 
-        if(md5($password) != $group->password)
+        if(!Utils::pwCheck($password,$group->password))
             throw new PasswordErrorException();
 
         return $this->problemAdmissionRepo->insert(['user_id' => $userId,'problem_group_id'=>$groupId]) == 1;

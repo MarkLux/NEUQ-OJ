@@ -185,7 +185,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
 
     public function getSolutions(int $groupId,int $page=1,int $size=15,array $conditions=[])
     {
-        $conditions[] = ['problem_group_id'=>$groupId];
+        $conditions['problem_group_id'] = $groupId;
         return $this->solutionRepo->paginate($page,$size,$conditions);
     }
 

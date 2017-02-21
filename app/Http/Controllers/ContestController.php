@@ -243,7 +243,7 @@ class ContestController extends Controller
             'creator_id' => $request->user->id,
             'creator_name' => $request->user->name,
             'private' => $request->input('private'),
-            'password' => md5($request->input('password')),
+            'password' => Utils::pwGen($request->input('password')),
             'langmask' => $request->input('langmask')
         ];
 
@@ -290,17 +290,20 @@ class ContestController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'title' => 'string|max:100',
-            'start_time' => 'date',
+            'start_time' => 'date|after:now',
             'end_time' => 'date|after:start_time',
             'langmask' => 'array',
-            'password' => 'required|string|min:6|max:20'
+            'private' => 'integer|min:0|max:2',
+            'password' => 'string|min:6|max:20',
+            'users' => 'array',
+            'user_password' => 'required|string|min:6|max:20'
         ]);
 
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
         //为危险动作检查密码
-        if(!Utils::pwCheck($request->input('password'),$request->user->password))
+        if(!Utils::pwCheck($request->input('user_password'),$request->user->password))
             throw new PasswordErrorException();
         //TODO 检查是否是管理员
         if(!$this->contestService->isUserContestCreator($contestId,$request->user->id))
@@ -310,6 +313,9 @@ class ContestController extends Controller
         $startTime = $request->input('start_time',null);
         $endTime = $request->input('end_time',null);
         $langmask = $request->input('langmask',null);
+        $users = $request->input('users',null);
+        $private = $request->input('private',null);
+        $password = $request->input('password',null);
 
         $newInfo = [];
 
@@ -317,12 +323,22 @@ class ContestController extends Controller
         if($startTime!=null) $newInfo['start_time'] = $startTime;
         if($endTime!=null) $newInfo['end_time'] = $endTime;
         if($langmask!=null) $newInfo['langmask'] = $langmask;
+        if($private!=null) $newInfo['private'] = $private;
+        if($password!=null) $newInfo['password'] = Utils::pwGen($password);
 
         if(!empty($newInfo))
         {
             if(!$this->contestService->updateContestInfo($contestId,$newInfo))
                 throw new InnerError("Fail to update contest :".$contestId);
         }
+
+        if($users!=null)
+        {
+            if(!$this->contestService->resetContestPermission($contestId,$users))
+                throw new InnerError("Fail to update contest permission");
+        }
+
+        //上面这个其实应该写在一起，用transaction搞定，暂时不想做太大的改动了
 
         return response()->json([
             'code' => 0
