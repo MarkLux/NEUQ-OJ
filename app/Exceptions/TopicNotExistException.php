@@ -11,7 +11,7 @@ namespace NEUQOJ\Exceptions;
 
 class TopicNotExistException extends BaseException
 {
-    protected $code = 1002;
+    protected $code = 4002;
 
     protected $data = "Topic Not Existed";
 }
