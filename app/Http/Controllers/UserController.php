@@ -25,14 +25,23 @@ class UserController extends Controller
     private $userService;
     private $verifyService;
     private $tokenService;
-    private $captchaService;
+//    private $captchaService;
 
-    public function __construct(UserService $userService,VerifyService $verifyService,TokenService $tokenService,CaptchaService $captchaService)
+    public function __construct(UserService $userService,VerifyService $verifyService,TokenService $tokenService)
     {
         $this->userService = $userService;
         $this->verifyService = $verifyService;
         $this->tokenService = $tokenService;
-        $this->captchaService = $captchaService;
+    }
+
+    public function getCaptcha()
+    {
+        $url = Captcha::src();
+
+        return response()->json([
+            'code' => 0,
+            'url' => $url
+        ]);
     }
 
     //验证码的注册必须让前端带上cookie才能保持同一个会话
@@ -44,8 +53,9 @@ class UserController extends Controller
             'mobile' => 'required|max:45',
             'password' => 'required|confirmed|min:6|max:20',
             'school' => 'string|max:100',
-            'captcha_token' => 'required|string',
-            'captcha_text' => 'required|string'
+            'captcha' => 'required|captcha'
+//            'captcha_token' => 'required|string',
+//            'captcha_text' => 'required|string'
         ]);
 
         if($validator->fails()) {
@@ -53,15 +63,12 @@ class UserController extends Controller
             throw new FormValidatorException($error);
         }
 
-        $token = $request->input('captcha_token');
-        $captchaText = $request->input('captcha_text');
+//        $token = $request->input('captcha_token');
+//        $captchaText = $request->input('captcha_text');
+//
+//        if(!$this->captchaService->checkCaptcha($token,$captchaText))
+//            throw new CaptchaNotMatchException();
 
-        if(!$this->captchaService->checkCaptcha($token,$captchaText))
-            throw new CaptchaNotMatchException();
-
-        return response()->json([
-            'code' => 0
-        ]);
 
         $userId = $this->userService->register($request->all());
 
