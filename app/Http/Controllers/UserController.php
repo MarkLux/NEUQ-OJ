@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
 use Mews\Captcha\Facades\Captcha;
-use NEUQOJ\Exceptions\Captcha\CaptchaNotMatchException;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\UserIsActivatedException;
@@ -14,7 +13,6 @@ use NEUQOJ\Exceptions\UserLockedException;
 use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Http\Requests;
 use NEUQOJ\Repository\Models\User;
-use NEUQOJ\Services\CaptchaService;
 use NEUQOJ\Services\TokenService;
 use NEUQOJ\Services\UserService;
 use Illuminate\Support\Facades\Response;
@@ -25,15 +23,24 @@ class UserController extends Controller
     private $userService;
     private $verifyService;
     private $tokenService;
-    private $captchaService;
 
-    public function __construct(UserService $userService,VerifyService $verifyService,TokenService $tokenService,CaptchaService $captchaService)
+    public function __construct(UserService $userService,VerifyService $verifyService,TokenService $tokenService)
     {
         $this->userService = $userService;
         $this->verifyService = $verifyService;
         $this->tokenService = $tokenService;
-        $this->captchaService = $captchaService;
     }
+
+    //获取验证码
+   public function getCaptcha(Request $request)
+   {
+       $url = Captcha::src();
+
+       return response()->json([
+           'code' => 0,
+           'url' => $url
+       ]);
+   }
 
     //验证码的注册必须让前端带上cookie才能保持同一个会话
     public function register(Request $request)
@@ -44,24 +51,13 @@ class UserController extends Controller
             'mobile' => 'required|max:45',
             'password' => 'required|confirmed|min:6|max:20',
             'school' => 'string|max:100',
-            'captcha_token' => 'required|string',
-            'captcha_text' => 'required|string'
+            'captcha' => 'required|captcha'
         ]);
 
         if($validator->fails()) {
             $error = $validator->getMessageBag()->all();
             throw new FormValidatorException($error);
         }
-
-        $token = $request->input('captcha_token');
-        $captchaText = $request->input('captcha_text');
-
-        if(!$this->captchaService->checkCaptcha($token,$captchaText))
-            throw new CaptchaNotMatchException();
-
-        return response()->json([
-            'code' => 0
-        ]);
 
         $userId = $this->userService->register($request->all());
 

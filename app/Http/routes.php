@@ -30,8 +30,6 @@ include 'Routes/Status.php';
 
 include 'Routes/Contest.php';
 
-include 'Routes/Captcha.php';
-
 Route::get('/', function () {
     return 'here is the main page!!';
 });
