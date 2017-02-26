@@ -23,23 +23,29 @@ class SolutionRepository extends AbstractRepository
         return $this->model->all()->count();
     }
 
-    public function getAllSolutions(int $page = 1,int $size = 15,array $param = [],array $columns = ['*'])
+    public function getAllSolutions(int $page = 1,int $size = 15,array $param = [])
     {
         if(!empty($param))
             return $this->model
+                ->leftJoin('users','solutions.user_id','=','users.id')
                 ->where($param)
-                ->where('problem_id','>','0')
+                ->where('solutions.problem_id','>','0')
+                ->where('solutions.problem_num','>','0')
+                ->select('solutions.id','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','users.name')
                 ->orderBy('created_at','desc')
                 ->skip($size * --$page)
                 ->take($size)
-                ->get($columns);
+                ->get();
         else
             return $this->model
-                ->where('problem_id','>','0')
+                ->leftJoin('users','solutions.user_id','=','users.id')
+                ->where('solutions.problem_id','>','0')
+                ->where('solutions.problem_num','>','0')
+                ->select('solutions.id','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','users.name')
                 ->orderBy('created_at','desc')
                 ->skip($size * --$page)
                 ->take($size)
-                ->get($columns);
+                ->get();
     }
 
     public function deleteWhereIn(string $param, array $data = [])

@@ -8,6 +8,8 @@
 
 Route::get('/status','SolutionController@getSolutions');
 
+Route::get('/solution/{id}','SolutionController@getSolution');
+
 Route::get('/status/compile-info/{id}','SolutionController@getCompileInfo');
 
 Route::get('/status/runtime-info/{id}','SolutionController@getRuntimeInfo');

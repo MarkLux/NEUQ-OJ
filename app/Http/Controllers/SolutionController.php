@@ -63,6 +63,16 @@ class SolutionController extends Controller
         ]);
     }
 
+    public function getSolution(int $solutionId)
+    {
+        $data = $this->solutionService->getSolution($solutionId);
+
+        return response()->json([
+            'code' =>0,
+            'data' => $data
+        ]);
+    }
+
     public function getCompileInfo(int $solutionId)
     {
         $compileInfo = $this->solutionService->getCompileInfo($solutionId);
