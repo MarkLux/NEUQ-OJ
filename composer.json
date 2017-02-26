@@ -9,7 +9,8 @@
         "laravel/framework": "5.2.*",
         "predis/predis": "~1.0",
         "league/commonmark": "^0.15.3",
-        "mews/captcha": "^2.1"
+        "mews/captcha": "^2.1",
+        "qiniu/php-sdk": "^7.1"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
