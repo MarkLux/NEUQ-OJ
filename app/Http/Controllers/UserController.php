@@ -69,7 +69,6 @@ class UserController extends Controller
 //        if(!$this->captchaService->checkCaptcha($token,$captchaText))
 //            throw new CaptchaNotMatchException();
 
-
         $userId = $this->userService->register($request->all());
 
 

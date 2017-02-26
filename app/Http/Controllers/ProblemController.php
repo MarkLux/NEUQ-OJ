@@ -204,7 +204,7 @@ class ProblemController extends Controller
             throw new NoPermissionException();
 
         $data = [
-            'source_code' => $request->input('source_code'),
+            'source_code' => stripcslashes($request->input('source_code')),
             'private' => $request->input('private'),
             'code_length' => strlen($request->input('source_code')),
             'ip' => $request->ip(),
