@@ -105,60 +105,70 @@ class ProblemService implements ProblemServiceInterface
 
     public function getProblems(int $userId = -1,int $page,int $size)
     {
-        $problems = $this->problemRepo->paginate($page,$size,['is_public'=>1],['id','title','difficulty','source','submit','accepted','is_public','created_at','updated_at'])->toArray();
+        $problems = $this->problemRepo->getProblems($page,$size)->toArray();
 
-        $problemIds = [];
+        //重新组织数组形式
+        $data = [];
 
-        foreach ($problems as $problem)
+        $singleProblem = $problems[0];
+        $tags = [];
+        if($problems[0]['tag_id'] != null)
+            $tags[] = ['tag_title' => $problems[0]['tag_title'] , 'tag_id' => $problems[0]['tag_id']];
+
+        if(count($problems) > 1)
         {
-            $problemIds[] = $problem['id'];
+            for($i=1;$i<count($problems);$i++)
+            {
+                if($singleProblem['id'] == $problems[$i]['id'])
+                {
+                    if($problems[$i]['tag_id'] != null)
+                        $tags[] = ['tag_title' => $problems[$i]['tag_title'] , 'tag_id' => $problems[$i]['tag_id']];
+                }
+                else
+                {
+                    $singleProblem['tags'] = $tags;
+                    unset($singleProblem['tag_id']);
+                    unset($singleProblem['tag_title']);
+                    $data[] = $singleProblem;
+                    $singleProblem = $problems[$i];
+                    $tags = [];
+                    if($problems[$i]['tag_id'] != null)
+                        $tags[] = ['tag_title' => $problems[$i]['tag_title'] , 'tag_id' => $problems[$i]['tag_id']];
+                }
+            }
         }
 
-        $tagRelations = $this->tagRelationRepo->getIn('problem_id',$problemIds,['problem_id','tag_id','tag_title'])->toArray();
-
-        //组织题目标签信息
-
-        $tags = [];
-
-        foreach ($tagRelations as $tagRelation)
-        {
-            $tags[$tagRelation['problem_id']][] = $tagRelation;
-        }//合并
+        //剩下最后一个题目
+        $singleProblem['tags'] = $tags;
+        unset($singleProblem['tag_id']);
+        unset($singleProblem['tag_title']);
+        $data[] = $singleProblem;
 
         //组织用户解题情况
-        //注意：没有使用join的方法而是进行了3次查询 影响了效率
 
-        if($userId != -1)
-        {
-            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
+        if($userId != -1) {
+            $problemIds = [];
+
+            foreach ($data as $problem) {
+                $problemIds[] = $problem['id'];
+            }
+
+            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id', $userId, 'problem_id', $problemIds, ['problem_id', 'result'])->toArray();
             $status = [];
 
-            foreach ($userStatuses as $userStatus)
-            {
+            foreach ($userStatuses as $userStatus) {
                 $status[$userStatus['problem_id']] = $userStatus['result'];
             }
-        }
-        if($userId == -1) {
-            foreach ($problems as &$problem) {
-                if (isset($tags[$problem['id']]))
-                    $problem['tags'] = $tags[$problem['id']];
-                else
-                    $problem['tags'] = null;
-            }
-        }else{
-            foreach ($problems as &$problem) {
-                if (isset($tags[$problem['id']]))
-                    $problem['tags'] = $tags[$problem['id']];
-                else
-                    $problem['tags'] = null;
-                if(isset($status[$problem['id']]))
-                    $problem['user_status'] = $status[$problem['id']]==4?'Y':'N';
+
+            foreach ($data as &$problem) {
+                if (isset($status[$problem['id']]))
+                    $problem['user_status'] = $status[$problem['id']] == 4 ? 'Y' : 'N';
                 else
                     $problem['user_status'] = null;
             }
         }
 
-        return $problems;
+        return $data;
     }
 
     //组织数据 转化md为markdown
@@ -389,96 +399,63 @@ class ProblemService implements ProblemServiceInterface
         //重新组织数组形式
         $data = [];
 
+        $singleProblem = $problems[0];
+        $tags = [];
+        if($problems[0]['tag_id'] != null)
+            $tags[] = ['tag_title' => $problems[0]['tag_title'] , 'tag_id' => $problems[0]['tag_id']];
+
         if(count($problems) > 1)
         {
-            $singleProblem = $problems[0];
-            $tags = [];
-
-            foreach ($problems as $problem)
+            for($i=1;$i<count($problems);$i++)
             {
-
-                if($singleProblem['id'] == $problem['id'])
+                if($singleProblem['id'] == $problems[$i]['id'])
                 {
-                    //还是上一道题目的
-                    $tags[] = ['tag_id' => $problem['tag_id'],'tag_title' => $problem['tag_title']];
+                    if($problems[$i]['tag_id'] != null)
+                        $tags[] = ['tag_title' => $problems[$i]['tag_title'] , 'tag_id' => $problems[$i]['tag_id']];
                 }
                 else
                 {
-                    //一道题目组装完毕
                     $singleProblem['tags'] = $tags;
                     unset($singleProblem['tag_id']);
                     unset($singleProblem['tag_title']);
                     $data[] = $singleProblem;
-                    $singleProblem = [];
+                    $singleProblem = $problems[$i];
+                    $tags = [];
+                    if($problems[$i]['tag_id'] != null)
+                        $tags[] = ['tag_title' => $problems[$i]['tag_title'] , 'tag_id' => $problems[$i]['tag_id']];
                 }
             }
-
-            //最后一道题目没有装进去
-            $singleProblem['tags'] = $tags;
-            unset($singleProblem['tag_id']);
-            unset($singleProblem['tag_title']);
-            $data[] = $singleProblem;
         }
 
-
-//        $problemIds = [];
-//
-//        foreach ($problems as $problem)
-//        {
-//            $problemIds[] = $problem['id'];
-//        }
-//
-//        $tagRelations = $this->tagRelationRepo->getIn('problem_id',$problemIds,['problem_id','tag_id','tag_title'])->toArray();
-//
-//        //组织题目标签信息
-//
-//        $tags = [];
-//
-//        foreach ($tagRelations as $tagRelation)
-//        {
-//            $tags[$tagRelation['problem_id']][] = $tagRelation;
-//        }//合并
+        //剩下最后一个题目
+        $singleProblem['tags'] = $tags;
+        unset($singleProblem['tag_id']);
+        unset($singleProblem['tag_title']);
+        $data[] = $singleProblem;
 
         //组织用户解题情况
 
-        if($userId != -1)
-        {
+        if($userId != -1) {
             $problemIds = [];
 
-            foreach ($data as $problem)
-            {
+            foreach ($data as $problem) {
                 $problemIds[] = $problem['id'];
             }
 
-            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
+            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id', $userId, 'problem_id', $problemIds, ['problem_id', 'result'])->toArray();
             $status = [];
 
-            foreach ($userStatuses as $userStatus)
-            {
+            foreach ($userStatuses as $userStatus) {
                 $status[$userStatus['problem_id']] = $userStatus['result'];
             }
 
             foreach ($data as &$problem) {
-//                if (isset($tags[$problem['id']]))
-//                    $problem['tags'] = $tags[$problem['id']];
-//                else
-//                    $problem['tags'] = null;
-                if(isset($status[$problem['id']]))
-                    $problem['user_status'] = $status[$problem['id']]==4?'Y':'N';
+                if (isset($status[$problem['id']]))
+                    $problem['user_status'] = $status[$problem['id']] == 4 ? 'Y' : 'N';
                 else
                     $problem['user_status'] = null;
             }
         }
-//        if($userId == -1) {
-//            foreach ($problems as &$problem) {
-//                if (isset($tags[$problem['id']]))
-//                    $problem['tags'] = $tags[$problem['id']];
-//                else
-//                    $problem['tags'] = null;
-//            }
-//        }else{
-//
-//        }
 
         return $data;
     }

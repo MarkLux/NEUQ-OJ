@@ -43,7 +43,7 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
             ->where('is_public',1)
             ->skip($size * --$page)
             ->take($size)
-            ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
+            ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.accepted',
                 'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
                 'problem_tag_relations.tag_title')
             ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
