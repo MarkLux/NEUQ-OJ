@@ -109,8 +109,11 @@ class ProblemService implements ProblemServiceInterface
 
         //重新组织数组形式
         $data = [];
+        $problemIds = [];
 
         $singleProblem = $problems[0];
+        $problemIds[] = $problems[0]['id'];
+
         $tags = [];
         if($problems[0]['tag_id'] != null)
             $tags[] = ['tag_title' => $problems[0]['tag_title'] , 'tag_id' => $problems[0]['tag_id']];
@@ -135,6 +138,8 @@ class ProblemService implements ProblemServiceInterface
                     if($problems[$i]['tag_id'] != null)
                         $tags[] = ['tag_title' => $problems[$i]['tag_title'] , 'tag_id' => $problems[$i]['tag_id']];
                 }
+
+                $problemIds[] = $problems[$i]['id'];
             }
         }
 
@@ -154,17 +159,23 @@ class ProblemService implements ProblemServiceInterface
             }
 
             $userStatuses = $this->solutionRepo->getSolutionsIn('user_id', $userId, 'problem_id', $problemIds, ['problem_id', 'result'])->toArray();
-            $status = [];
+
+            $subIds = $acIds = [];
 
             foreach ($userStatuses as $userStatus) {
-                $status[$userStatus['problem_id']] = $userStatus['result'];
+                $subIds[$userStatus['problem_id']] = true;
+                if($userStatus['result'] == 4) $acIds[$userStatus['problem_id']] = true;
             }
 
             foreach ($data as &$problem) {
-                if (isset($status[$problem['id']]))
-                    $problem['user_status'] = $status[$problem['id']] == 4 ? 'Y' : 'N';
-                else
-                    $problem['user_status'] = null;
+                if (isset($subIds[$problem['id']]))
+                {
+                    if(isset($acIds[$problem['id']]))
+                        $problem['user_status'] = 'Y';
+                    else
+                        $problem['user_status'] = 'N';
+                }
+                else $problem['user_status'] = null;
             }
         }
 
@@ -443,17 +454,23 @@ class ProblemService implements ProblemServiceInterface
             }
 
             $userStatuses = $this->solutionRepo->getSolutionsIn('user_id', $userId, 'problem_id', $problemIds, ['problem_id', 'result'])->toArray();
-            $status = [];
+
+            $subIds = $acIds = [];
 
             foreach ($userStatuses as $userStatus) {
-                $status[$userStatus['problem_id']] = $userStatus['result'];
+                $subIds[$userStatus['problem_id']] = true;
+                if($userStatus['result'] == 4) $acIds[$userStatus['problem_id']] = true;
             }
 
             foreach ($data as &$problem) {
-                if (isset($status[$problem['id']]))
-                    $problem['user_status'] = $status[$problem['id']] == 4 ? 'Y' : 'N';
-                else
-                    $problem['user_status'] = null;
+                if (isset($subIds[$problem['id']]))
+                {
+                    if(isset($acIds[$problem['id']]))
+                        $problem['user_status'] = 'Y';
+                    else
+                        $problem['user_status'] = 'N';
+                }
+                else $problem['user_status'] = null;
             }
         }
 
