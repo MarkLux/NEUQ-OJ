@@ -149,7 +149,30 @@ class ProblemService implements ProblemServiceInterface
         unset($singleProblem['tag_title']);
         $data[] = $singleProblem;
 
-        //组织用户解题情况
+        //组织用户解题情况,原版 groupBy语法
+
+//        if($userId != -1) {
+//
+//            $acArr = $this->solutionRepo->getUserAcIds($userId,$problemIds)->toArray();
+//
+//            $subArr = $this->solutionRepo->getUserSubIds($userId,$problemIds)->toArray();
+//
+//            $acIds = $subIds = [];
+//
+//            foreach ($acArr as $item) $acIds[$item['problem_id']] = true;
+//            foreach ($subArr as $item) $subIds[$item['problem_id']] = true;
+//
+//            foreach ($data as &$problem) {
+//                if (isset($subIds[$problem['id']]))
+//                {
+//                    if(isset($acIds[$problem['id']]))
+//                        $problem['user_status'] = 'Y';
+//                    else
+//                        $problem['user_status'] = 'N';
+//                }
+//                else $problem['user_status'] = null;
+//            }
+//        }
 
         if($userId != -1) {
             $problemIds = [];
@@ -186,8 +209,13 @@ class ProblemService implements ProblemServiceInterface
 
     public function getProblemById(int $problemId,array $columns = ['*'])
     {
+        return $this->problemRepo->get($problemId,$columns)->first();
+    }
+
+    public function getProblemIndex(int $problemId)
+    {
         //join过的表不能再简单的用原表主键找   
-        $problems = $this->problemRepo->getBy('problems.id',$problemId,$columns)->toArray();
+        $problems = $this->problemRepo->getBy('problems.id',$problemId)->toArray();
         //拿到的全部的数据
 
         if(count($problems) == 0)
@@ -225,9 +253,9 @@ class ProblemService implements ProblemServiceInterface
         return $data;
     }
 
-    public function getProblemBy(string $param, $value,array $columns = ['*'])
+    public function getProblemBy(string $param, $value)
     {
-        $problems = $this->problemRepo->getBy($param,$value,$columns)->toArray();
+        $problems = $this->problemRepo->getBy($param,$value)->toArray();
         //拿到的全部的数据
 
         if(empty($problems))
@@ -296,8 +324,8 @@ class ProblemService implements ProblemServiceInterface
 
             return true;
         }
-
-        return false;
+        else
+            return false;
     }
 
     /**

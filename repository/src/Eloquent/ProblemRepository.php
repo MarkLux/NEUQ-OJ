@@ -80,7 +80,7 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
             ->get();
     }
 
-    function getBy(string $param, string $value, array $columns = ['*'])
+    function getBy(string $param, string $value,array $columns=['*'])
     {
         return $this->model
             ->where($param, $value)

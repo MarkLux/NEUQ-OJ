@@ -81,7 +81,7 @@ class ProblemController extends Controller
 
     public function getProblem(Request $request,int $problemId)
     {
-        $problem = $this->problemService->getProblemById($problemId);
+        $problem = $this->problemService->getProblemIndex($problemId);
 
         if($problem == false)//可能出bug
             throw new ProblemNotExistException();

@@ -27,9 +27,11 @@ interface ProblemServiceInterface
 
     function getProblemById(int $problemId,array $columns = ['*']);
 
-    function getProblemBy(string $param,$value,array $columns = ['*']);
+    function getProblemBy(string $param,$value);
 
     function getProblemByMult(array $condition,array $columns = ['*']);
+
+    function getProblemIndex(int $problemId);
 
     //以文件形式输出测试输入输出等数据
     function getRunDataPath(int $problemId,string $name);

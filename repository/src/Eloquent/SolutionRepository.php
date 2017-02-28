@@ -23,6 +23,26 @@ class SolutionRepository extends AbstractRepository
         return $this->model->all()->count();
     }
 
+    //组织题目的部分
+//    public function getUserAcIds(int $userId,array $problemIds)
+//    {
+//        return $this->model
+//            ->where('user_id',$userId)
+//            ->whereIn('problem_id',$problemIds)
+//            ->where('result',4)
+//            ->groupBy('problem_id')
+//            ->get(['problem_id']);
+//    }
+//
+//    public function getUserSubIds(int $userId,array $problemIds)
+//    {
+//        return $this->model
+//            ->where('user_id',$userId)
+//            ->whereIn('problem_id',$problemIds)
+//            ->groupBy('problem_id')
+//            ->get(['problem_id']);
+//    }
+
     public function getAllSolutions(int $page = 1,int $size = 15,array $param = [])
     {
         if(!empty($param))
