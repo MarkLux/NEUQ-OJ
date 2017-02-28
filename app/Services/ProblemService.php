@@ -384,30 +384,72 @@ class ProblemService implements ProblemServiceInterface
     {
         $pattern = "%".$likeName."%";
 
-        $problems = $this->problemRepo->getWhereLike($pattern,$start,$size);
+        $problems = $this->problemRepo->getWhereLike($pattern,$start,$size)->toArray();
 
-        $problemIds = [];
+        //重新组织数组形式
+        $data = [];
 
-        foreach ($problems as $problem)
+        if(count($problems) > 1)
         {
-            $problemIds[] = $problem['id'];
+            $singleProblem = $problems[0];
+            $tags = [];
+
+            foreach ($problems as $problem)
+            {
+
+                if($singleProblem['id'] == $problem['id'])
+                {
+                    //还是上一道题目的
+                    $tags[] = ['tag_id' => $problem['tag_id'],'tag_title' => $problem['tag_title']];
+                }
+                else
+                {
+                    //一道题目组装完毕
+                    $singleProblem['tags'] = $tags;
+                    unset($singleProblem['tag_id']);
+                    unset($singleProblem['tag_title']);
+                    $data[] = $singleProblem;
+                    $singleProblem = [];
+                }
+            }
+
+            //最后一道题目没有装进去
+            $singleProblem['tags'] = $tags;
+            unset($singleProblem['tag_id']);
+            unset($singleProblem['tag_title']);
+            $data[] = $singleProblem;
         }
 
-        $tagRelations = $this->tagRelationRepo->getIn('problem_id',$problemIds,['problem_id','tag_id','tag_title'])->toArray();
 
-        //组织题目标签信息
-
-        $tags = [];
-
-        foreach ($tagRelations as $tagRelation)
-        {
-            $tags[$tagRelation['problem_id']][] = $tagRelation;
-        }//合并
+//        $problemIds = [];
+//
+//        foreach ($problems as $problem)
+//        {
+//            $problemIds[] = $problem['id'];
+//        }
+//
+//        $tagRelations = $this->tagRelationRepo->getIn('problem_id',$problemIds,['problem_id','tag_id','tag_title'])->toArray();
+//
+//        //组织题目标签信息
+//
+//        $tags = [];
+//
+//        foreach ($tagRelations as $tagRelation)
+//        {
+//            $tags[$tagRelation['problem_id']][] = $tagRelation;
+//        }//合并
 
         //组织用户解题情况
 
         if($userId != -1)
         {
+            $problemIds = [];
+
+            foreach ($data as $problem)
+            {
+                $problemIds[] = $problem['id'];
+            }
+
             $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
             $status = [];
 
@@ -415,28 +457,30 @@ class ProblemService implements ProblemServiceInterface
             {
                 $status[$userStatus['problem_id']] = $userStatus['result'];
             }
-        }
-        if($userId == -1) {
-            foreach ($problems as &$problem) {
-                if (isset($tags[$problem['id']]))
-                    $problem['tags'] = $tags[$problem['id']];
-                else
-                    $problem['tags'] = null;
-            }
-        }else{
-            foreach ($problems as &$problem) {
-                if (isset($tags[$problem['id']]))
-                    $problem['tags'] = $tags[$problem['id']];
-                else
-                    $problem['tags'] = null;
+
+            foreach ($data as &$problem) {
+//                if (isset($tags[$problem['id']]))
+//                    $problem['tags'] = $tags[$problem['id']];
+//                else
+//                    $problem['tags'] = null;
                 if(isset($status[$problem['id']]))
                     $problem['user_status'] = $status[$problem['id']]==4?'Y':'N';
                 else
                     $problem['user_status'] = null;
             }
         }
+//        if($userId == -1) {
+//            foreach ($problems as &$problem) {
+//                if (isset($tags[$problem['id']]))
+//                    $problem['tags'] = $tags[$problem['id']];
+//                else
+//                    $problem['tags'] = null;
+//            }
+//        }else{
+//
+//        }
 
-        return $problems;
+        return $data;
     }
 
     /**
