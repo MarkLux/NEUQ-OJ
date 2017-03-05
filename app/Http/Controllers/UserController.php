@@ -324,4 +324,22 @@ class UserController extends Controller
             'code' => 0
         ]);
     }
+
+    public function getRankList(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'page' => 'integer|min:1',
+            'size' => 'integer|min:1|max:50',
+            'scope' => 'string'
+        ]);
+
+        if($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $scope = $request->input('scope','total');
+        $page = $request->input('page',1);
+        $size = $request->input('size',20);
+
+        return $this->userService->getRankList($scope,$page,$size);
+    }
 }

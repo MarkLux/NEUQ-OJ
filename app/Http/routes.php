@@ -36,5 +36,5 @@ Route::get('/', function () {
     return 'here is the main page!!';
 });
 
-Route::post('/test','TestController@test');
+Route::get('/test','TestController@test');
 

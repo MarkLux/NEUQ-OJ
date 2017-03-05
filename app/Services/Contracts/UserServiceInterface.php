@@ -55,5 +55,6 @@ interface UserServiceInterface
 
     function getUserRole(int $userId);
 
+    function getRankList(string $scope,int $page,int $size);
 
 }

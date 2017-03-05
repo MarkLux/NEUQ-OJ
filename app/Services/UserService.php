@@ -257,4 +257,30 @@ class UserService implements UserServiceInterface
     {
         // TODO: Implement getUserRole() method.
     }
+
+    public function getRankList(string $scope, int $page, int $size)
+    {
+        $startDate = '';
+
+        switch ($scope)
+        {
+            //按日获取
+            case "d":
+                $startDate = date('Y').'-'.date('m').'-'.date('d');
+                break;
+            //按周获取
+            case "w":
+                $monday = mktime(0, 0, 0, date('m'),date('d')-(date('w')+7)%8+1,date('Y'));
+                $startDate = strftime("%Y-%m-%d",$monday);
+                break;
+            //按月获取
+            case "m":
+                $startDate = date('Y').'-'.date('m').'-01';
+                break;
+            default:
+                $startDate = 'total';
+        }
+
+        return $this->userRepo->getRankList($startDate,$page,$size);
+    }
 }

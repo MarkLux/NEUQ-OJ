@@ -23,6 +23,8 @@ Route::get('/user/active-mail/send','UserController@resendActiveMail');
 
 Route::get('/user/{id}/info','UserController@getUserInfo');
 
+Route::get('/user/ranklist','UserController@getRankList');
+
 Route::group(['middleware' => 'token'], function() {
     Route::get('/token-verify',function (){
         return response()->json([
