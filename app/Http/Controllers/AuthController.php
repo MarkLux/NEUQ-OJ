@@ -15,6 +15,8 @@ use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserExistedException;
 use NEUQOJ\Exceptions\UserNotExistException;
+use NEUQOJ\Http\Controllers\Controller;
+use NEUQOJ\Repository\Eloquent\TokenRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Services\TokenService;
 use NEUQOJ\Services\UserService;
@@ -44,8 +46,11 @@ class AuthController extends Controller
         }
 
         //手机和邮箱都应该检查
-        if ($userService->isUserExist('mobile', $request->mobile) || $userService->isUserExist('email', $request->email))
+        if($userService->isUserExist(['mobile', $request->mobile]) || $userService->isUserExist(['email', $request->email]))
             throw new UserExistedException();
+        //检查用户名有没有被注册
+        if($userService->isUserExist(['name',$request->name]))
+            throw new FormValidatorException(["User Name Has Been Registered"]);
 
         $user = [
             'name' => $request->name,
@@ -69,7 +74,6 @@ class AuthController extends Controller
     public function login(Request $request, TokenService $tokenService, UserService $userService, UserRepository $userRepository)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|max:100',
             'identifier' => 'required|max:100',
             'password' => 'required|min:6'
         ]);
@@ -109,4 +113,12 @@ class AuthController extends Controller
 
     }
 
+    public function logout(Request $request,TokenService $tokenService)
+    {
+        $tokenService->destoryToken($request->user->id);
+
+        return response()->json([
+            'code' => '0'
+        ]);
+    }
 }

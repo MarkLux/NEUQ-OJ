@@ -29,21 +29,22 @@ class PrivilegeMiddleware
 
     public function handle($request, Closure $next, ... $params)
     {
-        foreach ($params as $priStr) {
-            //TODO 查询操作放在for循环外
-            $privilege = $this->priRepo->getBy('name', $priStr)->first();
+        $collection = $this->priRepo->getIn('name',$params);
 
-            if($privilege == null)
-                throw new PrivilegeNotExistException();
+        $privileges = [];
 
-            $result = $this->usrPriRepo->getByMult([
-                'user_id' => $request->user->id,
-                'privilege_id' => $privilege->id
-            ])->first();
+        if(count($collection)!=count($params))
+            throw new PrivilegeNotExistException();
 
-            if ($result == null)
-                throw new NoPermissionException();
+        //重新压缩数组
+        foreach ($collection as $item){
+            $privileges[] = $item->id;
         }
+
+        $collection = $this->usrPriRepo->getRes($request->user->id,$privileges);
+
+        if(count($collection)!=count($params))
+            throw new NoPermissionException();
 
         return $next($request);
     }

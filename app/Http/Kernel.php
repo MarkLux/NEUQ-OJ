@@ -16,6 +16,7 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
+        \NEUQOJ\Http\Middleware\EnableCrossRequestMiddleware::class
     ];
 
     /**
@@ -52,6 +53,8 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'flow' => FlowControllerMiddleware::class,
         'token' => \NEUQOJ\Http\Middleware\TokenMiddleware::class,
-        'privilege' => \NEUQOJ\Http\Middleware\PrivilegeMiddleware::class
+        'privilege' => \NEUQOJ\Http\Middleware\PrivilegeMiddleware::class,
+        'admin' => \NEUQOJ\Http\Middleware\AdminMiddleware::class,
+        'user' => \NEUQOJ\Http\Middleware\UserMiddleware::class
     ];
 }

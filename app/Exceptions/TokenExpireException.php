@@ -11,7 +11,7 @@ namespace NEUQOJ\Exceptions;
 
 class TokenExpireException extends BaseException
 {
-    protected $code = 1006;
+    protected $code = 1013;
 
     protected $data = "Token Expired";
 }

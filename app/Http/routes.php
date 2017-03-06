@@ -11,20 +11,30 @@
 |
 */
 
+
+include 'Routes/UserGroup.php';
+
+include 'Routes/Homework.php';
+
+include 'Routes/User.php';
+
+include 'Routes/DeletionLog.php';
+
+include 'Routes/Admin.php';
+
+include 'Routes/Discuss.php';
+
+include 'Routes/Problem.php';
+
+include 'Routes/Status.php';
+
+include 'Routes/Contest.php';
+
+//include 'Routes/Captcha.php';
+
 Route::get('/', function () {
     return 'here is the main page!!';
 });
 
-Route::post('/register','AuthController@register');
+Route::get('/test','TestController@test');
 
-Route::post('/login','AuthController@login');
-
-Route::group(['middleware' => 'token'],function (){
-    Route::get('/profile',function (){
-        return "hello";
-    });
-
-    Route::get('/test',['middleware' => 'privilege:check,create-post',function (){
-        echo "You Have The Right!";
-    }]);
-});

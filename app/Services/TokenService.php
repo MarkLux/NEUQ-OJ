@@ -15,13 +15,14 @@ use NEUQOJ\Exceptions\NeedLoginException;
 use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Repository\Eloquent\TokenRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
+use NEUQOJ\Services\Contracts\TokenServiceInterface;
 
-class TokenService
+class TokenService implements TokenServiceInterface
 {
     private $userRepo;
     private $tokenRepo;
 
-    private static  $EXPIRE_TIME = 1728000000;
+    private static  $EXPIRE_TIME = 10800000;
 
     public function __construct(UserRepository $userRepository,TokenRepository $tokenRepository)
     {
@@ -29,7 +30,7 @@ class TokenService
         $this->tokenRepo = $tokenRepository;
     }
 
-    private function hasToken(int $userId):bool
+    public function hasToken(int $userId):bool
     {
         $user = $this->userRepo->get($userId)->first();
 
@@ -60,7 +61,7 @@ class TokenService
         return $tokenStr;
     }
 
-    private function updateToken($userId,$ip)
+    private function updateToken(int $userId,string $ip):string
     {
         $time = Utils::createTimeStamp();
         $tokenStr = md5(uniqid());
@@ -76,7 +77,7 @@ class TokenService
     }
 
 
-    public function makeToken($userId,$ip)
+    public function makeToken(int $userId,string $ip):string
     {
         $user = $this->userRepo->get($userId)->first();
 
@@ -95,7 +96,7 @@ class TokenService
         }
     }
 
-    public function isTokenExpire($tokenStr)
+    public function isTokenExpire(string $tokenStr):bool
     {
         $time = Utils::createTimeStamp();
 
@@ -106,5 +107,25 @@ class TokenService
             return true;
         else
             return false;
+    }
+
+    public function destoryToken(int $userId)
+    {
+        $token = $this->tokenRepo->getBy('user_id',$userId)->first();
+
+        if($token!=null)
+            return $this->tokenRepo->update(['token' => ''],$token->id);
+
+        return -1;
+    }
+
+    public function getUserIdByToken(string $tokenStr):int
+    {
+        $token = $this->tokenRepo->getBy('token',$tokenStr)->first();
+
+        $time = Utils::createTimeStamp();
+
+        if($token == null || $token->expires_at < $time) return -1;
+        else return $token->user_id;
     }
 }
