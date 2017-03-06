@@ -20,3 +20,5 @@
 
 * 判题时的输入输出数据均来自``` /home/judge/data/题目号 ``` 文件夹 因此修改和添加题目都必须在这里进行改动。
 * 重编译说明：需要修改judge_client.cc和judged.cc两个源代码文件。然后关闭正在运行的judged服务进程，删除```/usr/bin/```目录下的judged和judge_client然后用bash运行make.sh脚本即可。 其他的在安装时已经搞定（如启动服务的脚本等）
+
+### Test
