@@ -58,6 +58,7 @@ class ContestController extends Controller
         else
             $userId = -1;
 
+
         $data = $this->contestService->getContestIndex($userId,$contestId);
 
         return response()->json([
