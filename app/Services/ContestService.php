@@ -428,20 +428,19 @@ class ContestService implements ContestServiceInterface
         $group = $this->problemGroupRepo->get($groupId,['private','type','start_time','creator_id'])->first();
 
         //如果是创建者 直接可以获得权限，管理员也应该一样
-        if($userId = $group->creator_id) return true;
+        if($userId == $group->creator_id) return true;
         //TODO: 管理员权限检查
 
         //判断时间
         $currentTime = time();
 
-        $startTime = strtotime($group->start_time);
-
-        //尚未开始的比赛
-        if($startTime > $currentTime)
-            throw new ContestNotAvailableException();
-
         if($group == null || $group->type!=1)//判断题目组类型
             return false;
+
+        $startTime = strtotime($group->start_time);
+        //尚未开始的比赛
+        if($startTime > $currentTime)
+        throw new ContestNotAvailableException();
 
         if($group->private == 0)
             return true;
