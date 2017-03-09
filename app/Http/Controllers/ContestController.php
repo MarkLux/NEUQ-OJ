@@ -306,8 +306,9 @@ class ContestController extends Controller
         //为危险动作检查密码
         if(!Utils::pwCheck($request->input('user_password'),$request->user->password))
             throw new PasswordErrorException();
+
         //TODO 检查是否是管理员
-        if(!$this->contestService->isUserContestCreator($contestId,$request->user->id))
+        if(!$this->contestService->isUserContestCreator($request->user->id,$contestId))
             throw new NoPermissionException();
 
         $title = $request->input('title',null);
