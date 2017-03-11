@@ -81,23 +81,46 @@ class ContestService implements ContestServiceInterface
 
         //获取用户解题状态
 
-        if($userId != -1)
-        {
-            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
-            $status = [];
+//        if($userId != -1)
+//        {
+//            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
+//            $status = [];
+//
+//            foreach ($userStatuses as $userStatus)
+//            {
+//                $status[$userStatus['problem_id']] = $userStatus['result'];
+//            }
+//            foreach ($problemInfo as &$info) {
+//
+//                if(isset($status[$info->pid]))
+//                    $info->user_status = $status[$info->pid]==4?'Y':'N';
+//                else
+//                    $info->user_status = null;
+//            }
 
-            foreach ($userStatuses as $userStatus)
-            {
-                $status[$userStatus['problem_id']] = $userStatus['result'];
+//        }
+
+        if($userId != -1) {
+        $problemIds = [];
+
+        $userStatuses = $this->solutionRepo->getSolutionsIn('user_id', $userId, 'problem_id', $problemIds, ['problem_id', 'result'])->toArray();
+
+        $subIds = $acIds = [];
+
+        foreach ($userStatuses as $userStatus) {
+            $subIds[$userStatus['problem_id']] = true;
+            if($userStatus['result'] == 4) $acIds[$userStatus['problem_id']] = true;
+        }
+
+        foreach ($problemInfo as &$problem) {
+                if (isset($subIds[$problem->pid])) {
+                    if(isset($acIds[$problem->pid]))
+                        $problem->user_status = 'Y';
+                    else
+                        $problem->user_status = 'N';
+                }
+                else $problem->user_status = null;
             }
-            foreach ($problemInfo as &$info) {
-
-                if(isset($status[$info->pid]))
-                    $info->user_status = $status[$info->pid]==4?'Y':'N';
-                else
-                    $info->user_status = null;
-            }
-
         }
 
         $data['contest_info'] = $contest;
