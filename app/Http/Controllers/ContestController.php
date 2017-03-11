@@ -172,7 +172,7 @@ class ContestController extends Controller
         ]);
 
         if($validator->fails())
-            throw new FormValidatorException($request->getMessageBag()->all());
+            throw new FormValidatorException($validator->getMessageBag()->all());
 
         $data = [
             'source_code' => $request->input('source_code'),

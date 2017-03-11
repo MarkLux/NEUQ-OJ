@@ -430,7 +430,7 @@ class ContestService implements ContestServiceInterface
             throw new LanguageErrorException();
 
         //获取题目id
-        $relation = $this->problemGroupRelationRepo->getByMult(['problem_group_id'=>$groupId,'problem_num'=>$problemNum],['problem_id'])->first();
+        $relation = $this->problemGroupRelationRepo->getByMult(['problem_group_id'=>$groupId,'problem_num'=>$problemNum],['problem_id','problem_num'])->first();
 
         if($relation == null)
             return false;
