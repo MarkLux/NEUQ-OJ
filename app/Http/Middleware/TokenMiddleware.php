@@ -55,6 +55,8 @@ class TokenMiddleware
         elseif($user->status == 0)
             throw new UserNotActivatedException();
 
+        //延长token的作用时间
+
         $request->user = $user;
         return $next($request);
     }

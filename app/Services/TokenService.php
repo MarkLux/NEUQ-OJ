@@ -22,7 +22,7 @@ class TokenService implements TokenServiceInterface
     private $userRepo;
     private $tokenRepo;
 
-    private static  $EXPIRE_TIME = 10800000;
+    private static  $EXPIRE_TIME = 10800000; // 3小时
 
     public function __construct(UserRepository $userRepository,TokenRepository $tokenRepository)
     {

@@ -340,6 +340,11 @@ class UserController extends Controller
         $page = $request->input('page',1);
         $size = $request->input('size',20);
 
-        return $this->userService->getRankList($scope,$page,$size);
+        return response()->json([
+            'code' => 0,
+            'data' => $this->userService->getRankList($scope,$page,$size)
+        ]);
+
+
     }
 }
