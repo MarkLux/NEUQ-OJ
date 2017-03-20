@@ -66,6 +66,15 @@ class SolutionRepository extends AbstractRepository
                 ->get();
     }
 
+    public function getSolution(int $id)
+    {
+        return $this->model
+            ->leftJoin('users','solutions.user_id','=','users.id')
+            ->select('solutions.id','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','users.name')
+            ->where('solutions.id',$id)
+            ->get();
+    }
+
     public function deleteWhereIn(string $param, array $data = [])
     {
         return $this->model->whereIn($param, $data)->delete();

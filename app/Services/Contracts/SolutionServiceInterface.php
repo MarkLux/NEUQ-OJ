@@ -14,7 +14,7 @@ interface SolutionServiceInterface
 
     function getSolutionBy(string $param,$value,array $columns = ['*']);
 
-    function getSolution(int $solutionId,array $columns = ['*']);
+    function getSolution(int $solutionId);
 
     function isSolutionExist(int $solutionId):bool;
 

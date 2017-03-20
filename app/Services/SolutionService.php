@@ -38,9 +38,9 @@ class SolutionService implements SolutionServiceInterface
         return $this->solutionRepo->getAllSolutions($page,$size,$condition);
     }
 
-    public function getSolution(int $solutionId, array $columns = ['*'])
+    public function getSolution(int $solutionId)
     {
-        return $this->solutionRepo->get($solutionId,$columns)->first();
+        return $this->solutionRepo->getSolution($solutionId);
     }
 
     public function getSolutionBy(string $param, $value, array $columns = ['*'])
