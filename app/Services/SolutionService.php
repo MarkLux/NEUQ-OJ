@@ -40,7 +40,7 @@ class SolutionService implements SolutionServiceInterface
 
     public function getSolution(int $solutionId)
     {
-        return $this->solutionRepo->getSolution($solutionId);
+        return $this->solutionRepo->getSolution($solutionId)->first();
     }
 
     public function getSolutionBy(string $param, $value, array $columns = ['*'])

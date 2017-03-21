@@ -18,7 +18,7 @@ class EnableCrossRequestMiddleware
     {
 
         $response = $next($request);
-        $response->header('Access-Control-Allow-Origin', 'http://oj.outxu.cn');
+        $response->header('Access-Control-Allow-Origin', '*');
         $response->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Cookie, Accept,token,Accept,X-Requested-With');
         $response->header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, OPTIONS');
         $response->header('Access-Control-Allow-Credentials', 'true');

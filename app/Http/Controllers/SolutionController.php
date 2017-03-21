@@ -67,6 +67,9 @@ class SolutionController extends Controller
     {
         $data = $this->solutionService->getSolution($solutionId);
 
+        $data['solution_id'] = $data['id'];
+        unset($data['id']);
+
         return response()->json([
             'code' =>0,
             'data' => $data
