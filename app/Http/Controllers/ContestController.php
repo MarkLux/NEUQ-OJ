@@ -90,7 +90,6 @@ class ContestController extends Controller
             throw new ContestNotExistException();
 
         $ranks = $this->contestService->getRankList($contestId);
-
         return response()->json([
             'code' => 0,
             'data' => $ranks

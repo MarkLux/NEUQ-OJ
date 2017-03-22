@@ -328,15 +328,19 @@ class ContestService implements ContestServiceInterface
 
                 if($solution['result'] == 4)
                 {
-                    $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']] = strtotime($solution['created_at']) - strtotime($group->start_time);
+                    $timeUsed = strtotime($solution['created_at']) - strtotime($group->start_time);
+                    $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']] = $timeUsed;
+                    $rank[$userCnt]['time'] += $timeUsed;
                     $rank[$userCnt]['solved']++;
                 }
-                elseif($solution['result'] > 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
+                else if($solution['result'] > 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
                     $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
 
-                //刷新总时间，注意所有时间全部以秒级正整数方式保存,错题的罚时只在题目成功ac之后才计算
-                if($solution['result'] ==4)
-                    $rank[$userCnt]['time'] += (strtotime($solution['created_at'])-strtotime($group->start_time));
+                //刷新总时间，注意所有时间全部以秒级正整数方式保存
+
+                if($solution['result'] == 4) {
+                    $rank[$userCnt]['time'] += (strtotime($solution['created_at']) - strtotime($group->start_time));
+                }
 
                 $userId = $solution['id'];//标记用户
             }
@@ -347,15 +351,18 @@ class ContestService implements ContestServiceInterface
                 {
                     if(!isset($rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]))//之前还没有ac过对应的题目
                     {
+                        $timeUsed = strtotime($solution['created_at']) - strtotime($group->start_time);
+
                         $rank[$userCnt]['solved'] ++;//解题数目+1
-                        $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]  = strtotime($solution['created_at']) - strtotime($group->start_time);
-                        //计算题目总罚时
+                        $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]  = $timeUsed;
+                        $rank[$userCnt]['time'] += $timeUsed;
+                        //错题的罚时只在题目成功ac之后才计算
                         if(isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
                             $rank[$userCnt]['time'] += 1200*$rank[$userCnt]['problem_wa_num'][$solution['problem_num']];
                     }
                     //如果已经ac过这个题目，不再考虑
                 }
-                elseif ($solution['result'] > 4)//错误
+                else if ($solution['result'] > 4)//错误
                 {
                     if(isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']]++;
