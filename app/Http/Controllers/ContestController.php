@@ -86,10 +86,17 @@ class ContestController extends Controller
 
     public function getRankList(int $contestId)
     {
+        $startTime = Utils::createTimeStamp();
+
         if(!$this->contestService->isContestExist($contestId))
             throw new ContestNotExistException();
 
         $ranks = $this->contestService->getRankList($contestId);
+
+        $endTime = Utils::createTimeStamp();
+
+        dd($startTime."   ".$endTime);
+
         return response()->json([
             'code' => 0,
             'data' => $ranks
@@ -156,9 +163,10 @@ class ContestController extends Controller
 
         $data = $this->contestService->searchContest($keyword,$page,$size);
 
-        $data['code'] = 0;
-
-        return response()->json($data);
+        return response()->json([
+            'code' => 0,
+            'data' => $data
+        ]);
 
     }
 

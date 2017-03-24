@@ -69,7 +69,9 @@ class HomeworkController extends Controller
 
         return response()->json([
             'code' => 0,
-            'homework_id' => $homeworkId
+            'data'=>[
+                'homework_id' => $homeworkId
+            ]
         ]);
     }
 
@@ -156,7 +158,9 @@ class HomeworkController extends Controller
 
         return response()->json([
             'code' => 0,
-            'solution_id' => $solutionId
+            'data'=>[
+                'solution_id' => $solutionId
+            ]
         ]);
     }
 

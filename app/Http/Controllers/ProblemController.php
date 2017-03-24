@@ -24,7 +24,7 @@ class ProblemController extends Controller
     private $problemService;
     private $tokenService;
 
-    public function __construct(ProblemService $problemService,TokenService $tokenService)
+    public function __construct(ProblemService $problemService, TokenService $tokenService)
     {
         $this->problemService = $problemService;
         $this->tokenService = $tokenService;
@@ -48,48 +48,50 @@ class ProblemController extends Controller
 
     public function getProblems(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'page' => 'integer|min:1',
             'size' => 'integer|min:1|max:40'
         ]);
 
-        if($validator->fails())
+        if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $page = $request->input('page',1);
-        $size = $request->input('size',20);
+        $page = $request->input('page', 1);
+        $size = $request->input('size', 20);
 
         $total_count = $this->problemService->getTotalPublicCount();
 
         $userId = -1;
         //检测用户登陆状态
-        if(isset($request->user))
+        if (isset($request->user))
             $userId = $request->user->id;
 
-        if(!empty($total_count))
-            $data = $this->problemService->getProblems($userId,$page,$size);
+        if (!empty($total_count))
+            $data = $this->problemService->getProblems($userId, $page, $size);
         else
             $data = null;
 
         return response()->json([
             'code' => 0,
-            'data' => $data,
-            'total_count' => $total_count
+            'data' => [
+                'problems' => $data,
+                'total_count' => $total_count
+            ]
         ]);
 
     }
 
-    public function getProblem(Request $request,int $problemId)
+    public function getProblem(Request $request, int $problemId)
     {
         $problem = $this->problemService->getProblemIndex($problemId);
 
-        if($problem == false)//可能出bug
+        if ($problem == false)//可能出bug
             throw new ProblemNotExistException();
 
-        if($problem['is_public'] == 0)//是私有题目
+        if ($problem['is_public'] == 0)//是私有题目
         {
-            if($request->user == null) throw new NoPermissionException(); //没登陆
-            elseif(!$this->problemService->canUserAccessProblem($request->user->id,$problemId)) throw new NoPermissionException();
+            if ($request->user == null) throw new NoPermissionException(); //没登陆
+            elseif (!$this->problemService->canUserAccessProblem($request->user->id, $problemId)) throw new NoPermissionException();
         }
 
         return response()->json([
@@ -101,25 +103,25 @@ class ProblemController extends Controller
     public function addProblem(Request $request)
     {
         //表单验证
-        $validator = Validator::make($request->all(),$this->getValidateRules());
+        $validator = Validator::make($request->all(), $this->getValidateRules());
 
         //  TODO:  权限验证
 
-        if($validator->fails())
+        if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
-        
+
         //重新组装数据
-        
+
         $problemData = [
             'title' => $request->input('title'),
             'description' => $request->input('description'),
             'difficulty' => $request->input('difficulty'),
-            'sample_input'=> $request->input('sample_input'),
+            'sample_input' => $request->input('sample_input'),
             'sample_output' => $request->input('sample_output'),
             'source' => $request->input('source'),
             'time_limit' => $request->input('time_limit'),
             'memory_limit' => $request->input('memory_limit'),
-            'hint'=>$request->input('hint'),
+            'hint' => $request->input('hint'),
             'spj' => $request->input('spj'),
             'is_public' => $request->input('is_public')
         ];
@@ -129,31 +131,33 @@ class ProblemController extends Controller
             'output' => $request->input('test_output')
         ];
 
-        $id = $this->problemService->addProblem($request->user,$problemData,$testData);
+        $id = $this->problemService->addProblem($request->user, $problemData, $testData);
 
-        if($id==-1)
+        if ($id == -1)
             throw new InnerError("Fail to add problem");
 
         return response()->json([
             'code' => 0,
-            'problem_id' => $id
+            'data' => [
+                'problem_id' => $id
+            ]
         ]);
     }
 
-    public function updateProblem(Request $request,int $problemId)
+    public function updateProblem(Request $request, int $problemId)
     {
         //表单验证
-        $validator = Validator::make($request->all(),$this->getValidateRules());
+        $validator = Validator::make($request->all(), $this->getValidateRules());
 
         //  TODO:  权限验证
 
-        if($validator->fails())
+        if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $problem = $this->problemService->getProblemById($problemId,['creator_id']);
+        $problem = $this->problemService->getProblemById($problemId, ['creator_id']);
 
-        if($problem == null) throw new ProblemNotExistException();
-        elseif($problem->creator_id != $request->user->id) throw new NoPermissionException();
+        if ($problem == null) throw new ProblemNotExistException();
+        elseif ($problem->creator_id != $request->user->id) throw new NoPermissionException();
 
         //重新组装数据
 
@@ -161,12 +165,12 @@ class ProblemController extends Controller
             'title' => $request->input('title'),
             'description' => $request->input('description'),
             'difficulty' => $request->input('difficulty'),
-            'sample_input'=> $request->input('sample_input'),
+            'sample_input' => $request->input('sample_input'),
             'sample_output' => $request->input('sample_output'),
             'source' => $request->input('source'),
             'time_limit' => $request->input('time_limit'),
             'memory_limit' => $request->input('memory_limit'),
-            'hint'=>$request->input('hint'),
+            'hint' => $request->input('hint'),
             'spj' => $request->input('spj'),
             'is_public' => $request->input('is_public')
         ];
@@ -176,7 +180,7 @@ class ProblemController extends Controller
             'output' => $request->input('test_output')
         ];
 
-        if(!$this->problemService->updateProblem($problemId,$problemData,$testData))
+        if (!$this->problemService->updateProblem($problemId, $problemData, $testData))
             throw new InnerError("fail to update problem");
 
         return response()->json([
@@ -184,23 +188,23 @@ class ProblemController extends Controller
         ]);
     }
 
-    public function submitProblem(Request $request,int $problemId)
+    public function submitProblem(Request $request, int $problemId)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'source_code' => 'required|string|min:2',
             'private' => 'required|boolean',
             'language' => 'required|integer|min:0|max:17'
         ]);
 
-        if($validator->fails())
+        if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
         //TODO: 检查权限
 
-        if(!$this->problemService->isProblemExist($problemId))
+        if (!$this->problemService->isProblemExist($problemId))
             throw new ProblemNotExistException();
 
-        if(!$this->problemService->canUserAccessProblem($request->user->id,$problemId))
+        if (!$this->problemService->canUserAccessProblem($request->user->id, $problemId))
             throw new NoPermissionException();
 
         $data = [
@@ -213,10 +217,10 @@ class ProblemController extends Controller
             'user_id' => $request->user->id
         ];
 
-        $solutionId = $this->problemService->submitProblem($problemId,$data);
+        $solutionId = $this->problemService->submitProblem($problemId, $data);
 
-        if(!$solutionId)
-            throw new InnerError("Fail to Submit :problem id".$problemId);
+        if (!$solutionId)
+            throw new InnerError("Fail to Submit :problem id" . $problemId);
 
         return response()->json([
             'code' => 0,
@@ -226,23 +230,23 @@ class ProblemController extends Controller
         ]);
     }
 
-    public function getRunData(Request $request,int $problemId)
+    public function getRunData(Request $request, int $problemId)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'filename' => 'required|string'
         ]);
 
-        if($validator->fails())
+        if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
         //TODO:检查权限
 
-        if(!$this->problemService->isProblemExist($problemId))
+        if (!$this->problemService->isProblemExist($problemId))
             throw new ProblemNotExistException();
 
-        $filePath = $this->problemService->getRunDataPath($problemId,$request->filename);
+        $filePath = $this->problemService->getRunDataPath($problemId, $request->filename);
 
-        if(!empty($filePath))
+        if (!empty($filePath))
             return response()->download($filePath);
         else
             throw new FormValidatorException(["wrong param"]);
@@ -250,62 +254,63 @@ class ProblemController extends Controller
 
     public function searchProblems(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'keyword' => 'required|string|min:1|max:20',
             'page' => 'integer|min:1',
             'size' => 'integer|min:1|max:40'
         ]);
 
-        if($validator->fails())
+        if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
         $keyword = $request->input('keyword');
-        $page = $request->input('page',1);
-        $size = $request->input('size',20);
+        $page = $request->input('page', 1);
+        $size = $request->input('size', 20);
 
         $total_count = $this->problemService->searchProblemsCount($keyword);
 
         $userId = -1;
-        if(isset($request->user)) $userId = $request->user->id;
+        if (isset($request->user)) $userId = $request->user->id;
 
-        if($total_count > 0)
-            $data = $this->problemService->searchProblems($userId,$keyword,$page,$size);
+        if ($total_count > 0)
+            $data = $this->problemService->searchProblems($userId, $keyword, $page, $size);
         else
             $data = null;
 
         return response()->json([
             'code' => 0,
-            'data' => $data,
-            'total_count' => $total_count
+            'data' => [
+                'problems' => $data,
+                'total_count' => $total_count
+            ]
         ]);
     }
 
-    public function deleteProblem(Request $request,int $problemId)
+    public function deleteProblem(Request $request, int $problemId)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'password' => 'required|string|min:6|max:20'
         ]);
 
-        if($validator->fails())
+        if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        if(!$this->problemService->isProblemExist($problemId))
+        if (!$this->problemService->isProblemExist($problemId))
             throw new ProblemNotExistException();
 
         $problem = $this->problemService->getProblemById($problemId);
 
         //判断是否是创建者
-        if($request->user->id != $problem['creator_id'])
+        if ($request->user->id != $problem['creator_id'])
             throw new NoPermissionException();
 
         //TODO ：角色权限检验
 
-        if(!$this->problemService->deleteProblem($request->user,$problemId))
-            throw new InnerError("Fail to delete Problem: ".$problemId);
+        if (!$this->problemService->deleteProblem($request->user, $problemId))
+            throw new InnerError("Fail to delete Problem: " . $problemId);
 
         return response()->json([
             'code' => 0
         ]);
-
     }
 }

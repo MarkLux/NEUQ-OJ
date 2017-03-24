@@ -387,7 +387,7 @@ class ContestService implements ContestServiceInterface
 
         $contests = $this->problemGroupRepo->searchProblemGroup(1,$pattern,$page,$size);
 
-        $data = ['total_count' => $totalCount,'data' => $contests];
+        $data = ['total_count' => $totalCount,'contests' => $contests];
 
         return $data;
     }

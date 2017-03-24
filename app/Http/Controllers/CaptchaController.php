@@ -25,8 +25,10 @@ class CaptchaController extends Controller
         $token = $this->captchaService->generateCaptcha();
         return response()->json([
             'code' => 0,
-            'captcha_token' => $token,
-            'url' => url('/mark/captcha/get').'?token='.$token
+            'data' => [
+                'captcha_token' => $token,
+                'url' => url('/mark/captcha/get').'?token='.$token
+            ]
         ]);
     }
     public function getCaptcha(Request $request)

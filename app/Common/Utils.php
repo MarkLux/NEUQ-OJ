@@ -15,7 +15,7 @@ class Utils
     static function createTimeStamp():float
     {
         list($micro, $se) = explode(' ', microtime());
-        return $se * 1000 + round($micro, 0);
+        return $se * 1000 + round($micro * 1000, 0);
     }
 
     public static function isEmailAvailable(string $email):bool
