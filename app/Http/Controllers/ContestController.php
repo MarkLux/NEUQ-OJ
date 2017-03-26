@@ -43,9 +43,10 @@ class ContestController extends Controller
 
         $data = $this->contestService->getAllContests($page,$size);
 
-        $data['code'] = 0;
-
-        return response()->json($data);
+        return response()->json([
+            'code' => 0,
+            'data' => $data
+        ]);
     }
 
     public function getContestIndex(Request $request,int $contestId)
