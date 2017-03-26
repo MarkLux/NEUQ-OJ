@@ -184,7 +184,7 @@ class ContestService implements ContestServiceInterface
         $groups = $this->problemGroupRepo->paginate($page,$size,
             ['type' => 1],['id','title','creator_id','creator_name','start_time','end_time','private','status']);
 
-        return ['data' => $groups,'total_count' => $totalCount];
+        return ['contests' => $groups,'total_count' => $totalCount];
     }
 
     //创建一个竞赛，如果成功，返回新创建的竞赛id，否则返回-1
