@@ -14,4 +14,8 @@ Route::group(['middleware' => 'token'], function () {
         Route::get('/lock/{id}', 'AdminController@lockUser');
         Route::get('/unlock/{id}', 'AdminController@unlockUser');
     });
+
+    Route::post('/news/create','NewsController@addNews');
+    Route::post('/news/{id}/update','NewsController@updateNews');
+    Route::get('/news/{id}/delete','NewsController@deleteNews');
 });

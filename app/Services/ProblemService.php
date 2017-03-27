@@ -63,6 +63,11 @@ class ProblemService implements ProblemServiceInterface
 
         //添加一些必要的验证逻辑？
 
+        //转换markdown内容
+        $problemData['description'] = $this->converter->convertToHtml($problemData['description']);
+        $problemData['input'] = $this->converter->convertToHtml($problemData['input']);
+        $problemData['output'] = $this->converter->convertToHtml($problemData['output']);
+
         $path = $this->getPath($id);
 
         //创建文件目录
@@ -245,10 +250,7 @@ class ProblemService implements ProblemServiceInterface
         unset($data['tag_id']);
         unset($data['tag_title']);
 
-        //转换markdown内容
-        $data['description'] = $this->converter->convertToHtml($data['description']);
-        $data['input'] = $this->converter->convertToHtml($data['input']);
-        $data['output'] = $this->converter->convertToHtml($data['output']);
+
 
         return $data;
     }

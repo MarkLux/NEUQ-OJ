@@ -308,6 +308,5 @@ class UserController extends Controller
             'data' => $this->userService->getRankList($scope, $page, $size)
         ]);
 
-
     }
 }
