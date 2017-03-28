@@ -49,9 +49,9 @@ class PrivilegeTableSeeder extends Seeder
                 'updated_at' => $current
             ],
             [
-                'name' => 'submit-any-problem',
-                'display_name' => '提交任意题目',
-                'description' => '提交任意一个题目',
+                'name' => 'access-any-problem',
+                'display_name' => '获取任意题目',
+                'description' => '获取任意一个题目的访问权',
                 'created_at' => $current,
                 'updated_at' => $current
             ],
@@ -194,6 +194,13 @@ class PrivilegeTableSeeder extends Seeder
                 'created_at' => $current,
                 'updated_at' => $current
             ],
+            [
+                'name' => 'access-any-homework',
+                'display_name' => '进入任意作业',
+                'description' => '获取任意一个作业的权限',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
 
             /**
              * 系统管理部分
@@ -217,6 +224,32 @@ class PrivilegeTableSeeder extends Seeder
                 'name' => 'unlock-user',
                 'display_name' => '解锁用户',
                 'description' => '解锁一个被锁定的用户',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
+
+            /**
+             * 新闻公告
+             */
+
+            [
+                'name' => 'add-news',
+                'display_name' => '添加通知',
+                'description' => '添加首页的新闻或者公告',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
+            [
+                'name' => 'update-news',
+                'display_name' => '修改通知',
+                'description' => '修改首页的新闻或者公告',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
+            [
+                'name' => 'delete-news',
+                'display_name' => '删除通知',
+                'description' => '删除首页的新闻或者公告',
                 'created_at' => $current,
                 'updated_at' => $current
             ],
@@ -253,6 +286,17 @@ class PrivilegeTableSeeder extends Seeder
                 'updated_at' => $current
             ],
 
+            /**
+             * 判题
+             */
+
+            [
+                'name' => 'access-any-source-code',
+                'display_name' => '获取源代码',
+                'description' => '获取任意一次提交的源代码',
+                'created_at' => $current,
+                'updated_at' => $current
+            ]
         ]);
     }
 }

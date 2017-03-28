@@ -11,6 +11,7 @@ use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\PasswordErrorException;
 use NEUQOJ\Exceptions\UserGroup\UserGroupNotExistException;
+use NEUQOJ\Facades\Permission;
 use NEUQOJ\Services\UserGroupService;
 use Illuminate\Support\Facades\Hash;
 use NEUQOJ\Http\Controllers\Controller;
@@ -61,7 +62,6 @@ class UserGroupController extends Controller
 
     /**
      * 创建新用户组
-     * TODO:用户权限检查
      */
     public function createNewGroup(Request $request)
     {
@@ -76,6 +76,10 @@ class UserGroupController extends Controller
 
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
+
+        if (!Permission::checkPermission($request->user->id,['create-user-group'])){
+            throw new NoPermissionException();
+        }
 
         $data = [
             'name' => $request->name,
@@ -158,8 +162,11 @@ class UserGroupController extends Controller
 
         return response()->json([
             "code" => 0,
-            "data" => $data,
-            "page_count" => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+            "data" => [
+                'members' => $data,
+                'total_count' => $total_count
+            ]
+
         ]);
     }
     /**
@@ -223,12 +230,12 @@ class UserGroupController extends Controller
             'newOwnerId' => 'required|integer'
         ]);
 
-        if(!$this->userGroupService->isGroupExistById($groupId))
-            throw new UserGroupNotExistException();
-        if(!$this->userGroupService->isUser)
-
         if($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
+
+        if(!$this->userGroupService->isGroupExistById($groupId))
+            throw new UserGroupNotExistException();
+
         if(!$this->userGroupService->isUserGroupOwner($request->user->id,$groupId))
             throw new NoPermissionException();
 

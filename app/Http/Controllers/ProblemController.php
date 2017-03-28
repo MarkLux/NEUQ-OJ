@@ -15,6 +15,7 @@ use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
+use NEUQOJ\Facades\Permission;
 use NEUQOJ\Repository\Models\Token;
 use NEUQOJ\Services\ProblemService;
 use NEUQOJ\Services\TokenService;
@@ -105,7 +106,9 @@ class ProblemController extends Controller
         //表单验证
         $validator = Validator::make($request->all(), $this->getValidateRules());
 
-        //  TODO:  权限验证
+        if (!Permission::checkPermission($request->user->id, ['create-problem'])) {
+            throw new NoPermissionException();
+        }
 
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
@@ -149,15 +152,16 @@ class ProblemController extends Controller
         //表单验证
         $validator = Validator::make($request->all(), $this->getValidateRules());
 
-        //  TODO:  权限验证
-
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
         $problem = $this->problemService->getProblemById($problemId, ['creator_id']);
-
         if ($problem == null) throw new ProblemNotExistException();
-        elseif ($problem->creator_id != $request->user->id) throw new NoPermissionException();
+
+        if (!Permission::checkPermission($request->user->id, ['update-any-problem'])) {
+            if ($problem->creator_id != $request->user->id)
+                throw new NoPermissionException();
+        }
 
         //重新组装数据
 
@@ -199,8 +203,6 @@ class ProblemController extends Controller
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        //TODO: 检查权限
-
         if (!$this->problemService->isProblemExist($problemId))
             throw new ProblemNotExistException();
 
@@ -239,7 +241,8 @@ class ProblemController extends Controller
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        //TODO:检查权限
+        if (!Permission::checkPermission($request->user->id,['get-run-data']))
+            throw new NoPermissionException();
 
         if (!$this->problemService->isProblemExist($problemId))
             throw new ProblemNotExistException();
@@ -300,11 +303,11 @@ class ProblemController extends Controller
 
         $problem = $this->problemService->getProblemById($problemId);
 
-        //判断是否是创建者
-        if ($request->user->id != $problem['creator_id'])
-            throw new NoPermissionException();
-
-        //TODO ：角色权限检验
+        if (!Permission::checkPermission($request->user->id,['delete-any-problem'])) {
+            //判断是否是创建者
+            if ($request->user->id != $problem['creator_id'])
+                throw new NoPermissionException();
+        }
 
         if (!$this->problemService->deleteProblem($request->user, $problemId))
             throw new InnerError("Fail to delete Problem: " . $problemId);

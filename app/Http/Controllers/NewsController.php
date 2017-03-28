@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
+use NEUQOJ\Exceptions\NoPermissionException;
+use NEUQOJ\Facades\Permission;
 use NEUQOJ\Services\NewsService;
 
 class NewsController extends Controller
@@ -101,7 +103,9 @@ class NewsController extends Controller
             throw new FormValidatorException($validator->getMessageBag()->all());
         }
 
-        // TODO 检查权限
+        if (!Permission::checkPermission($request->user->id,['add-news'])) {
+            throw new NoPermissionException();
+        }
 
         $news = [
             'title' => $request->input('title'),
@@ -132,7 +136,9 @@ class NewsController extends Controller
             throw new FormValidatorException($validator->getMessageBag()->all());
         }
 
-        // TODO： 管理员权限验证
+        if (!Permission::checkPermission($request->user->id,['update-news'])) {
+            throw new NoPermissionException();
+        }
 
         $newNews = [
             'title' => $request->input('title'),
@@ -151,7 +157,9 @@ class NewsController extends Controller
 
     public function deleteNews(Request $request,int $newsId)
     {
-        //TODO: 管理员权限验证
+        if (!Permission::checkPermission($request->user->id,['delete-news'])) {
+            throw new NoPermissionException();
+        }
 
         if (!$this->newsService->deleteNews($newsId)) {
             throw new InnerError("Fail to delete News");

@@ -216,7 +216,9 @@ class HomeworkService implements HomeworkServiceInterface
 
         //如果是创建者 直接可以获得权限，管理员也应该一样
         if($userId = $group->creator_id) return true;
-        //TODO: 管理员权限检查
+
+        if (Permission::checkPermission($userId, ['access-any-homework']))
+            return true;
 
         //判断用户是否在该组里
         if(!($this->userGroupService->isUserInGroup($userId,$group->user_group_id)))

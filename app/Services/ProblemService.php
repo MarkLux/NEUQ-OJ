@@ -92,6 +92,10 @@ class ProblemService implements ProblemServiceInterface
 
     public function canUserAccessProblem(int $userId, int $problemId): bool
     {
+        if (!Permission::checkPermission($userId,['access-any-problem'])) {
+            throw new NoPermissionException();
+        }
+
         $problem = $this->problemRepo->get($problemId,['is_public','creator_id'])->first();
         if($problem == null) return false;
         if($problem->is_public == 0&&$problem->creator_id != $userId) return false;

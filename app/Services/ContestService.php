@@ -18,6 +18,7 @@ use NEUQOJ\Exceptions\ProblemGroup\ContestEndedException;
 use NEUQOJ\Exceptions\ProblemGroup\ContestNotAvailableException;
 use NEUQOJ\Exceptions\ProblemGroup\ContestNotExistException;
 use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
+use NEUQOJ\Facades\Permission;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Services\Contracts\ContestServiceInterface;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
@@ -35,9 +36,9 @@ class ContestService implements ContestServiceInterface
     private $cacheService;
 
     public function __construct(
-        ProblemGroupService $problemGroupService,ProblemGroupRepository $problemGroupRepository,
-        ProblemGroupRelationRepository $problemGroupRelationRepository,ProblemGroupAdmissionRepository $problemGroupAdmissionRepository,
-        ProblemService $problemService,SolutionRepository $solutionRepository,CacheService $cacheService
+        ProblemGroupService $problemGroupService, ProblemGroupRepository $problemGroupRepository,
+        ProblemGroupRelationRepository $problemGroupRelationRepository, ProblemGroupAdmissionRepository $problemGroupAdmissionRepository,
+        ProblemService $problemService, SolutionRepository $solutionRepository, CacheService $cacheService
     )
     {
         $this->problemGroupRepo = $problemGroupRepository;
@@ -49,22 +50,22 @@ class ContestService implements ContestServiceInterface
         $this->cacheService = $cacheService;
     }
 
-    public function getContest(int $contestId,array $columns = ['*'])
+    public function getContest(int $contestId, array $columns = ['*'])
     {
         //使用这个方法前请先检查contest是否存在。
-        return $this->problemGroupService->getProblemGroup($contestId,$columns);
+        return $this->problemGroupService->getProblemGroup($contestId, $columns);
     }
 
     public function getContestIndex(int $userId = -1, int $groupId)
     {
         //检查权限
-        if(!$this->canUserAccessContest($userId,$groupId))
+        if (!$this->canUserAccessContest($userId, $groupId))
             throw new NoPermissionException();
 
         //获取基本信息
-        $contest = $this->problemGroupService->getProblemGroup($groupId,[
-            'id','title','description','start_time','end_time',
-            'creator_id','creator_name', 'status','langmask'
+        $contest = $this->problemGroupService->getProblemGroup($groupId, [
+            'id', 'title', 'description', 'start_time', 'end_time',
+            'creator_id', 'creator_name', 'status', 'langmask'
         ]);
 
         $problemInfo = $this->problemGroupRelationRepo->getProblemInfoInGroup($groupId);
@@ -72,10 +73,9 @@ class ContestService implements ContestServiceInterface
         $problemIds = [];
 
         //消除null值
-        foreach ($problemInfo as &$info)
-        {
-            if($info->submit == null) $info->submit = 0;
-            if($info->accepted == null) $info->accepted = 0;
+        foreach ($problemInfo as &$info) {
+            if ($info->submit == null) $info->submit = 0;
+            if ($info->accepted == null) $info->accepted = 0;
             $problemIds[] = $info->pid;
         }
 
@@ -100,26 +100,25 @@ class ContestService implements ContestServiceInterface
 
 //        }
 
-        if($userId != -1) {
-        $problemIds = [];
+        if ($userId != -1) {
+            $problemIds = [];
 
-        $userStatuses = $this->solutionRepo->getSolutionsIn('user_id', $userId, 'problem_id', $problemIds, ['problem_id', 'result'])->toArray();
+            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id', $userId, 'problem_id', $problemIds, ['problem_id', 'result'])->toArray();
 
-        $subIds = $acIds = [];
+            $subIds = $acIds = [];
 
-        foreach ($userStatuses as $userStatus) {
-            $subIds[$userStatus['problem_id']] = true;
-            if($userStatus['result'] == 4) $acIds[$userStatus['problem_id']] = true;
-        }
+            foreach ($userStatuses as $userStatus) {
+                $subIds[$userStatus['problem_id']] = true;
+                if ($userStatus['result'] == 4) $acIds[$userStatus['problem_id']] = true;
+            }
 
-        foreach ($problemInfo as &$problem) {
+            foreach ($problemInfo as &$problem) {
                 if (isset($subIds[$problem->pid])) {
-                    if(isset($acIds[$problem->pid]))
+                    if (isset($acIds[$problem->pid]))
                         $problem->user_status = 'Y';
                     else
                         $problem->user_status = 'N';
-                }
-                else $problem->user_status = null;
+                } else $problem->user_status = null;
             }
         }
 
@@ -131,20 +130,19 @@ class ContestService implements ContestServiceInterface
 
     public function getContestDetail(int $groupId)
     {
-       //用于获取竞赛的所有数据，用于更新
-        $contestInfo = $this->problemGroupService->getProblemGroup($groupId,['title','type','description','private','langmask']);
+        //用于获取竞赛的所有数据，用于更新
+        $contestInfo = $this->problemGroupService->getProblemGroup($groupId, ['title', 'type', 'description', 'private', 'langmask']);
 
-        if($contestInfo == null || $contestInfo->type != 1) throw new ContestNotExistException();
+        if ($contestInfo == null || $contestInfo->type != 1) throw new ContestNotExistException();
 
-        if($contestInfo->langmask == null) $contestInfo->langmask = 0;
+        if ($contestInfo->langmask == null) $contestInfo->langmask = 0;
 
         //根据计算出的掩码值  还原langmask
         $langs = [];
 
         $lang_count = count($this->problemGroupService->language_ext);
 
-        for($i=0;$i<$lang_count;$i++)
-        {
+        for ($i = 0; $i < $lang_count; $i++) {
             if ($contestInfo->langmask & (1 << $i))
                 $langs[] = $i;
         }
@@ -153,18 +151,18 @@ class ContestService implements ContestServiceInterface
 
         //题目信息（竞赛中，只显示id，题号，标题，当前设计题号一但产生不可更改）
 
-        $problemInfo = $this->problemGroupRelationRepo->getBy('problem_group_id',$groupId,['problem_id','problem_num','problem_title']);
+        $problemInfo = $this->problemGroupRelationRepo->getBy('problem_group_id', $groupId, ['problem_id', 'problem_num', 'problem_title']);
 
         //权限信息，只显示当前加入到竞赛中的用户列表，不再取出密码
 
-        if($contestInfo->private != 0)
-            $admissionInfo = $this->problemAdmissionRepo->getBy('problem_group_id',$groupId,['user_id']);
+        if ($contestInfo->private != 0)
+            $admissionInfo = $this->problemAdmissionRepo->getBy('problem_group_id', $groupId, ['user_id']);
 
         //组装整个数组
 
         $data['contest_info'] = $contestInfo;
         $data['problems_info'] = $problemInfo;
-        if(isset($admissionInfo))
+        if (isset($admissionInfo))
             $data['user_ids'] = $admissionInfo;
 
         return $data;
@@ -172,7 +170,7 @@ class ContestService implements ContestServiceInterface
 
     public function getProblem(int $groupId, int $problemNum)
     {
-        $problem =  $this->problemGroupService->getProblemByNum($groupId,$problemNum);
+        $problem = $this->problemGroupService->getProblemByNum($groupId, $problemNum);
 
         return $problem;
     }
@@ -181,14 +179,14 @@ class ContestService implements ContestServiceInterface
     {
         $totalCount = $this->problemGroupRepo->getProblemGroupCount(1);
 
-        $groups = $this->problemGroupRepo->paginate($page,$size,
-            ['type' => 1],['id','title','creator_id','creator_name','start_time','end_time','private','status']);
+        $groups = $this->problemGroupRepo->paginate($page, $size,
+            ['type' => 1], ['id', 'title', 'creator_id', 'creator_name', 'start_time', 'end_time', 'private', 'status']);
 
-        return ['contests' => $groups,'total_count' => $totalCount];
+        return ['contests' => $groups, 'total_count' => $totalCount];
     }
 
     //创建一个竞赛，如果成功，返回新创建的竞赛id，否则返回-1
-    public function createContest(array $data,array $problemIds,array $users=[]):int
+    public function createContest(array $data, array $problemIds, array $users = []): int
     {
         //根据私有性类别来创建
         $data['type'] = 1;
@@ -197,22 +195,20 @@ class ContestService implements ContestServiceInterface
 
         //传入的problems数组只包括id,初步组装数据格式
 
-        $problems  = [];
+        $problems = [];
 
-        foreach ($problemIds as $problemId)
-        {
+        foreach ($problemIds as $problemId) {
             $problems[] = ['problem_id' => $problemId];
         }
 
 
-        DB::transaction(function()use($data,$problems,$users,&$id){
-            $id = $this->problemGroupService->createProblemGroup($data,$problems);
+        DB::transaction(function () use ($data, $problems, $users, &$id) {
+            $id = $this->problemGroupService->createProblemGroup($data, $problems);
             //如果是指定可见的私有模式,重新组装数据
-            if($data['private'] == 2&&!empty($users))
-            {
+            if ($data['private'] == 2 && !empty($users)) {
                 $admissions = [];
-                foreach ($users as $user){
-                    $admissions[] = ['user_id' => $user,'problem_group_id'=>$id];
+                foreach ($users as $user) {
+                    $admissions[] = ['user_id' => $user, 'problem_group_id' => $id];
                 }
                 $this->problemAdmissionRepo->insert($admissions);
             }
@@ -221,83 +217,79 @@ class ContestService implements ContestServiceInterface
         return $id;
     }
 
-    public function deleteContest(int $groupId):bool
+    public function deleteContest(int $groupId): bool
     {
-        if($this->isContestExist($groupId))
+        if ($this->isContestExist($groupId))
             return $this->problemGroupService->deleteProblemGroup($groupId);
         return false;
     }
 
-    public function updateContestInfo(int $groupId,array $data):bool
+    public function updateContestInfo(int $groupId, array $data): bool
     {
-        $group = $this->problemGroupService->getProblemGroup($groupId,['type','start_time','end_time']);
+        $group = $this->problemGroupService->getProblemGroup($groupId, ['type', 'start_time', 'end_time']);
 
-        if($group==null|| $group->type!=1) throw new ContestNotExistException();
+        if ($group == null || $group->type != 1) throw new ContestNotExistException();
 
         //检查比赛是否正在进行中，若已经开始，不允许再更改开始时间
         $startTime = strtotime($group->start_time);
         $endTime = strtotime($group->end_time);
         $time = time();
-        if($startTime > $time||$time < $endTime)
-        {
-            if(isset($data['start_time'])) unset($data['start_time']);//直接无效索引
+        if ($startTime > $time || $time < $endTime) {
+            if (isset($data['start_time'])) unset($data['start_time']);//直接无效索引
         }
 
-        return $this->problemGroupService->updateProblemGroup($groupId,$data);
+        return $this->problemGroupService->updateProblemGroup($groupId, $data);
     }
 
     //批量重置竞赛中的题目
-    public function updateContestProblem(int $contestId,array $problemIds):bool
+    public function updateContestProblem(int $contestId, array $problemIds): bool
     {
         //重新组装题目
         $problems = [];
-        foreach ($problemIds as $problemId)
-        {
-            $problems[] = ['problem_id' => $problemId,'problem_score' => null];
+        foreach ($problemIds as $problemId) {
+            $problems[] = ['problem_id' => $problemId, 'problem_score' => null];
         }
 
-        return $this->problemGroupService->updateProblems($contestId,$problems);
+        return $this->problemGroupService->updateProblems($contestId, $problems);
     }
 
-    public function resetContestPassword(int $groupId,string $password):bool
+    public function resetContestPassword(int $groupId, string $password): bool
     {
         //获取组基本信息
-        $group = $this->problemGroupRepo->get($groupId,['type','private'])->first();
+        $group = $this->problemGroupRepo->get($groupId, ['type', 'private'])->first();
         //检测题目组是否是竞赛以及私有性设置是否正确
-        if($group == null||$group->type!=1||$group->private!=1)
+        if ($group == null || $group->type != 1 || $group->private != 1)
             return false;
         else
-            return $this->problemGroupService->updateProblemGroup($groupId,['password' => md5($password)]);
+            return $this->problemGroupService->updateProblemGroup($groupId, ['password' => md5($password)]);
 
         //之前已经通过密码加入的用户不进行处理了
     }
 
-    public function resetContestPermission(int $groupId,array $users):bool
+    public function resetContestPermission(int $groupId, array $users): bool
     {
-        $group = $this->problemGroupRepo->get($groupId,['type','private'])->first();
+        $group = $this->problemGroupRepo->get($groupId, ['type', 'private'])->first();
         //同上
-        if($group == null||$group->type!=1||$group->private!=1)
+        if ($group == null || $group->type != 1 || $group->private != 1)
             return false;
 
-        return $this->problemGroupService->resetGroupAdmissions($groupId,$users);
+        return $this->problemGroupService->resetGroupAdmissions($groupId, $users);
     }
 
     public function getRankList(int $groupId)
     {
-        $group = $this->problemGroupService->getProblemGroup($groupId,['title','type','start_time','end_time','status']);
+        $group = $this->problemGroupService->getProblemGroup($groupId, ['title', 'type', 'start_time', 'end_time', 'status']);
 
-        if($group == null || $group->type!=1) return false;
+        if ($group == null || $group->type != 1) return false;
 
         //先检查是否存在缓存
 
-        $cacheKey = 'contest_'.$groupId;
+        $cacheKey = 'contest_' . $groupId;
 
-        if($this->cacheService->isCacheExist($cacheKey))
-        {
+        if ($this->cacheService->isCacheExist($cacheKey)) {
             $ranks = $this->cacheService->getRankCache($cacheKey);
-            if(!empty($ranks))
-            {
-                usort($ranks,['NEUQOJ\Common\Utils','s_cmp_obj']);
+            if (!empty($ranks)) {
+                usort($ranks, ['NEUQOJ\Common\Utils', 's_cmp_obj']);
                 return $ranks;
             }
         }
@@ -310,9 +302,8 @@ class ContestService implements ContestServiceInterface
         $userId = -1;
 
         //组装排行榜
-        foreach ($solutions as $solution)
-        {
-            if($userId != $solution['id'])//新的用户
+        foreach ($solutions as $solution) {
+            if ($userId != $solution['id'])//新的用户
             {
                 //创建一个新的数组
                 $rank[++$userCnt] = [
@@ -326,45 +317,40 @@ class ContestService implements ContestServiceInterface
 
                 //判断第一个数据
 
-                if($solution['result'] == 4)
-                {
+                if ($solution['result'] == 4) {
                     $timeUsed = strtotime($solution['created_at']) - strtotime($group->start_time);
                     $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']] = $timeUsed;
                     $rank[$userCnt]['time'] += $timeUsed;
                     $rank[$userCnt]['solved']++;
-                }
-                else if($solution['result'] > 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
+                } else if ($solution['result'] > 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
                     $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
 
                 //刷新总时间，注意所有时间全部以秒级正整数方式保存
 
-                if($solution['result'] == 4) {
+                if ($solution['result'] == 4) {
                     $rank[$userCnt]['time'] += (strtotime($solution['created_at']) - strtotime($group->start_time));
                 }
 
                 $userId = $solution['id'];//标记用户
-            }
-            else
-            {
+            } else {
                 //说明不是一个新的用户，还属于上个用户
-                if($solution['result'] == 4)//ac
+                if ($solution['result'] == 4)//ac
                 {
-                    if(!isset($rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]))//之前还没有ac过对应的题目
+                    if (!isset($rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]))//之前还没有ac过对应的题目
                     {
                         $timeUsed = strtotime($solution['created_at']) - strtotime($group->start_time);
 
-                        $rank[$userCnt]['solved'] ++;//解题数目+1
-                        $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']]  = $timeUsed;
+                        $rank[$userCnt]['solved']++;//解题数目+1
+                        $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']] = $timeUsed;
                         $rank[$userCnt]['time'] += $timeUsed;
                         //错题的罚时只在题目成功ac之后才计算
-                        if(isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
-                            $rank[$userCnt]['time'] += 1200*$rank[$userCnt]['problem_wa_num'][$solution['problem_num']];
+                        if (isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
+                            $rank[$userCnt]['time'] += 1200 * $rank[$userCnt]['problem_wa_num'][$solution['problem_num']];
                     }
                     //如果已经ac过这个题目，不再考虑
-                }
-                else if ($solution['result'] > 4)//错误
+                } else if ($solution['result'] > 4)//错误
                 {
-                    if(isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
+                    if (isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']]++;
                     else
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
@@ -373,44 +359,44 @@ class ContestService implements ContestServiceInterface
             }
         }
 
-        usort($rank,['NEUQOJ\Common\Utils','s_cmp_array']);
-        $this->cacheService->setRankCache($cacheKey,$rank,60);
+        usort($rank, ['NEUQOJ\Common\Utils', 's_cmp_array']);
+        $this->cacheService->setRankCache($cacheKey, $rank, 60);
 
         return $rank;
     }
 
-    public function searchContest(string $keyword,int $page,int $size)
+    public function searchContest(string $keyword, int $page, int $size)
     {
-        $pattern = '%'.$keyword.'%';
+        $pattern = '%' . $keyword . '%';
 
-        $totalCount = $this->problemGroupRepo->getProblemGroupCountLike(1,$pattern);
+        $totalCount = $this->problemGroupRepo->getProblemGroupCountLike(1, $pattern);
 
-        $contests = $this->problemGroupRepo->searchProblemGroup(1,$pattern,$page,$size);
+        $contests = $this->problemGroupRepo->searchProblemGroup(1, $pattern, $page, $size);
 
-        $data = ['total_count' => $totalCount,'contests' => $contests];
+        $data = ['total_count' => $totalCount, 'contests' => $contests];
 
         return $data;
     }
 
-    public function getStatus(int $groupId,int $page,int $size,array $conditions=[])
+    public function getStatus(int $groupId, int $page, int $size, array $conditions = [])
     {
-        $data = $this->problemGroupService->getSolutions($groupId,$page,$size,$conditions);
+        $data = $this->problemGroupService->getSolutions($groupId, $page, $size, $conditions);
         return ['data' => $data];
     }
 
-    public function isContestExist(int $groupId):bool
+    public function isContestExist(int $groupId): bool
     {
-        $group = $this->problemGroupRepo->get($groupId,['type'])->first();
+        $group = $this->problemGroupRepo->get($groupId, ['type'])->first();
 
-        if($group==null||$group->type!=1)
+        if ($group == null || $group->type != 1)
             return false;
         return true;
     }
 
-    public function submitProblem(int $userId,int $groupId,int $problemNum,array $data):int
+    public function submitProblem(int $userId, int $groupId, int $problemNum, array $data): int
     {
         //先检测用户能不能提交
-        $group = $this->problemGroupRepo->get($groupId,['private','type','langmask','start_time','end_time'])->first();
+        $group = $this->problemGroupRepo->get($groupId, ['private', 'type', 'langmask', 'start_time', 'end_time'])->first();
 
         //检查时间
 
@@ -419,80 +405,81 @@ class ContestService implements ContestServiceInterface
         $startTime = strtotime($group->start_time);
         $endTime = strtotime($group->end_time);
 
-        if($startTime > $currentTime)
+        if ($startTime > $currentTime)
             throw new ContestNotAvailableException();
-        elseif($currentTime > $endTime)
+        elseif ($currentTime > $endTime)
             throw new ContestEndedException();
 
-        if($group == null || $group->type!=1) throw new NoPermissionException();
+        if ($group == null || $group->type != 1) throw new NoPermissionException();
 
-        if($group->private != 0)
-        {
-            $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId,'problem_group_id'=>$groupId])->first();
-            if($admission == null) throw new NoPermissionException();
+        if ($group->private != 0) {
+            $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId, 'problem_group_id' => $groupId])->first();
+            if ($admission == null) throw new NoPermissionException();
         }
 
         //检查语言
-        if(!$this->problemGroupService->checkLang($data['language'],$group->langmask))
+        if (!$this->problemGroupService->checkLang($data['language'], $group->langmask))
             throw new LanguageErrorException();
 
         //获取题目id
-        $relation = $this->problemGroupRelationRepo->getByMult(['problem_group_id'=>$groupId,'problem_num'=>$problemNum],['problem_id','problem_num'])->first();
+        $relation = $this->problemGroupRelationRepo->getByMult(['problem_group_id' => $groupId, 'problem_num' => $problemNum], ['problem_id', 'problem_num'])->first();
 
-        if($relation == null)
+        if ($relation == null)
             return false;
 
         $data['problem_group_id'] = $groupId;
 
-        return $this->problemService->submitProblem($relation->problem_id,$data,$relation->problem_num);
+        return $this->problemService->submitProblem($relation->problem_id, $data, $relation->problem_num);
     }
 
     public function isUserContestCreator(int $userId, int $groupId): bool
     {
-        return $this->problemGroupService->isUserGroupCreator($userId,$groupId);
+        return $this->problemGroupService->isUserGroupCreator($userId, $groupId);
     }
 
     public function canUserAccessContest(int $userId, int $groupId): bool
     {
 
-        $group = $this->problemGroupRepo->get($groupId,['private','type','start_time','creator_id'])->first();
+        $group = $this->problemGroupRepo->get($groupId, ['private', 'type', 'start_time', 'creator_id'])->first();
 
         //如果是创建者 直接可以获得权限，管理员也应该一样
-        if($userId == $group->creator_id) return true;
-        //TODO: 管理员权限检查
+        if ($userId == $group->creator_id) return true;
 
-        //判断时间
+        if (Permission::checkPermission($userId,['access-any-contest']))
+            return true;
+
+            //判断时间
         $currentTime = time();
 
-        if($group == null || $group->type!=1)//判断题目组类型
+        if ($group == null || $group->type != 1)//判断题目组类型
             return false;
 
         $startTime = strtotime($group->start_time);
         //尚未开始的比赛
-        if($startTime > $currentTime)
-        throw new ContestNotAvailableException();
+        if ($startTime > $currentTime)
+            throw new ContestNotAvailableException();
 
-        if($group->private == 0)
+        if ($group->private == 0)
             return true;
 
-        $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId,'problem_group_id'=>$groupId])->first();
+        $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId, 'problem_group_id' => $groupId])->first();
 
-        return !($admission==null);
+        return !($admission == null);
     }
 
     public function getInContestByPassword(int $userId, int $groupId, string $password): bool
     {
-        $group = $this->problemGroupRepo->get($groupId,['private','password','type'])->first();
+        $group = $this->problemGroupRepo->get($groupId, ['private', 'password', 'type'])->first();
 
-        if($group == null || $group->type!=1 || $group->private!=1) return false;
+        if ($group == null || $group->type != 1 || $group->private != 1) return false;
 
-        $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId,'problem_group_id' => $groupId])->first();
+        $admission = $this->problemAdmissionRepo->getByMult(['user_id' => $userId, 'problem_group_id' => $groupId])->first();
 
-        if($admission!=null) return true;//已经有权限了
+        if ($admission != null) return true;//已经有权限了
 
-        if(!Utils::pwCheck($password,$group->password))
+        if (!Utils::pwCheck($password, $group->password))
             throw new PasswordErrorException();
 
-        return $this->problemAdmissionRepo->insert(['user_id' => $userId,'problem_group_id'=>$groupId]) == 1;
+        return $this->problemAdmissionRepo->insert(['user_id' => $userId, 'problem_group_id' => $groupId]) == 1;
     }
 }
