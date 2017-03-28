@@ -43,11 +43,11 @@ class NewsController extends Controller
         $page = $request->input('page',1);
         $size = $request->input('size',20);
 
-        $news = $this->newsService->getAllNews($page,$size);
+        $data = $this->newsService->getAllNews($page,$size);
 
         return response()->json([
             'code' => 0,
-            'data' => $news
+            'data' => $data
         ]);
     }
 
@@ -94,7 +94,7 @@ class NewsController extends Controller
         $validator = Validator::make($request->all(),[
             'title' => 'required|string|max:100',
             'content' => 'required',
-            'importance' => 'integer|min:1|max:3',
+            'importance' => 'required|integer|min:1|max:3',
         ]);
 
         if ($validator->fails()){
@@ -125,7 +125,7 @@ class NewsController extends Controller
         $validator = Validator::make($request->all(),[
             'title' => 'required|string|max:100',
             'content' => 'required',
-            'importance' => 'integer|min:1|max:3',
+            'importance' => 'required|integer|min:1|max:3',
         ]);
 
         if ($validator->fails()){

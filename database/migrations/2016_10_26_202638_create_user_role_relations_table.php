@@ -14,9 +14,7 @@ class CreateUserRoleRelationsTable extends Migration
     {
         Schema::create('user_role_relations', function (Blueprint $table) {
             $table->bigInteger('user_id');
-            $table->integer('role_id');
-            $table->primary(['user_id','role_id']);
-            $table->timestamps();
+            $table->string('role_name',100);
         });
     }
 

@@ -13,11 +13,9 @@ class CreateRolePrivilegeRelationsTable extends Migration
     public function up()
     {
         Schema::create('role_privilege_relations', function (Blueprint $table) {
-            $table->integer('role_id');
-            $table->integer('privilege_id');
-            $table->primary(['role_id','privilege_id']);
-            $table->string('role',50);
-            $table->timestamps();
+            $table->string('role_name',100);
+            $table->string('privilege_name',100);
+            $table->primary(['role_name','privilege_name']);
         });
     }
 

@@ -26,7 +26,13 @@ class NewsService implements NewsServiceInterface
 
     public function getAllNews(int $page, int $size)
     {
-        return $this->newsRepository->paginate($page,$size,['id','author_id','title','importance','created_at','updated_at']);
+        $news = $this->newsRepository->paginate($page,$size,[],['id','author_id','title','importance','created_at','updated_at']);
+        $totalCount = $this->newsRepository->getTotalCount();
+
+        return [
+            'news' => $news,
+            'total_count' => $totalCount
+        ];
     }
 
     public function getNews(int $newsId,array $columns = ['*'])

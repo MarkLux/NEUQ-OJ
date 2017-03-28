@@ -15,6 +15,7 @@ class RolePriRepository extends AbstractRepository
     {
         return "NEUQOJ\Repository\Models\RolePrivilegeRelation";
     }
+
     function deleteBy($roleId)
     {
         return $this->model->where('roleId',$roleId)->destory();

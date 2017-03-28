@@ -3,10 +3,9 @@
 namespace NEUQOJ\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use NEUQOJ\Services\PermissionService;
 
-use NEUQOJ\Services\DeletionService;
-
-class DeletionProvider extends ServiceProvider
+class PermissionServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.
@@ -25,8 +24,8 @@ class DeletionProvider extends ServiceProvider
      */
     public function register()
     {
-        return $this->app->singleton('DeletionService',function($app){
-            return new DeletionService();
+        $this->app->singleton('PermissionService',function ($app){
+            return new PermissionService();
         });
     }
 }

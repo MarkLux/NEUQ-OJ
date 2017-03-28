@@ -27,4 +27,26 @@ class NewsRepository extends AbstractRepository
             ->take($size)
             ->get($columns);
     }
+
+    public function paginate(int $page = 1, int $size = 15, array $param = [], array $columns = ['*'])
+    {
+        if(!empty($param))
+            return $this->model
+                ->where($param)
+                ->orderBy('created_at','desc')
+                ->skip($size * --$page)
+                ->take($size)
+                ->get($columns);
+        else
+            return $this->model
+                ->orderBy('created_at','desc')
+                ->skip($size * --$page)
+                ->take($size)
+                ->get($columns);
+    }
+
+    public function getTotalCount():int
+    {
+        return $this->model->all()->count();
+    }
 }
