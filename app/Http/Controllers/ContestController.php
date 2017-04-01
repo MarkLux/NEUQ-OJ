@@ -314,7 +314,7 @@ class ContestController extends Controller
         if (!Utils::pwCheck($request->input('user_password'), $request->user->password))
             throw new PasswordErrorException();
 
-        if (!Permission::checkPermission($request->user->id,['update-any-contest'])) {
+        if (!Permission::checkPermission($request->user->id, ['update-any-contest'])) {
             if (!$this->contestService->isUserContestCreator($request->user->id, $contestId))
                 throw new NoPermissionException();
         }
@@ -367,7 +367,7 @@ class ContestController extends Controller
         if (!Utils::pwCheck($request->input('password'), $request->user->password))
             throw new PasswordErrorException();
 
-        if (!Permission::checkPermission($request->user->id,['update-any-contest'])) {
+        if (!Permission::checkPermission($request->user->id, ['update-any-contest'])) {
             if (!$this->contestService->isUserContestCreator($request->user->id, $contestId))
                 throw new NoPermissionException();
         }
@@ -394,7 +394,7 @@ class ContestController extends Controller
             throw new ContestNotExistException();
 
         $group = $this->contestService->getContest($contestId, ['creator_id']);
-        if(!Permission::checkPermission($request->user->id,['delete-any-contest'])){
+        if (!Permission::checkPermission($request->user->id, ['delete-any-contest'])) {
             if ($group->creator_id != $request->user->id)
                 throw new NoPermissionException();
         }

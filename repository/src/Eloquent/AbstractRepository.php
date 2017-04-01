@@ -1,13 +1,10 @@
 <?php
 namespace NEUQOJ\Repository\Eloquent;
+
 use Carbon\Carbon;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
 use NEUQOJ\Repository\Contracts\RepositoryInterface;
-use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
-use NEUQOJ\Repository\Models\News;
 
 /**
  * Created by PhpStorm.
@@ -39,7 +36,7 @@ abstract class AbstractRepository implements RepositoryInterface
             ->get($columns);
     }
 
-    function getBy(string $param,string $value,array $columns = ['*'])
+    function getBy(string $param, string $value, array $columns = ['*'])
     {
         return $this->model
             ->where($param, $value)
@@ -54,26 +51,26 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     //在多个候选列表中的匹配
-    function getIn($param,array $data,array $columns = ['*'])
+    function getIn($param, array $data, array $columns = ['*'])
     {
         return $this->model
-            ->whereIn($param,$data)
+            ->whereIn($param, $data)
             ->get($columns);
     }
 
     function insert(array $data)
     {
-        if($this->model->timestamps){
+        if ($this->model->timestamps) {
             $current = new Carbon();
 
-            if(! is_array(reset($data))){
+            if (!is_array(reset($data))) {
                 $data = array_merge($data,
                     [
                         'created_at' => $current,
                         'updated_at' => $current,
                     ]);
-            }else{
-                foreach ($data as  $key => $value) {
+            } else {
+                foreach ($data as $key => $value) {
                     $data[$key] = array_merge($value,
                         [
                             'created_at' => $current,
@@ -87,18 +84,18 @@ abstract class AbstractRepository implements RepositoryInterface
             ->insert($data);
     }
 
-    function update(array $data,int $id, string $attribute="id")
+    function update(array $data, int $id, string $attribute = "id")
     {
-        if($this->model->timestamps){
+        if ($this->model->timestamps) {
             $current = new Carbon();
 
-            if(! is_array(reset($data))){
+            if (!is_array(reset($data))) {
                 $data = array_merge($data,
                     [
                         'updated_at' => $current,
                     ]);
-            }else{
-                foreach ($data as  $key => $value) {
+            } else {
+                foreach ($data as $key => $value) {
                     $data[$key] = array_merge($value,
                         [
                             'updated_at' => $current,
@@ -116,18 +113,18 @@ abstract class AbstractRepository implements RepositoryInterface
     /**
      * 多条件限定查找
      */
-    function updateWhere(array $condition,array $data)
+    function updateWhere(array $condition, array $data)
     {
-        if($this->model->timestamps){
+        if ($this->model->timestamps) {
             $current = new Carbon();
 
-            if(! is_array(reset($data))){
+            if (!is_array(reset($data))) {
                 $data = array_merge($data,
                     [
                         'updated_at' => $current,
                     ]);
-            }else{
-                foreach ($data as  $key => $value) {
+            } else {
+                foreach ($data as $key => $value) {
                     $data[$key] = array_merge($value,
                         [
                             'updated_at' => $current,
@@ -142,7 +139,7 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
 
-    function delete(int $id):bool
+    function delete(int $id): bool
     {
         //WARNING:DO NOT USE THIS FUNCTION
         return $this->model
@@ -155,26 +152,9 @@ abstract class AbstractRepository implements RepositoryInterface
             ->where($param)->delete();
     }
 
-    /**
-     * 批量硬删除&撤销
-
-    function forceDeleteIn(string $param,array $data)
+    function paginate(int $page = 1, int $size = 15, array $param = [], array $columns = ['*'])
     {
-        if($this instanceof SoftDeletionInterface)
-            return $this->model->whereIn($param,$data)->forceDelete();
-    }
-
-    function restoreIn(string $param,array $data)
-    {
-        if($this instanceof SoftDeletionInterface)
-            return $this->model->whereIn($param,$data)->restore();
-    }
-     *
-     * */
-
-    function paginate(int $page = 1,int $size = 15,array $param = [],array $columns = ['*'])
-    {
-        if(!empty($param))
+        if (!empty($param))
             return $this->model
                 ->where($param)
                 ->skip($size * --$page)
@@ -187,7 +167,7 @@ abstract class AbstractRepository implements RepositoryInterface
                 ->get($columns);
     }
 
-    private function freshTimestamp():Carbon
+    private function freshTimestamp(): Carbon
     {
         return new Carbon;
     }
