@@ -54,7 +54,6 @@ class MessageController extends Controller
     {
         //表单认证
         $validator = Validator::make($request->all(), [
-            'userId' => 'required',
             'page' => 'integer|min:1',
             'size' => 'integer|min:1',
         ]);
@@ -64,7 +63,7 @@ class MessageController extends Controller
             throw new FormValidatorException($data);
         }
 
-        $userId = $request->input('userId');
+        $userId = $request->user->id;
         $page = $request->input('page', 1);
         $size = $request->input('size', 20);
 
@@ -107,13 +106,13 @@ class MessageController extends Controller
         ]);
     }
 
-    public function getUserMessageCount(MessageService $messageService, int $userId)
+    public function getUserMessageCount(MessageService $messageService, Request $request)
     {
 
 
         $messageCount = 0;
 
-        $messageCount = $messageService->getUserMessageCount($userId);
+        $messageCount = $messageService->getUserMessageCount($request->user->id);
 
         return response()->json([
             'code' => 0,

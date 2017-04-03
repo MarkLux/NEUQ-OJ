@@ -18,6 +18,8 @@ class CreateProblemKeysTable extends Migration
             $table->text('key');
             $table->bigInteger('author_id');
             $table->string('author_name');
+            $table->boolean('type');
+            $table->integer('times');
             $table->timestamps();
         });
     }

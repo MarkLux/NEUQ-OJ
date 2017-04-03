@@ -107,5 +107,15 @@ class SolutionRepository extends AbstractRepository
             ->orderBy('solutions.created_at','desc')
             ->get();
     }
-
+    //判断某道题提交错误次数是否与定义次数匹配
+    public function getUnPassProblemSolutionCount(int $userId,int $problemId,int $times)
+    {
+        return $this->model
+            ->where('problem_id',$problemId)
+            ->where('user_id',$userId)
+            ->Where('result','<>',4)
+            ->orderBy('created_at','desc')
+            ->take($times)
+            ->count()==$times;
+    }
 }

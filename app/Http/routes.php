@@ -32,6 +32,8 @@ include 'Routes/Contest.php';
 
 include 'Routes/Index.php';
 
+include 'Routes/tag.php';
+
 //include 'Routes/Captcha.php';
 
 Route::get('/', function () {

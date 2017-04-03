@@ -296,6 +296,37 @@ class PrivilegeTableSeeder extends Seeder
                 'description' => '获取任意一次提交的源代码',
                 'created_at' => $current,
                 'updated_at' => $current
+            ],
+            /*
+             * 题解
+             */
+            [
+                'name' => 'create-problem-key',
+                'display_name' => '创建题解',
+                'description' => '对题目创建题解',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
+            [
+                'name' => 'update-problem-key',
+                'display_name' => '更改题解',
+                'description' => '修改题目的题解',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
+            [
+                'name' => 'delete-problem-key',
+                'display_name' => '删除题解',
+                'description' => '删除题目的题解',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
+            [
+                'name' => 'access-any-key',
+                'display_name' => '获取题解',
+                'description' => '能查看所有题解',
+                'created_at' => $current,
+                'updated_at' => $current
             ]
         ]);
     }

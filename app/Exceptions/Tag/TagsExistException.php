@@ -6,10 +6,12 @@
  * Time: 下午9:10
  */
 
-namespace NEUQOJ\Exceptions;
+namespace NEUQOJ\Exceptions\Tag;
 
 
-class TagsExistExceptios extends BaseException
+use NEUQOJ\Exceptions\BaseException;
+
+class TagsExistException extends BaseException
 {
     protected $code = 3005;
 

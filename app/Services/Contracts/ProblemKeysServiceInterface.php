@@ -20,4 +20,6 @@ interface ProblemKeysServiceInterface
     function updateProblemKey(array $condition,array $data):bool;
 
     function getProblemKey(int $problemId);
+
+    function canUserAccessKey(int $problemId,int $userId);
 }

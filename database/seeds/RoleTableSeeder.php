@@ -96,7 +96,20 @@ class RoleTableSeeder extends Seeder
                 [
                     'role_name' => 'teacher',
                     'privilege_name' => 'create-user-group'
+                ],
+                [
+                    'role_name' =>'teacher',
+                    'privilege_name' => 'create-problem-key'
+                ],
+                [
+                    'role_name' => 'teacher',
+                    'privilege_name' => 'update-problem-key'
+                ],
+                [
+                    'role_name' => 'teacher',
+                    'privilege_name' => 'delete-problem-key'
                 ]
+
             ]);
         });
 

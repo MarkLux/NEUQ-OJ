@@ -6,8 +6,10 @@
  * Time: 下午2:12
  */
 
-namespace NEUQOJ\Exceptions;
+namespace NEUQOJ\Exceptions\Tag;
 
+
+use NEUQOJ\Exceptions\BaseException;
 
 class TagNotExistException extends BaseException
 {

@@ -6,13 +6,14 @@
  * Time: 下午11:59
  */
 
+Route::group(['middleware' => 'user'],function(){
+    Route::post('/tag/updateTag','TagsController@updateTag');
+    Route::post('/tag/createTags','TagsController@createTags');
+    Route::get('/tag/deleteTag','TagsController@deleteTag');
+    Route::get('/tag/deleteProblemTag','TagsController@deleteProblemTag');
+    Route::post('/tag/updateProblemTag','TagsController@updateProblemTag');
+    Route::get('/tag/giveTagTo','TagsController@giveTagTo');
+});
 
-Route::post('/tag/updateTag','TagsController@updateTag');
-Route::post('/tag/createTag','TagsController@createTag');
-Route::post('/tag/deleteTag','TagsController@deleteTag');
-Route::post('/tag/createProblemTag','TagsController@createProblemTag');
-Route::post('/tag/deleteProblemTag','TagsController@deleteProblemTag');
-Route::post('/tag/updateProblemTag','TagsController@updateProblemTag');
-Route::post('/tag/giveTagTo','TagsController@giveTagTo');
 Route::get('/tag/getSameTagProblem','TagsController@getSameTagProblem');
 Route::get('/tag/getSameSourceProblem','TagsController@getSameSourceProblem');

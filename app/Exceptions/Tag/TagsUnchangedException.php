@@ -6,10 +6,12 @@
  * Time: 下午10:20
  */
 
-namespace NEUQOJ\Exceptions;
+namespace NEUQOJ\Exceptions\Tag;
 
 
-class TagsUnchangedExceptions extends BaseException
+use NEUQOJ\Exceptions\BaseException;
+
+class TagsUnchangedException extends BaseException
 {
     protected $code =3006;
 

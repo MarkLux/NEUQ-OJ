@@ -12,6 +12,7 @@ namespace NEUQOJ\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\NoPermissionException;
+use NEUQOJ\Facades\Permission;
 use NEUQOJ\Services\ProblemKeysService;
 use NEUQOJ\Services\RoleService;
 use NEUQOJ\Services\UserService;
@@ -25,13 +26,16 @@ class ProblemKeysController extends Controller
             'problemId' => 'required|max:45',
             'user' => 'required',
             'title' => 'required|max:100',
-            'key' => 'required'
+            'key' => 'required',
+            'type'=> 'required|boolean',
+            'times'=> 'integer|min:3|max:6'
         ]);
 
         if ($validator->fails()) {
             $data = $validator->getMessageBag()->all();
             throw new FormValidatorException($data);
         }
+        $times = $request->input('times',5);
 
         $user = $request->user;
         //判断是否是出题人
@@ -39,7 +43,7 @@ class ProblemKeysController extends Controller
         $problem = $userService->getUserById($user->id);
 
         if ($problem->creator_id != $user->id)
-            if ($roleService->hasRole($user->id, 'admin'))//如果是管理员就不说了
+            if (!Permission::checkPermission($request->user->id, ['create-problem-key']))
                 throw new NoPermissionException();
         //整合数据
 
@@ -48,7 +52,9 @@ class ProblemKeysController extends Controller
             'title' => $request->title,
             'key' => $request->key,
             'author_id' => $user->id,
-            'author_name' => $user->name
+            'author_name' => $user->name,
+            'type' => $request->type,
+            'times'=> $times
         ];
 
         if ($problemKeysService->addProblemKey($data))
@@ -78,7 +84,7 @@ class ProblemKeysController extends Controller
         $problem = $userService->getUserById($user->id);
 
         if ($problem->creator_id != $user->id)
-            if ($roleService->hasRole($user->id, 'admin'))//如果是管理员就不说了
+            if (!Permission::checkPermission($request->user->id, ['delete-problem-key']))
                 throw new NoPermissionException();
 
         if ($problemKeysService->deleteProblemKey($request->problemId))
@@ -108,7 +114,7 @@ class ProblemKeysController extends Controller
 
         $problem = $userService->getUserById($user->id);
         if ($problem->creator_id != $user->id)//判断是否是出题人
-            if ($roleService->hasRole($user->id, 'admin'))//管理
+            if (!Permission::checkPermission($request->user->id, ['update-problem-key']))
                 throw new NoPermissionException();
 
         $data = array(
@@ -126,16 +132,16 @@ class ProblemKeysController extends Controller
 
     public function getProblemKey(Request $request, ProblemKeysService $problemKeysService)
     {
-        if ($data = $problemKeysService->getProblemKey($request->problemId))
-            return response()->json(
-                [
-                    'code' => 0,
-                    'data' => [
-                        'problemKey' => $data
-                    ]
-                ]
-            );
-
+       if ($problemKeysService->canUserAccessKey($request->problemId,$request->userId)) {
+           if ($data = $problemKeysService->getProblemKey($request->problemId))
+               return response()->json(
+                   [
+                       'code' => 0,
+                       'data' => [
+                           'problemKey' => $data
+                       ]
+                   ]);
+       }
     }
 
 }
