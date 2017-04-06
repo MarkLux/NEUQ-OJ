@@ -131,7 +131,9 @@ class ContestService implements ContestServiceInterface
     public function getContestDetail(int $groupId)
     {
         //用于获取竞赛的所有数据，用于更新
-        $contestInfo = $this->problemGroupService->getProblemGroup($groupId, ['title', 'type', 'description', 'private', 'langmask']);
+        $contestInfo = $this->problemGroupService->getProblemGroup(
+            $groupId, ['id','title', 'type', 'description', 'private', 'langmask','start_time','end_time']
+        );
 
         if ($contestInfo == null || $contestInfo->type != 1) throw new ContestNotExistException();
 
@@ -142,8 +144,10 @@ class ContestService implements ContestServiceInterface
 
         $lang_count = count($this->problemGroupService->language_ext);
 
+        $langmask=(~((int)$contestInfo->langmask))&((1<<($lang_count))-1);
+
         for ($i = 0; $i < $lang_count; $i++) {
-            if ($contestInfo->langmask & (1 << $i))
+            if ($langmask & (1 << $i))
                 $langs[] = $i;
         }
 
