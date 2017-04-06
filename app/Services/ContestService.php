@@ -266,12 +266,23 @@ class ContestService implements ContestServiceInterface
         //之前已经通过密码加入的用户不进行处理了
     }
 
-    public function resetContestPermission(int $groupId, array $users): bool
+    public function resetContestPermission(int $groupId, array $userIds): bool
     {
         $group = $this->problemGroupRepo->get($groupId, ['type', 'private'])->first();
         //同上
         if ($group == null || $group->type != 1 || $group->private != 1)
             return false;
+
+        $users = [];
+
+        // 重新组织关系
+
+        foreach ($userIds as $userId) {
+            $users[] = [
+                'problem_group_id' => $groupId,
+                'user_id' => $userId
+            ];
+        }
 
         return $this->problemGroupService->resetGroupAdmissions($groupId, $users);
     }

@@ -326,6 +326,7 @@ class ContestController extends Controller
         $users = $request->input('users', null);
         $private = $request->input('private', null);
         $password = $request->input('password', null);
+        $description = $request->input('description',null);
 
         $newInfo = [];
 
@@ -335,6 +336,7 @@ class ContestController extends Controller
         if ($langmask != null) $newInfo['langmask'] = $langmask;
         if ($private != null) $newInfo['private'] = $private;
         if ($password != null) $newInfo['password'] = Utils::pwGen($password);
+        if ($description != null) $newInfo['description']  = $description;
 
         if (!empty($newInfo)) {
             if (!$this->contestService->updateContestInfo($contestId, $newInfo))
