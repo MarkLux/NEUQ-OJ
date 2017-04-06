@@ -238,7 +238,8 @@ class ContestService implements ContestServiceInterface
         $startTime = strtotime($group->start_time);
         $endTime = strtotime($group->end_time);
         $time = time();
-        if ($startTime > $time || $time < $endTime) {
+
+        if ($startTime < $time || $time > $endTime) {
             if (isset($data['start_time'])) unset($data['start_time']);//直接无效索引
         }
 
