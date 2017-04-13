@@ -17,14 +17,12 @@ use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
 
-class ProblemRepository extends AbstractRepository implements SoftDeletionInterface
+class ProblemRepository extends AbstractRepository
 {
     function model()
     {
         return "NEUQOJ\Repository\Models\Problem";
     }
-
-    use SoftDeletionTrait;
 
     use InsertWithIdTrait;
 
@@ -94,26 +92,23 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
             ->get();
     }
 
-    //覆盖方法
+//    //覆盖方法
+//
+//    function doDeletion(int $id): bool
+//    {
+//        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
+//
+//        if($item == null)
+//            return false;
+//        if(!$item->forceDelete())
+//            return false;
+//
+//        //删除文件系统中的相关内容
+//        //文件操作写在这里并不合适，但是由于系统文件结构并不复杂所以就这么写了
+//
 
-    function doDeletion(int $id): bool
-    {
-        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
-
-        if($item == null)
-            return false;
-        if(!$item->forceDelete())
-            return false;
-
-        //删除文件系统中的相关内容
-        //文件操作写在这里并不合适，但是由于系统文件结构并不复杂所以就这么写了
-
-        $path = '/home/judge/data/'.$id.'/';
-
-        if(File::isDirectory($path))
-            return File::deleteDirectory($path);
-
-    }
+//
+//    }
 
     /*
      * 搜索

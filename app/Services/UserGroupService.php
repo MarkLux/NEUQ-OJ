@@ -19,6 +19,7 @@ use NEUQOJ\Exceptions\UserGroup\UserInGroupException;
 use NEUQOJ\Exceptions\UserGroup\UserNotInGroupException;
 use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Repository\Eloquent\GroupNoticeRepository;
+use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRelationRepository;
@@ -27,7 +28,6 @@ use NEUQOJ\Services\Contracts\UserGroupServiceInterface;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Exceptions\InnerError;
 use Illuminate\Support\Facades\DB;
-use NEUQOJ\Services\DeletionService;
 
 
 class UserGroupService implements UserGroupServiceInterface
@@ -36,19 +36,23 @@ class UserGroupService implements UserGroupServiceInterface
     private $userGroupRepo;
     private $relationRepo;
     private $noticeRepo;
-    private $deletionService;
+    private $problemGroupRepo;
+//    private $deletionService;
 
-    public function __construct(UserRepository $userRepository, UserGroupRelationRepository $relationRepository,
-                                UserGroupRepository $userGroupRepository, GroupNoticeRepository $noticeRepository,
-                                DeletionService $deletionService
+    public function __construct(
+        UserRepository $userRepository, UserGroupRelationRepository $relationRepository,
+        UserGroupRepository $userGroupRepository, GroupNoticeRepository $noticeRepository,
+        ProblemGroupRepository $problemGroupRepository
     )
     {
         $this->userRepo = $userRepository;
         $this->userGroupRepo = $userGroupRepository;
         $this->relationRepo = $relationRepository;
         $this->noticeRepo = $noticeRepository;
-        $this->deletionService = $deletionService;
+        $this->problemGroupRepo = $problemGroupRepository;
+//        $this->deletionService = $deletionService;
     }
+
 
     /**
      * 基本获取部分
@@ -189,47 +193,23 @@ class UserGroupService implements UserGroupServiceInterface
 
         //多张表数据操作，应该使用数据库事务
 
-        DB::transaction(function () use ($groupId, $user) {
+        $flag = false;
+
+        DB::transaction(function () use ($groupId, $user,&$flag) {
             $this->userGroupRepo->deleteWhere(['id' => $groupId]);
 
-            $data = [
-                'table_name' => 'UserGroup',
-                'key' => $groupId,
-                'user_id' => $user->id,
-                'user_name' => $user->name
-            ];
-
-            $this->deletionService->createDeletion($data);
-
-            $data = [];
-
-            $relations = $this->relationRepo->getBy('group_id', $groupId, ['id']);
-
-            if ($relations->count() != 0) //修正bug
-            {
-                foreach ($relations as $relation) {
-                    array_push($data, [
-                        'user_id' => $user->id,
-                        'user_name' => $user->name,
-                        'table_name' => 'UserGroupRelation',
-                        'key' => $relation->id
-                    ]);
-                }
-
-                $this->deletionService->createDeletions($data);
-                //删除用户关系
-                $this->relationRepo->deleteWhere(['group_id' => $groupId]);
-            }
+            $this->relationRepo->deleteWhere(['group_id' => $groupId]);
             //删除公告
             //公告不记录在日志里
             $this->noticeRepo->deleteWhere(['group_id' => $groupId]);
+
+            // 删除作业
+            $this->problemGroupRepo->deleteWhere(['problem_group_id' => $groupId]);
+
+            $flag = true;
         });
 
-        return true;
-
-        //TODO 删除作业等一系列相关数据
-        //删除考试
-        //...
+        return $flag;
     }
 
     //易主

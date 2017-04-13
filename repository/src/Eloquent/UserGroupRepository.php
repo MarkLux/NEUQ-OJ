@@ -15,7 +15,7 @@ use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
 use NEUQOJ\Repository\Traits\InsertWithIdTrait;
 use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 
-class UserGroupRepository extends AbstractRepository implements SoftDeletionInterface
+class UserGroupRepository extends AbstractRepository
 {
     function model()
     {
@@ -55,22 +55,4 @@ class UserGroupRepository extends AbstractRepository implements SoftDeletionInte
         return $this->model->all()->count();
     }
 
-//    function doDeletion(int $id): bool
-//    {
-//        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
-//
-//        if($item == null)
-//            return false;
-//        return $item->forceDelete();
-//    }
-//
-//    function undoDeletion(int $id): bool
-//    {
-//        $item =  $this->model->where('id',$id)->onlyTrashed()->get()->first();
-//        if($item == null)
-//            return false;
-//        return $item->restore();
-//    }
-
-    use SoftDeletionTrait;
 }

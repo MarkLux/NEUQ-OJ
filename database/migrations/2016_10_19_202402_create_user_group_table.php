@@ -22,7 +22,6 @@ class CreateUserGroupTable extends Migration
             $table->integer('max_size');
             $table->string('password',255)->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

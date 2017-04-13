@@ -12,6 +12,7 @@ namespace NEUQOJ\Services;
 use League\CommonMark\CommonMarkConverter;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Facades\Permission;
+use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemTagRelationRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Repository\Eloquent\SourceCodeRepository;
@@ -27,8 +28,9 @@ class ProblemService implements ProblemServiceInterface
     private $problemRepo;
     private $solutionRepo;
     private $sourceRepo;
-    private $deletionService;
+//    private $deletionService;
     private $tagRelationRepo;
+    private $problemGroupRelationRepo;
     private $converter;
 
     //获取对应题目数据的磁盘储存路径
@@ -40,15 +42,16 @@ class ProblemService implements ProblemServiceInterface
 
     public function __construct(
         ProblemRepository $problemRepository,SolutionRepository $solutionRepository,
-        DeletionService $deletionService,SourceCodeRepository $sourceCodeRepository,
-        ProblemTagRelationRepository $tagRelationRepository
+        SourceCodeRepository $sourceCodeRepository,
+        ProblemTagRelationRepository $tagRelationRepository,ProblemGroupRelationRepository $problemGroupRelationRepository
     )
     {
         $this->problemRepo = $problemRepository;
         $this->solutionRepo = $solutionRepository;
-        $this->deletionService = $deletionService;
+//        $this->deletionService = $deletionService;
         $this->sourceRepo = $sourceCodeRepository;
         $this->tagRelationRepo = $tagRelationRepository;
+        $this->problemGroupRelationRepo = $problemGroupRelationRepository;
         $this->converter = app('CommonMarkService');
     }
 
@@ -219,6 +222,8 @@ class ProblemService implements ProblemServiceInterface
     public function getProblemByCreatorId(int $userId,int $page,int $size,array $columns = ['*'])
     {
         $count = $this->problemRepo->getWhereCount(['creator_id' => $userId]);
+
+        $problems = null;
 
         if ($count > 0) {
             $problems = $this->problemRepo->paginate($page,$size,['creator_id' => $userId],$columns);
@@ -398,45 +403,29 @@ class ProblemService implements ProblemServiceInterface
 
     public function deleteProblem(User $user,int $problemId): bool
     {
-        $flag = true;
+        $flag = false;
 
-        //TODO: 删除一道题目会涉及到很多其他的表，随着以后系统的扩充慢慢完善这个方法的内容
         DB::transaction(function () use($user,$problemId,&$flag){
-            //删除题目表
-            if($this->problemRepo->deleteWhere(['id'=>$problemId])!=1) $flag = false;
-            //创建删除日志的条目
-            $data = [
-                'table_name' => 'Problem',
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'key' => $problemId
-            ];
+            // 删除题目表
+           $this->problemRepo->deleteWhere(['id'=>$problemId]);
 
-            if(!$this->deletionService->createDeletion($data)) $flag = false;
+            // 删除tag关系表
 
-            //包装tag关系信息
-            $tagRelations = $this->tagRelationRepo->getBy('problem_id',$problemId,['id']);
-            //创建删除记录
-            if($tagRelations->count()>0)
-            {
-                $data = [];
+            $this->tagRelationRepo->deleteWhere(['problem_id' => $problemId]);
 
-                foreach ($tagRelations as $tagRelation)
-                {
-                    array_push($data,[
-                        'table_name' => 'ProblemTagRelation',
-                        'user_id' => $user->id,
-                        'user_name' => $user->name,
-                        'key' => $tagRelation->id
-                    ]);
-                }
+            // 考虑到排行榜组织问题，没有删除竞赛和作业中的记录
 
-                $this->deletionService->createDeletions($data);
-                //删除tag关系
-                $this->tagRelationRepo->deleteWhere(['problem_id' => $problemId]);
-            }
+            // $this->problemGroupRelationRepo->deleteWhere(['problem_id' => $problemId]);
 
+            // 考虑删不删solution表，应该没必要
+
+            $flag = true;
         });
+
+        $path = $this->getPath($problemId);
+
+        if(File::isDirectory($path))
+            return File::deleteDirectory($path);
 
         return $flag;
     }

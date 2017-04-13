@@ -13,14 +13,12 @@ use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
 use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 use Illuminate\Support\Facades\DB;
 
-class ProblemGroupRelationRepository extends AbstractRepository implements SoftDeletionInterface
+class ProblemGroupRelationRepository extends AbstractRepository
 {
     public function model()
     {
         return "NEUQOJ\Repository\Models\ProblemGroupRelation";
     }
-
-    use SoftDeletionTrait;
 
     public function getRelationsByNums(int $groupId,array $problemNums,array $columns = ['*'])
     {

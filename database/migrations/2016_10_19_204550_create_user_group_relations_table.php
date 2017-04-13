@@ -20,7 +20,6 @@ class CreateUserGroupRelationsTable extends Migration
             $table->string('user_code',45);
             $table->string('user_tag',100);
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

@@ -9,7 +9,7 @@ class UserGroup extends Model
 {
     protected $table = 'user_groups';
 
-    use SoftDeletes;
-
-    protected $dates = ['deleted_at'];
+//    use SoftDeletes;
+//
+//    protected $dates = ['deleted_at'];
 }
