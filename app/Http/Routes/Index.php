@@ -6,7 +6,7 @@
  * Time: 下午11:15
  */
 
-Route::get('/news/latest','NewsController@getLatestNews');
+Route::get('/news/index','NewsController@getIndexNews');
 
 Route::get('/news','NewsController@getAllNews');
 

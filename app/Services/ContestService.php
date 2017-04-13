@@ -189,6 +189,19 @@ class ContestService implements ContestServiceInterface
         return ['contests' => $groups, 'total_count' => $totalCount];
     }
 
+    public function getContestsByCreatorId(int $userId,int $page,int $size,array $columns = ['*'])
+    {
+        $count = $this->problemGroupRepo->getWhereCount(['creator_id' => $userId,'type' => 1]);
+        $contests = null;
+        if ($count > 0) {
+            $contests = $this->problemGroupRepo->paginate($page,$size,['creator_id' => $userId,'type' => 1],$columns);
+        }
+        return [
+            'total_count' => $count,
+            'contests' => $contests
+        ];
+    }
+
     //创建一个竞赛，如果成功，返回新创建的竞赛id，否则返回-1
     public function createContest(array $data, array $problemIds, array $users = []): int
     {

@@ -70,4 +70,9 @@ class NewsService implements NewsServiceInterface
     {
         return $this->newsRepository->deleteWhere(['id' => $newsId]) == 1;
     }
+
+    public function getFixedNews()
+    {
+        return $this->newsRepository->getBy('importance','0');
+    }
 }

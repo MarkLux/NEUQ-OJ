@@ -216,6 +216,20 @@ class ProblemService implements ProblemServiceInterface
         return $data;
     }
 
+    public function getProblemByCreatorId(int $userId,int $page,int $size,array $columns = ['*'])
+    {
+        $count = $this->problemRepo->getWhereCount(['creator_id' => $userId]);
+
+        if ($count > 0) {
+            $problems = $this->problemRepo->paginate($page,$size,['creator_id' => $userId],$columns);
+        }
+
+        return [
+            'total_count' => $count,
+            'problems' => $problems
+        ];
+    }
+
     //组织数据 转化md为markdown
 
     public function getProblemById(int $problemId,array $columns = ['*'])

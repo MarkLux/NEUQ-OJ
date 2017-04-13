@@ -79,7 +79,29 @@ class ProblemController extends Controller
                 'total_count' => $total_count
             ]
         ]);
+    }
 
+    public function getMyProblems(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'page' => 'integer|min:1',
+            'size' => 'integer|min:1|max:40'
+        ]);
+
+        if ($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $page = $request->input('page', 1);
+        $size = $request->input('size', 20);
+
+        $userId = $request->user->id;
+
+        $data = $this->problemService->getProblemByCreatorId($userId,$page,$size);
+
+        return response()->json([
+            'code' => 0,
+            'data' => $data
+        ]);
     }
 
     public function getProblem(Request $request, int $problemId)
@@ -92,7 +114,8 @@ class ProblemController extends Controller
         if ($problem['is_public'] == 0)//是私有题目
         {
             if ($request->user == null) throw new NoPermissionException(); //没登陆
-            elseif (!$this->problemService->canUserAccessProblem($request->user->id, $problemId)) throw new NoPermissionException();
+            elseif (!$this->problemService->canUserAccessProblem($request->user->id, $problemId))
+                throw new NoPermissionException();
         }
 
         return response()->json([
@@ -103,8 +126,11 @@ class ProblemController extends Controller
 
     public function addProblem(Request $request)
     {
+        $valiateRule = $this->getValidateRules();
+        unset($valiateRule['test_output']); // 不再需要测试数据
+
         //表单验证
-        $validator = Validator::make($request->all(), $this->getValidateRules());
+        $validator = Validator::make($request->all(), $valiateRule);
 
         if (!Permission::checkPermission($request->user->id, ['create-problem'])) {
             throw new NoPermissionException();

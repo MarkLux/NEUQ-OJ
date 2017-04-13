@@ -24,5 +24,6 @@ Route::group(['middleware' => 'token'],function(){
     Route::post('/contest/{id}/update/info','ContestController@updateContestInfo');
     Route::post('/contest/{id}/update/problem','ContestController@updateContestProblem');
     Route::post('/contest/{id}/delete','ContestController@deleteContest');
+    Route::get('/contests/mine','ContestController@getMyContests');
 });
 

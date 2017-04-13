@@ -22,4 +22,6 @@ interface NewsServiceInterface
     function updateNews(int $newsId,array $news):bool;
 
     function deleteNews(int $newsId):bool;
+
+    function getFixedNews();
 }

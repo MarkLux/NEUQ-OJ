@@ -10,6 +10,8 @@ namespace NEUQOJ\Repository\Eloquent;
 
 
 use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
+use NEUQOJ\Repository\Traits\getWhereCount;
+use NEUQOJ\Repository\Traits\GetWhereCountTrait;
 use NEUQOJ\Repository\Traits\InsertWithIdTrait;
 use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 use Illuminate\Support\Facades\File;
@@ -25,6 +27,8 @@ class ProblemRepository extends AbstractRepository implements SoftDeletionInterf
     use SoftDeletionTrait;
 
     use InsertWithIdTrait;
+
+    use GetWhereCountTrait;
 
     function getTotalCount()
     {

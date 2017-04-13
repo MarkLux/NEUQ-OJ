@@ -27,7 +27,8 @@ class UserService implements UserServiceInterface
     private $tokenService;
     private $verifyService;
 
-    public function __construct(UserRepository $userRepository, TokenService $tokenService, VerifyService $verifyService)
+    public function __construct(UserRepository $userRepository, TokenService $tokenService,
+                                VerifyService $verifyService)
     {
         $this->userRepo = $userRepository;
         $this->tokenService = $tokenService;

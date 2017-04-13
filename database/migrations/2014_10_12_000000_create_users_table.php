@@ -25,7 +25,6 @@ class CreateUsersTable extends Migration
             $table->bigInteger('code_length');
             $table->string('signature',512)->nullable();
             $table->tinyInteger('status');
-            $table->tinyInteger('role')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

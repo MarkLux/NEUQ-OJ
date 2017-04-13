@@ -12,6 +12,7 @@ use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\UserIsActivatedException;
 use NEUQOJ\Exceptions\UserLockedException;
 use NEUQOJ\Exceptions\UserNotExistException;
+use NEUQOJ\Facades\Permission;
 use NEUQOJ\Http\Requests;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Services\CaptchaService;
@@ -142,11 +143,20 @@ class UserController extends Controller
 
         $tokenStr = $this->tokenService->makeToken($user->id, $request->ip());
 
+        $role = Permission::getUserRole($user->id);
+
+        if ($role != null) {
+            $role = $role->role_name;
+        }else{
+            $role = "user";
+        }
+
         return response()->json([
             'code' => 0,
             'data' => [
                 'user' => $user,
-                'token' => $tokenStr
+                'token' => $tokenStr,
+                'role' => $role
             ]
         ]);
     }
@@ -155,9 +165,18 @@ class UserController extends Controller
 
     public function getCurrentUserInfo(Request $request)
     {
+        $role = Permission::getUserRole($request->user->id);
+
+        if ($role != null) {
+            $role = $role->role_name;
+        }else{
+            $role = "user";
+        }
+
         return response()->json([
             'code' => 0,
-            'data' => $request->user
+            'data' => $request->user,
+            'role' => $role
         ]);
     }
 
@@ -165,13 +184,22 @@ class UserController extends Controller
 
     public function getUserInfo(Request $request, int $id)
     {
+        $role = Permission::getUserRole($request->user->id);
+
+        if ($role != null) {
+            $role = $role->role_name;
+        }else{
+            $role = "user";
+        }
+
         $user = $this->userService->getUserById($id, ['id', 'email', 'mobile', 'submit', 'solved', 'password', 'name', 'school', 'signature', 'created_at']);
 
         if ($user == null) throw new UserNotExistException();
 
         return response()->json([
             'code' => 0,
-            'data' => $user
+            'data' => $user,
+            'role' => $role
         ]);
     }
 

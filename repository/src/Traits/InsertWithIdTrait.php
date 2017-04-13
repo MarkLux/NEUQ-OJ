@@ -10,7 +10,8 @@ namespace NEUQOJ\Repository\Traits;
 
 use Carbon\Carbon;
 
-trait InsertWithIdTrait{
+trait InsertWithIdTrait
+{
     function insertWithId(array $data)
     {
         if($this->model->timestamps){

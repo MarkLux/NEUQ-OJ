@@ -123,7 +123,10 @@ class ProblemGroupService implements ProblemGroupServiceInterface
     public function updateProblemGroup(int $groupId, array $data): bool
     {
         //计算语言掩码
-        $data['langmask'] = $this->getLangMask($data['langmask']);
+        if (isset($data['langmask'])){
+            $data['langmask'] = $this->getLangMask($data['langmask']);
+        }
+
         return $this->problemGroupRepo->update($data, $groupId) == 1;
     }
 

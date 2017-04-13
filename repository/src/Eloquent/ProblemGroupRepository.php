@@ -10,6 +10,7 @@ namespace NEUQOJ\Repository\Eloquent;
 
 
 use NEUQOJ\Repository\Contracts\SoftDeletionInterface;
+use NEUQOJ\Repository\Traits\GetWhereCountTrait;
 use NEUQOJ\Repository\Traits\InsertWithIdTrait;
 use NEUQOJ\Repository\Traits\SoftDeletionTrait;
 
@@ -21,6 +22,7 @@ class ProblemGroupRepository extends AbstractRepository
     }
 
     use InsertWithIdTrait;
+    use GetWhereCountTrait;
 
 //    use SoftDeletionTrait;
 

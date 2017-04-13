@@ -31,7 +31,7 @@ interface PermissionServiceInterface
 
     // 获取一个用户所有的角色
 
-    function getUseRole(int $userId);
+    function getUserRole(int $userId);
 
     /**
      * 权限

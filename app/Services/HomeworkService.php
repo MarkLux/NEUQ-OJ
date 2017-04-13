@@ -11,7 +11,6 @@ namespace NEUQOJ\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\ProblemGroup\HomeworkNotAvailableException;
@@ -337,6 +336,7 @@ class HomeworkService implements HomeworkServiceInterface
             if ($A['score']!=$B['score']) return $A['score']<$B['score'];
             else return $A['solved']<$B['solved'];
         });
+
         $this->cacheService->setRankCache($cacheKey,$rank,60);
 
         return $rank;

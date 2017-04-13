@@ -157,10 +157,10 @@ class PermissionService implements PermissionServiceInterface
             ->first();
     }
 
-    public function getUseRole(int $userId)
+    public function getUserRole(int $userId)
     {
         return $this->userRoleRelationRepository
-            ->getBy('user_id', $userId);
+            ->getBy('user_id', $userId,['role_name'])->first();
     }
 
     /**

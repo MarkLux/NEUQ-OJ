@@ -50,6 +50,27 @@ class ContestController extends Controller
         ]);
     }
 
+    public function getMyContests(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'page' => 'integer|min:1',
+            'size' => 'integer|min:1|max:100'
+        ]);
+
+        if ($validator->fails())
+            throw new FormValidatorException($validator->getMessageBag()->all());
+
+        $page = $request->input('page', 1);
+        $size = $request->input('size', 20);
+
+        $data = $this->contestService->getContestsByCreatorId($request->user->id,$page,$size);
+
+        return response()->json([
+            'code' => 0,
+            'data' => $data
+        ]);
+    }
+
     public function getContestIndex(Request $request, int $contestId)
     {
         if (!$this->contestService->isContestExist($contestId))

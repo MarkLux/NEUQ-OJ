@@ -12,6 +12,7 @@ Route::group(['middleware' => 'token'],function(){
     Route::get('/problem/{id}/rundata','ProblemController@getRunData');
     Route::post('/problem/{id}/delete','ProblemController@deleteProblem');
     Route::post('/problem/{id}/update','ProblemController@updateProblem');
+    Route::get('/problems/mine','ProblemController@getMyProblems');
 });
 
 Route::group(['middleware' => 'user'],function(){

@@ -33,19 +33,19 @@ class NewsController extends Controller
 
     public function getAllNews(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'page' => 'integer|min:1',
             'size' => 'integer|min:1'
         ]);
 
-        if ($validator->fails()){
+        if ($validator->fails()) {
             throw new FormValidatorException($validator->getMessageBag()->all());
         }
 
-        $page = $request->input('page',1);
-        $size = $request->input('size',20);
+        $page = $request->input('page', 1);
+        $size = $request->input('size', 20);
 
-        $data = $this->newsService->getAllNews($page,$size);
+        $data = $this->newsService->getAllNews($page, $size);
 
         return response()->json([
             'code' => 0,
@@ -54,28 +54,36 @@ class NewsController extends Controller
     }
 
     /**
-     * 用于首页获取最新的几条通知，最大20条
+     * 用于首页通知，最大20条
      */
 
-    public function getLatestNews(Request $request)
+    public function getIndexNews(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'size' => 'integer|min:1|max:20'
         ]);
 
-        if ($validator->fails()){
+        if ($validator->fails()) {
             throw new FormValidatorException($validator->getMessageBag()->all());
         }
 
         // 默认3条
 
-        $size = $request->input('size',3);
+        $size = $request->input('size', 3);
 
         $news = $this->newsService->getLatestNews($size);
 
+
+        // 获取固定的公告内容
+
+        $fixedNews = $this->newsService->getFixedNews();
+
         return response()->json([
             'code' => 0,
-            'data' => $news
+            'data' => [
+                'latest_news' => $news,
+                'fixed_news' => $fixedNews
+            ]
         ]);
     }
 
@@ -93,17 +101,17 @@ class NewsController extends Controller
     {
         // 重要程度：1表示普通，2表示重要，3表示紧急
 
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:100',
             'content' => 'required',
             'importance' => 'required|integer|min:1|max:3',
         ]);
 
-        if ($validator->fails()){
+        if ($validator->fails()) {
             throw new FormValidatorException($validator->getMessageBag()->all());
         }
 
-        if (!Permission::checkPermission($request->user->id,['add-news'])) {
+        if (!Permission::checkPermission($request->user->id, ['add-news'])) {
             throw new NoPermissionException();
         }
 
@@ -115,7 +123,7 @@ class NewsController extends Controller
             'author_name' => $request->user->name
         ];
 
-        if(!$this->newsService->addNews($news)){
+        if (!$this->newsService->addNews($news)) {
             throw new InnerError("Fail to add News");
         }
 
@@ -124,19 +132,19 @@ class NewsController extends Controller
         ]);
     }
 
-    public function updateNews(Request $request,int $newsId)
+    public function updateNews(Request $request, int $newsId)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:100',
             'content' => 'required',
             'importance' => 'required|integer|min:1|max:3',
         ]);
 
-        if ($validator->fails()){
+        if ($validator->fails()) {
             throw new FormValidatorException($validator->getMessageBag()->all());
         }
 
-        if (!Permission::checkPermission($request->user->id,['update-news'])) {
+        if (!Permission::checkPermission($request->user->id, ['update-news'])) {
             throw new NoPermissionException();
         }
 
@@ -146,7 +154,7 @@ class NewsController extends Controller
             'importance' => $request->input('importance')
         ];
 
-        if (!$this->newsService->updateNews($newsId,$newNews)) {
+        if (!$this->newsService->updateNews($newsId, $newNews)) {
             throw new InnerError("Fail to update news");
         }
 
@@ -155,9 +163,9 @@ class NewsController extends Controller
         ]);
     }
 
-    public function deleteNews(Request $request,int $newsId)
+    public function deleteNews(Request $request, int $newsId)
     {
-        if (!Permission::checkPermission($request->user->id,['delete-news'])) {
+        if (!Permission::checkPermission($request->user->id, ['delete-news'])) {
             throw new NoPermissionException();
         }
 

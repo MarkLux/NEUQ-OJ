@@ -10,11 +10,10 @@ use NEUQOJ\Services\PrivilegeService;
 
 class PrivilegeController extends Controller
 {
-    public function __construct()
+    private $privilegeService;
+
+    public function __construct(PrivilegeService $privilegeService)
     {
-
+        $this->privilegeService = $privilegeService;
     }
-
-
-
 }
