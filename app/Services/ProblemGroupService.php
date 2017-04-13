@@ -28,13 +28,13 @@ class ProblemGroupService implements ProblemGroupServiceInterface
     private $admissionRepo;
     private $solutionRepo;
     private $sourceRepo;
-    private $deletionService;
+//    private $deletionService;
     public $language_ext = ["c", "cc", "pas", "java", "rb", "sh", "py", "php", "pl", "cs", "m", "bas", "scm", "c", "cc", "lua", "js"];
 
 
     public function __construct(
         ProblemGroupRepository $problemGroupRepository, ProblemGroupAdmissionRepository $admissionRepository,
-        DeletionService $deletionService, ProblemGroupRelationRepository $problemGroupRelationRepository,
+        ProblemGroupRelationRepository $problemGroupRelationRepository,
         SolutionRepository $solutionRepository, ProblemRepository $problemRepository, SourceCodeRepository $sourceCodeRepository
     )
     {
@@ -42,7 +42,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         $this->problemGroupRepo = $problemGroupRepository;
         $this->solutionRepo = $solutionRepository;
         $this->sourceRepo = $sourceCodeRepository;
-        $this->deletionService = $deletionService;
+//        $this->deletionService = $deletionService;
         $this->problemGroupRelationRepo = $problemGroupRelationRepository;
         $this->problemRepo = $problemRepository;
     }
