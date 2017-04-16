@@ -56,8 +56,8 @@ class UserController extends Controller
             'email' => 'required|email|max:100',
             'mobile' => 'required|max:45',
             'password' => 'required|confirmed|min:6|max:20',
-            'school' => 'string|max:100',
-            'captcha' => 'required|captcha'
+            'school' => 'string|max:100'
+//            'captcha' => 'required|captcha'
         ]);
 
         if ($validator->fails()) {
@@ -69,9 +69,9 @@ class UserController extends Controller
 
         //正式上线时，激活这里的邮件验证服务
 
-//        $user = $this->userService->getUserById($userId, ['id', 'name', 'email']);
+        $user = $this->userService->getUserById($userId, ['id', 'name', 'email']);
 
-//        $this->verifyService->sendVerifyEmail($user);
+        $this->verifyService->sendVerifyEmail($user);
 
         return response()->json([
             'code' => 0,
@@ -184,7 +184,7 @@ class UserController extends Controller
 
     public function getUserInfo(Request $request, int $id)
     {
-        $role = Permission::getUserRole($request->user->id);
+        $role = Permission::getUserRole($id);
 
         if ($role != null) {
             $role = $role->role_name;

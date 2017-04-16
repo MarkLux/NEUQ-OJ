@@ -47,8 +47,9 @@ class ProblemRepository extends AbstractRepository
             ->take($size)
             ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.accepted',
                 'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
-                'problem_tag_relations.tag_title')
+                'problem_tags.name')
             ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+            ->leftJoin('problem_tags','problem_tag_relations.tag_id','=','problem_tags.id')
             ->orderBy('problems.id')
             ->get();
     }
@@ -72,13 +73,14 @@ class ProblemRepository extends AbstractRepository
     {
         //所有题目都显示
         return $this->model
-            ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.solved',
-                'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
-                'problem_tag_relations.tag_title')
-            ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
-            ->orderBy('problems.id')
             ->skip($size * --$page)
             ->take($size)
+            ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.accepted',
+                'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
+                'problem_tags.name')
+            ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+            ->leftJoin('problem_tags','problem_tag_relations.tag_id','=','problem_tags.id')
+            ->orderBy('problems.id')
             ->get();
     }
 
@@ -86,8 +88,9 @@ class ProblemRepository extends AbstractRepository
     {
         return $this->model
             ->where($param, $value)
-            ->select('problems.*','problem_tag_relations.tag_id','problem_tag_relations.tag_title')
+            ->select('problems.*','problem_tag_relations.tag_id','problem_tags.name')
             ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+            ->leftJoin('problem_tags','problem_tag_relations.tag_id','=','problem_tags.id')
             ->orderBy('problems.id')
             ->get();
     }
@@ -122,11 +125,11 @@ class ProblemRepository extends AbstractRepository
         $problems = $this->model
             ->where('is_public',1)
             ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+            ->leftJoin('problem_tags','problem_tag_relations.tag_id','=','problem_tags.id')
             ->select('problems.id')
             ->where('problems.title','like',$pattern)
             ->orWhere('problems.source','like',$pattern)
-            ->orWhere('problems.creator_name','like',$pattern)
-            ->orWhere('problem_tag_relations.tag_title','like',$pattern)
+            ->orWhere('problem_tags.name','like',$pattern)
             ->orWhere('problems.id','like',$pattern)
             ->get();
 
@@ -156,14 +159,14 @@ class ProblemRepository extends AbstractRepository
             return $this->model
                 ->where('is_public',1)
                 ->leftJoin('problem_tag_relations','problems.id','=','problem_tag_relations.problem_id')
+                ->leftJoin('problem_tags','problem_tag_relations.tag_id','=','problem_tags.id')
                 ->where('problems.title','like',$pattern)
                 ->orWhere('problems.source','like',$pattern)
-                ->orWhere('problems.creator_name','like',$pattern)
                 ->orWhere('problems.id','like',$pattern)
-                ->orWhere('problem_tag_relations.tag_title','like',$pattern)
+                ->orWhere('problem_tags.name','like',$pattern)
                 ->select('problems.id','problems.title','problems.difficulty','problems.source','problems.submit','problems.accepted',
                     'problems.is_public','problems.created_at','problems.updated_at','problem_tag_relations.tag_id',
-                    'problem_tag_relations.tag_title')
+                    'problem_tags.name')
                 ->orderBy('problems.id')
                 ->skip($size * --$page)
                 ->take($size)

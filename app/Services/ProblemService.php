@@ -9,7 +9,6 @@
 namespace NEUQOJ\Services;
 
 
-use League\CommonMark\CommonMarkConverter;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Facades\Permission;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
@@ -38,6 +37,11 @@ class ProblemService implements ProblemServiceInterface
     private function getPath(int $problemId):string
     {
         return '/home/judge/data/'.$problemId.'/';
+    }
+
+    private function adjustRawProblem($problems)
+    {
+        // todo 解耦
     }
 
     public function __construct(
@@ -119,7 +123,12 @@ class ProblemService implements ProblemServiceInterface
 
     public function getProblems(int $userId = -1,int $page,int $size)
     {
-        $problems = $this->problemRepo->getProblems($page,$size)->toArray();
+        if (Permission::checkPermission($userId,['access-any-problem'])) {
+            $problems = $this->problemRepo->getProblemsByAdmin($page,$size)->toArray();
+        }
+        else
+            $problems = $this->problemRepo->getProblems($page,$size)->toArray();
+
 
         //重新组织数组形式
         $data = [];
@@ -130,7 +139,7 @@ class ProblemService implements ProblemServiceInterface
 
         $tags = [];
         if($problems[0]['tag_id'] != null)
-            $tags[] = ['tag_title' => $problems[0]['tag_title'] , 'tag_id' => $problems[0]['tag_id']];
+            $tags[] = ['tag_title' => $problems[0]['name'] , 'tag_id' => $problems[0]['tag_id']];
 
         if(count($problems) > 1)
         {
@@ -139,7 +148,7 @@ class ProblemService implements ProblemServiceInterface
                 if($singleProblem['id'] == $problems[$i]['id'])
                 {
                     if($problems[$i]['tag_id'] != null)
-                        $tags[] = ['tag_title' => $problems[$i]['tag_title'] , 'tag_id' => $problems[$i]['tag_id']];
+                        $tags[] = ['tag_title' => $problems[$i]['name'] , 'tag_id' => $problems[$i]['tag_id']];
                 }
                 else
                 {
@@ -150,7 +159,7 @@ class ProblemService implements ProblemServiceInterface
                     $singleProblem = $problems[$i];
                     $tags = [];
                     if($problems[$i]['tag_id'] != null)
-                        $tags[] = ['tag_title' => $problems[$i]['tag_title'] , 'tag_id' => $problems[$i]['tag_id']];
+                        $tags[] = ['tag_title' => $problems[$i]['name'] , 'tag_id' => $problems[$i]['tag_id']];
                 }
 
                 $problemIds[] = $problems[$i]['id'];
@@ -260,7 +269,7 @@ class ProblemService implements ProblemServiceInterface
             foreach ($problems as $problem)
                 $data['tags'][] = [
                     'tag_id' => $problem['tag_id'],
-                    'tag_title' => $problem['tag_title']
+                    'tag_title' => $problem['name']
                 ];
 
         }
@@ -269,13 +278,11 @@ class ProblemService implements ProblemServiceInterface
             if($data['tag_id']!=null)
                 $data['tags'][] = [
                     'tag_id' => $data['tag_id'],
-                    'tag_title' => $data['tag_title']
+                    'tag_title' => $data['name']
                 ];
         }
         unset($data['tag_id']);
         unset($data['tag_title']);
-
-
 
         return $data;
     }
@@ -452,7 +459,7 @@ class ProblemService implements ProblemServiceInterface
         $singleProblem = $problems[0];
         $tags = [];
         if($problems[0]['tag_id'] != null)
-            $tags[] = ['tag_title' => $problems[0]['tag_title'] , 'tag_id' => $problems[0]['tag_id']];
+            $tags[] = ['tag_title' => $problems[0]['name'] , 'tag_id' => $problems[0]['tag_id']];
 
         if(count($problems) > 1)
         {
@@ -461,7 +468,7 @@ class ProblemService implements ProblemServiceInterface
                 if($singleProblem['id'] == $problems[$i]['id'])
                 {
                     if($problems[$i]['tag_id'] != null)
-                        $tags[] = ['tag_title' => $problems[$i]['tag_title'] , 'tag_id' => $problems[$i]['tag_id']];
+                        $tags[] = ['tag_title' => $problems[$i]['name'] , 'tag_id' => $problems[$i]['tag_id']];
                 }
                 else
                 {
@@ -472,7 +479,7 @@ class ProblemService implements ProblemServiceInterface
                     $singleProblem = $problems[$i];
                     $tags = [];
                     if($problems[$i]['tag_id'] != null)
-                        $tags[] = ['tag_title' => $problems[$i]['tag_title'] , 'tag_id' => $problems[$i]['tag_id']];
+                        $tags[] = ['tag_title' => $problems[$i]['name'] , 'tag_id' => $problems[$i]['tag_id']];
                 }
             }
         }
