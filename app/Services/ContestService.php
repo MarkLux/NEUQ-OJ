@@ -132,7 +132,7 @@ class ContestService implements ContestServiceInterface
     {
         //用于获取竞赛的所有数据，用于更新
         $contestInfo = $this->problemGroupService->getProblemGroup(
-            $groupId, ['id','title', 'type', 'description', 'private', 'langmask','start_time','end_time']
+            $groupId, ['id', 'title', 'type', 'description', 'private', 'langmask', 'start_time', 'end_time']
         );
 
         if ($contestInfo == null || $contestInfo->type != 1) throw new ContestNotExistException();
@@ -144,7 +144,7 @@ class ContestService implements ContestServiceInterface
 
         $lang_count = count($this->problemGroupService->language_ext);
 
-        $langmask=(~((int)$contestInfo->langmask))&((1<<($lang_count))-1);
+        $langmask = (~((int)$contestInfo->langmask)) & ((1 << ($lang_count)) - 1);
 
         for ($i = 0; $i < $lang_count; $i++) {
             if ($langmask & (1 << $i))
@@ -189,12 +189,12 @@ class ContestService implements ContestServiceInterface
         return ['contests' => $groups, 'total_count' => $totalCount];
     }
 
-    public function getContestsByCreatorId(int $userId,int $page,int $size,array $columns = ['*'])
+    public function getContestsByCreatorId(int $userId, int $page, int $size, array $columns = ['*'])
     {
-        $count = $this->problemGroupRepo->getWhereCount(['creator_id' => $userId,'type' => 1]);
+        $count = $this->problemGroupRepo->getWhereCount(['creator_id' => $userId, 'type' => 1]);
         $contests = null;
         if ($count > 0) {
-            $contests = $this->problemGroupRepo->paginate($page,$size,['creator_id' => $userId,'type' => 1],$columns);
+            $contests = $this->problemGroupRepo->paginate($page, $size, ['creator_id' => $userId, 'type' => 1], $columns);
         }
         return [
             'total_count' => $count,
@@ -305,26 +305,41 @@ class ContestService implements ContestServiceInterface
         return $this->problemGroupService->resetGroupAdmissions($groupId, $users);
     }
 
-    public function getRankList(int $groupId)
+    public function getRankList(int $groupId,bool $byScore = false)
     {
         $group = $this->problemGroupService->getProblemGroup($groupId, ['title', 'type', 'start_time', 'end_time', 'status']);
 
-        if ($group == null || $group->type != 1) return false;
+        if ($group == null || $group->type != 1)
+            return false;
 
         //先检查是否存在缓存
 
-        $cacheKey = 'contest_' . $groupId;
+        $cacheKey = 'contest_'.$groupId;
 
         if ($this->cacheService->isCacheExist($cacheKey)) {
             $ranks = $this->cacheService->getRankCache($cacheKey);
             if (!empty($ranks)) {
-                usort($ranks, ['NEUQOJ\Common\Utils', 's_cmp_obj']);
+                // 不能理解的是，为什么有序存入redis的数组取出来又变成无序的了
+                if ($byScore) {
+                    usort($ranks,['NEUQOJ\Common\Utils','scoreCmpObj']);
+                }else {
+                    usort($ranks, ['NEUQOJ\Common\Utils', 'rankCmpObj']);
+                }
                 return $ranks;
             }
         }
 
         //正常mysql查询方法：
         $solutions = $this->solutionRepo->getRankList($groupId)->toArray();
+
+        if ($byScore) {
+            $problemRelations = $this->problemGroupRelationRepo->getBy('problem_group_id',$groupId,['problem_num','problem_score'])->toArray();
+            $problemScores = [];
+            foreach ($problemRelations as $problemRelation)
+            {
+                $problemScores[$problemRelation['problem_num']] = $problemRelation['problem_score'];
+            }
+        }
 
         $rank = [];//最终保存总数据的数组
         $userCnt = -1;//计算用户总数
@@ -344,6 +359,10 @@ class ContestService implements ContestServiceInterface
                     'problem_ac_sec' => []
                 ];
 
+                if ($byScore) {
+                    $rank[$userCnt]['score'] = 0;
+                }
+
                 //判断第一个数据
 
                 if ($solution['result'] == 4) {
@@ -351,6 +370,10 @@ class ContestService implements ContestServiceInterface
                     $rank[$userCnt]['problem_ac_sec'][$solution['problem_num']] = $timeUsed;
                     $rank[$userCnt]['time'] += $timeUsed;
                     $rank[$userCnt]['solved']++;
+                    if ($byScore) {
+                        $rank[$userCnt]['score'] += $problemScores[$solution['problem_num']];
+                    }
+
                 } else if ($solution['result'] > 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
                     $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
 
@@ -388,7 +411,12 @@ class ContestService implements ContestServiceInterface
             }
         }
 
-        usort($rank, ['NEUQOJ\Common\Utils', 's_cmp_array']);
+        if ($byScore) {
+            usort($rank,['NEUQOJ\Common\Utils','scoreCmpArr']);
+        }else{
+            usort($rank, ['NEUQOJ\Common\Utils', 'rankCmpArr']);
+        }
+
         $this->cacheService->setRankCache($cacheKey, $rank, 60);
 
         return $rank;
@@ -474,10 +502,10 @@ class ContestService implements ContestServiceInterface
         //如果是创建者 直接可以获得权限，管理员也应该一样
         if ($userId == $group->creator_id) return true;
 
-        if (Permission::checkPermission($userId,['access-any-contest']))
+        if (Permission::checkPermission($userId, ['access-any-contest']))
             return true;
 
-            //判断时间
+        //判断时间
         $currentTime = time();
 
         if ($group == null || $group->type != 1)//判断题目组类型

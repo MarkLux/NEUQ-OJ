@@ -36,7 +36,7 @@ interface ContestServiceInterface
 
     function resetContestPermission(int $groupId,array $users):bool;
 
-    function getRankList(int $groupId);
+    function getRankList(int $groupId,bool $byScore = false);
 
     function searchContest(string $keyword,int $page,int $size);
 

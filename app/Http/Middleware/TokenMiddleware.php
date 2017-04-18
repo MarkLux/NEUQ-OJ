@@ -52,7 +52,7 @@ class TokenMiddleware
 
         if($user->status == -1)
             throw new UserLockedException();
-        elseif($user->status == 0)
+        else if($user->status == 0)
             throw new UserNotActivatedException();
 
         $request->user = $user;

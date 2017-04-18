@@ -35,8 +35,8 @@ class VerifyService implements VerifyServiceInterface
 
     public function sendVerifyEmail(User $user): bool
     {
-        //先生成验证码并存在数据库中，感觉没必要加密储存
-        $code = strtoupper(substr(MD5(rand(0,9999999)),0,6));
+        //先生成验证码并存在数据库中,其实相当于临时的token
+        $code = md5(uniqid());
 
         $now = Utils::createTimeStamp();
 
@@ -47,7 +47,7 @@ class VerifyService implements VerifyServiceInterface
             'code' => $code,
             'created_at' => $now,
             'updated_at' => $now,
-            'expires_at' => $now+3600000
+            'expires_at' => $now+10800000
         ];
 
         //先检测verifyCode是否已经存在
@@ -65,46 +65,71 @@ class VerifyService implements VerifyServiceInterface
                 throw new OperationTooQuickException();
 
             if($this->verifyCodeRepo->updateWhere(['user_id' => $user->id,'type' => 1,'via' => 1],
-                ['code' => $code,'updated_at'=>$now,'expires_at'=>$now+3600000])!=1)
+                ['code' => $code,'updated_at'=>$now,'expires_at'=>$now+10800000])!=1)
                 return false;
         }
 
         Mail::send('emails.register',['verifyCode' => $code,'name' => $user->name],function ($mail)use($user){
             $mail->from('stump2011@163.com','NEUQ-OJ');
-            $mail->to($user->email,$user->name)->subject('注册验证码');
+            $mail->to($user->email,$user->name)->subject('注册验证邮件');
         });
 
         return true;
     }
 
-    public function activeUserByEmailCode(int $userId, string $verifyCode): bool
+    public function resendVerifyEmail(User $user): bool
     {
-        $user = $this->userRepo->get($userId,['status'])->first();
+        $preVerifyCode = $this->verifyCodeRepo->getBy('user_id',$user->id)->first();
 
-        if($user!=null&&$user->status !=0)
-            throw new UserIsActivatedException();
-
-        $realCode = $this->verifyCodeRepo->getByMult(['user_id'=>$userId,'type'=>1,'via'=>1])->first();
-
-        if($realCode == null)
+        if ($preVerifyCode == null) {
             throw new UserNotExistException();
+        }
+
+        $now = Utils::createTimeStamp();
+
+        if( ($now - $preVerifyCode->updated_at) < 60000)
+            throw new OperationTooQuickException();
+
+        $newCode = md5(uniqid());
+
+        if( $this->verifyCodeRepo->updateWhere(['user_id' => $user->id],
+            ['code' => $newCode,'updated_at'=>$now,'expires_at'=>$now+10800000]) != 1) {
+            return false;
+        }
+
+        Mail::send('emails.register',['verifyCode' => $newCode,'name' => $user->name],function ($mail)use($user){
+            $mail->from('stump2011@163.com','NEUQ-OJ');
+            $mail->to($user->email,$user->name)->subject('注册验证邮件');
+        });
+
+        return true;
+    }
+
+    public function activeUserByEmailCode(string $verifyCode): int
+    {
+        $code = $this->verifyCodeRepo->getBy('code',$verifyCode)->first();
+
+        if ($code == null) {
+            throw new UserNotExistException();
+        }
 
         $now = Utils::createTimeStamp();
 
         //过期
-        if($realCode->expires_at < $now)
+        if($code->expires_at < $now)
             throw new VerifyCodeExpiresException();
 
-        if($realCode->code != $verifyCode)
-            throw new VerifyCodeErrorException();
+        $userId = $code->user_id;
+        $flag = -1;
 
         //验证通过，激活用户,删除验证码条目
-        DB::transaction(function()use($userId){
+        DB::transaction(function()use($userId,&$flag){
             $this->userRepo->updateWhere(['id' => $userId],['status' => 1]);
             $this->verifyCodeRepo->deleteWhere(['user_id'=>$userId,'type'=>1,'via'=>1]);
+            $flag = $userId;
         });
 
-        return true;
+        return $flag;
     }
 
 

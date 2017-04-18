@@ -251,10 +251,7 @@ class HomeworkService implements HomeworkServiceInterface
             $ranks = $this->cacheService->getRankCache($cacheKey);
             if(!empty($ranks))
             {
-                usort($ranks,function($A,$B){
-                    if ($A->score!=$B->score) return $A->score<$B->score;
-                    else return $A->solved < $B->solved;
-                });
+                usort($ranks,['NEUQOJ\Common\Utils','scoreCmpObj']);
                 return $ranks;
             }
         }
@@ -321,9 +318,9 @@ class HomeworkService implements HomeworkServiceInterface
                     }
                     //如果已经ac过这个题目，不再考虑
                 }
-                elseif ($solution['result'] > 4)//错误
+                else if ($solution['result'] > 4)//错误
                 {
-                    if(isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
+                    if (isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']]++;
                     else
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
@@ -332,10 +329,7 @@ class HomeworkService implements HomeworkServiceInterface
             }
         }
 
-        usort($rank,function($A,$B){
-            if ($A['score']!=$B['score']) return $A['score']<$B['score'];
-            else return $A['solved']<$B['solved'];
-        });
+        usort($rank,['NEUQOJ\Common\Utils','scoreCmpArr']);
 
         $this->cacheService->setRankCache($cacheKey,$rank,60);
 

@@ -1,9 +1,7 @@
 <h1>{{$name}}，您好！欢迎您注册使用NEUQ-OJ服务</h1>
 
-<p>下面是您的注册验证码，请将它复制粘贴到验证框中去</p>
+<p>请点击下面的链接激活您的账号，3小时内有效</p>
 
-<h2>{{$verifyCode}}</h2>
-
-<p>验证码将于一个小时之后过期</p>
+<a href="http://oj.outxu.cn/register/active?code={{$verifyCode}}">点我激活</a>
 
 <b>如果您不知道这是什么东西，请删除此邮件</b>

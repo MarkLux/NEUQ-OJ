@@ -56,7 +56,7 @@ class UserController extends Controller
             'email' => 'required|email|max:100',
             'mobile' => 'required|max:45',
             'password' => 'required|confirmed|min:6|max:20',
-            'school' => 'string|max:100'
+            'school' => 'string|max:100',
 //            'captcha' => 'required|captcha'
         ]);
 
@@ -84,17 +84,18 @@ class UserController extends Controller
     public function active(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'verify_code' => 'required',
-            'user_id' => 'required'
+            'verify_code' => 'required'
         ]);
 
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        if (!$this->verifyService->activeUserByEmailCode($request->user_id, $request->verify_code))
+        $userId = $this->verifyService->activeUserByEmailCode($request->verify_code);
+
+        if ($userId == -1)
             throw new InnerError("Fail to active User: " . $request->user_id);
 
-        $data = $this->userService->loginUser($request->user_id, $request->ip());
+        $data = $this->userService->loginUser($userId, $request->ip());
 
         return response()->json([
             'code' => 0,
@@ -107,19 +108,22 @@ class UserController extends Controller
         //重新发送邮件，应该检测上次发送邮件的时长，防止有人恶意重复访问此接口损耗服务器性能
 
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required'
+            'email' => 'required'
         ]);
 
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $user = $this->userService->getUserById($request->user_id, ['id', 'name', 'status', 'email']);
+        $user = $this->userService->getUserBy('email',$request->email, ['id', 'name', 'status', 'email']);
 
-        if ($user == null) throw new UserNotExistException();
-        elseif ($user->status == -1) throw new UserLockedException();
-        elseif ($user->status == 1) throw new UserIsActivatedException();
+        if ($user == null)
+            throw new UserNotExistException();
+        else if ($user->status == -1)
+            throw new UserLockedException();
+        else if ($user->status == 1)
+            throw new UserIsActivatedException();
 
-        if (!$this->verifyService->sendVerifyEmail($user))
+        if (!$this->verifyService->resendVerifyEmail($user))
             throw new InnerError('Fail to Send Email');
 
         return response()->json([
