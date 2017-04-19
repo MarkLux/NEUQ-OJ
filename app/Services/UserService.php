@@ -209,24 +209,17 @@ class UserService implements UserServiceInterface
         return $this->userRepo->update(['password' => $newPass], $userId) == 1;
     }
 
-    public function resetPasswordByVerifyCode(int $userId, string $verifyCode, string $newPass): bool
+    public function resetPasswordByVerifyCode(string $verifyCode, string $newPass): bool
     {
-        if (!$this->verifyService->checkUserByEmailCode($userId, $verifyCode))
+        $userId = $this->verifyService->checkUserByVerifyCode($verifyCode);
+
+        if ($userId == -1)
             return false;
 
         if ($this->userRepo->update(['password' => Utils::pwGen($newPass)], $userId) == 1)
             return true;
-        else return false;
-    }
-
-    public function sendForgotPasswordEmail(int $userId): bool
-    {
-        $user = $this->userRepo->get($userId, ['id', 'email', 'name', 'status'])->first();
-
-        if ($user == null) throw new UserNotExistException();
-        if ($user->status == -1) throw new UserLockedException();
-
-        return $this->verifyService->sendCheckEmail($user);
+        else
+            return false;
     }
 
     //非普通登录

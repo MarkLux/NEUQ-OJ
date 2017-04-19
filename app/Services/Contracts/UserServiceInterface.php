@@ -47,9 +47,7 @@ interface UserServiceInterface
 
     function resetPasswordByOldPass(int $userId,string $oldPass,string $newPass):bool;
 
-    function sendForgotPasswordEmail(int $userId):bool;
-
-    function resetPasswordByVerifyCode(int $userId,string $verifyCode,string $newPass):bool;
+    function resetPasswordByVerifyCode(string $verifyCode,string $newPass):bool;
 
     function loginUser(int $userId,string $ip);
 

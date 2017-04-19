@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Mail;
 use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\UserGroup\OperationTooQuickException;
 use NEUQOJ\Exceptions\UserIsActivatedException;
+use NEUQOJ\Exceptions\UserLockedException;
+use NEUQOJ\Exceptions\UserNotActivatedException;
 use NEUQOJ\Exceptions\UserNotExistException;
 use NEUQOJ\Exceptions\VerifyCodeErrorException;
 use NEUQOJ\Exceptions\VerifyCodeExpiresException;
@@ -133,69 +135,74 @@ class VerifyService implements VerifyServiceInterface
     }
 
 
-    //检查身份用的邮件，用于找回密码时使用。
-    public function sendCheckEmail(User $user): bool
+    public function sendResetPasswordEmail(string $email):bool
     {
-        $code = strtoupper(substr(MD5(rand(0,9999999)),0,6));
+        $user = $this->userRepo->getBy('email',$email,['id','email','name','status'])->first();
+
+        if ($user == null) {
+            throw new UserNotExistException();
+        }
+
+        if ($user->status == 0) {
+            throw new UserNotActivatedException();
+        }else if ($user->status == -1) {
+            throw new UserLockedException();
+        }
+
+        $preCode = $this->verifyCodeRepo->getByMult(['user_id' => $user->id,'type' => 2,'via' => 1])->first();
 
         $now = Utils::createTimeStamp();
 
-        $verifyCode = [
-            'user_id' => $user->id,
-            'type' => 2,//1是验证类邮件
-            'via' => 1,//发送方式：邮箱
-            'code' => $code,
-            'created_at' => $now,
-            'updated_at' => $now,
-            'expires_at' => $now+3600000
-        ];
+        $code = md5(uniqid());
 
-        //先检测verifyCode是否已经存在
-        $preVerifyCode = $this->verifyCodeRepo->getByMult(['user_id' => $user->id,'type' => 2,'via' => 1])->first();
+        if ($preCode == null) {
+            // 生成新的
+            $verifyCode = [
+                'user_id' => $user->id,
+                'type' => 2, // 2是重置密码类
+                'via' => 1, // 发送方式：邮箱
+                'code' => $code,
+                'created_at' => $now,
+                'updated_at' => $now,
+                'expires_at' => $now + 10800000
+            ];
 
-        if($preVerifyCode == null)
-        {
-            if($this->verifyCodeRepo->insert($verifyCode)!=1) return false;
-        }
-        else
-        {
-            //判断发送间隔是否太短(60s)
-            if($now - $preVerifyCode->updated_at < 60000)
+            if ($this->verifyCodeRepo->insert($verifyCode) != 1)
+                return false;
+        }else{
+            if ($now - $preCode->updated_at < 60000)
                 throw new OperationTooQuickException();
-
-            if($this->verifyCodeRepo->updateWhere(['user_id' => $user->id,'type' => 2,'via' => 1],
-                    ['code' => $code,'updated_at'=>$now,'expires_at'=>$now+3600000])!=1)
+            if ($this->verifyCodeRepo->updateWhere(['user_id' => $user->id,'type' => 2,'via' => 1],
+                    ['code' => $code,'updated_at' => $now,'expires_at' => $now + 1080000]) != 1)
                 return false;
         }
 
-        Mail::send('emails.check',['verifyCode' => $code,'name' => $user->name],function ($mail)use($user){
+        Mail::send('emails.reset-password',['verifyCode' => $code,'name' => $user->name],function ($mail)use($user){
             $mail->from('stump2011@163.com','NEUQ-OJ');
-            $mail->to($user->email,$user->name)->subject('身份检查验证码');
+            $mail->to($user->email,$user->name)->subject('重置密码链接');
         });
 
         return true;
     }
 
-    public function checkUserByEmailCode(int $userId, string $verifyCode): bool
+    public function checkUserByVerifyCode(string $verifyCode):int
     {
-        $realCode = $this->verifyCodeRepo->getByMult(['user_id'=>$userId,'type'=>2,'via'=>1])->first();
+        $code = $this->verifyCodeRepo->getBy('code',$verifyCode)->first();
 
-        if($realCode == null)
+        if ($code == null)
             throw new UserNotExistException();
+        if ($code->via!=1 || $code->type!= 2)
+            return -1;
 
         $now = Utils::createTimeStamp();
 
-        //过期
-        if($realCode->expires_at < $now)
+        if ($code->expires_at < $now)
             throw new VerifyCodeExpiresException();
 
-        if($realCode->code != $verifyCode)
-            throw new VerifyCodeErrorException();
-
         //验证通过，删除验证码条目
-        if($this->verifyCodeRepo->deleteWhere(['user_id'=>$userId,'type'=>2,'via'=>1])!=1)
-            return false;
+        if($this->verifyCodeRepo->deleteWhere(['user_id'=>$code->user_id,'type'=>2,'via'=>1])!=1)
+            return -1;
 
-        return true;
+        return $code->user_id;
     }
 }

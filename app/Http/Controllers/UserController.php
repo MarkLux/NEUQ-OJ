@@ -268,17 +268,13 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email'
+//            'captcha' => 'required|captcha'
         ]);
 
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $user = $this->userService->getUserBy('email', $request->email, ['id', 'name', 'email', 'status']);
-
-        if ($user == null) throw new UserNotExistException();
-        if ($user->status == -1) throw new UserLockedException();
-
-        if (!$this->verifyService->sendCheckEmail($user))
+        if (!$this->verifyService->sendResetPasswordEmail($request->email))
             throw new InnerError("Fail to send check email");
 
         return response()->json([
@@ -289,19 +285,15 @@ class UserController extends Controller
     public function resetPasswordByVerifyCode(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
             'new_password' => 'required|string|min:6|max:20|confirmed',
-            'verify_code' => 'required|string|min:6|max:6'
+            'verify_code' => 'required|string'
         ]);
 
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $user = $this->userService->getUserBy('email', $request->email, ['id', 'name', 'status']);
-        if ($user == null) throw new UserNotExistException();
-        if ($user->status == -1) throw new UserLockedException();
 
-        if (!$this->userService->resetPasswordByVerifyCode($user->id, $request->verify_code, $request->new_password))
+        if (!$this->userService->resetPasswordByVerifyCode($request->verify_code, $request->new_password))
             throw new InnerError('Reset Failed!');
 
         return response()->json([
