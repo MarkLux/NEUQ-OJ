@@ -18,4 +18,8 @@ Route::group(['middleware' => 'token'], function () {
     Route::post('/news/create','NewsController@addNews');
     Route::post('/news/{id}/update','NewsController@updateNews');
     Route::get('/news/{id}/delete','NewsController@deleteNews');
+
+
 });
+
+Route::post('/problems/import','AdminController@importProblem');

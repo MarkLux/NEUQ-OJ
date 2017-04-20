@@ -15,7 +15,7 @@ Route::post('/user/login','UserController@login');
 
 Route::get('/user/active','UserController@active');
 
-Route::post('/user/forgot-password','UserController@sendForgotPasswordEmail');
+Route::get('/user/forgot-password','UserController@sendForgotPasswordEmail');
 
 Route::post('/user/reset-password/verify','UserController@resetPasswordByVerifyCode');
 

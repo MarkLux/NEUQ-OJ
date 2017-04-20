@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Facades\Permission;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
@@ -36,7 +37,7 @@ class ProblemService implements ProblemServiceInterface
 
     private function getPath(int $problemId):string
     {
-        return '/home/judge/data/'.$problemId.'/';
+        return Utils::getProblemDataPath($problemId);
     }
 
     private function adjustRawProblem($problems)
@@ -93,6 +94,17 @@ class ProblemService implements ProblemServiceInterface
         File::put($path.'test.out', $testData['output']);
 
         return $id;
+    }
+
+    // 批量导入
+
+    public function addProblems(array $problems)
+    {
+        $problemIds = [];
+
+        foreach ($problems as $problem) {
+            // todo 完成此处批量生成的逻辑
+        }
     }
 
     /**

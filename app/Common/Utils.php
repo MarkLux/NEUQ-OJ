@@ -104,4 +104,9 @@ class Utils
         }
         return True;
     }
+
+    public static function getProblemDataPath(int $problemId):string
+    {
+        return '/home/judge/data/'.$problemId.'/';
+    }
 }
