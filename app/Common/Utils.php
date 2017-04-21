@@ -108,5 +108,6 @@ class Utils
     public static function getProblemDataPath(int $problemId):string
     {
         return '/home/judge/data/'.$problemId.'/';
+//        return '/Users/lumin/OJDATA/data/'.$problemId.'/';
     }
 }

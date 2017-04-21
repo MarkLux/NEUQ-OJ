@@ -19,7 +19,7 @@ Route::group(['middleware' => 'token'], function () {
     Route::post('/news/{id}/update','NewsController@updateNews');
     Route::get('/news/{id}/delete','NewsController@deleteNews');
 
-
+    Route::post('/problems/import','AdminController@importProblems');
+    Route::post('/problems/export','AdminController@exportProblems');
 });
 
-Route::post('/problems/import','AdminController@importProblem');

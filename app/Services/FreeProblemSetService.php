@@ -42,9 +42,15 @@ class FreeProblemSetService implements FreeProblemSetServiceInterface
         File::put($path.$filename,$data);
     }
 
+    private function getData(int $problemId,string $filename)
+    {
+        $path = Utils::getProblemDataPath($problemId);
+        return File::get($path.$filename);
+    }
+
     public function importProblems($file, array $config)
     {
-        $problemIds = [];
+        $problemOuts = [];
         $xmlDoc = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_PARSEHUGE);
         $searchNodes = $xmlDoc->xpath("/fps/item");
 
@@ -119,15 +125,47 @@ class FreeProblemSetService implements FreeProblemSetServiceInterface
                 $this->makeData($problemId, 'test' . $testNum++ . ".out", $testOutput);
             }
 
-            $problemIds[] = $problemId;
+            $problemOuts[] = [
+                'problem_id' => $problemId,
+                'problem_title' => (string)$title
+            ];
 
         }
 
-        return $problemIds;
+        return $problemOuts;
     }
 
     public function exportProblems(array $problemIds)
     {
-        // TODO: Implement exportProblems() method.
+        $problems = $this->problemRepo->getIn('id',$problemIds,[
+            'id','title','description','input','output','sample_input',
+            'sample_output','hint','source','time_limit','memory_limit',
+            'is_public','spj'
+        ])->toArray();
+
+        foreach ($problems as &$problem)
+        {
+            $files = File::files(Utils::getProblemDataPath($problem['id']));
+
+            $testIns = [];
+            $testOuts = [];
+
+            foreach ($files as $file) {
+                if ($file == Utils::getProblemDataPath($problem['id']).'sample.in' || $file == Utils::getProblemDataPath($problem['id']).'sample.out')
+                    continue;
+                if (File::extension($file) == 'in') {
+                    $testIns[] = file_get_contents($file);
+                }
+                if (File::extension($file) == 'out') {
+                    $testOuts[] = file_get_contents($file);
+                }
+            }
+
+            $problem['test_input'] = $testIns;
+            $problem['test_output'] = $testOuts;
+        }
+
+        return $problems;
+
     }
 }

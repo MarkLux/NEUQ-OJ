@@ -102,7 +102,20 @@ class PrivilegeTableSeeder extends Seeder
                 'created_at' => $current,
                 'updated_at' => $current
             ],
-
+            [
+                'name' => 'import-problems',
+                'display_name' => '导入题目',
+                'description' => '通过fps文件导入题目',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
+            [
+                'name' => 'export-problems',
+                'display_name' => '导出题目',
+                'description' => '以fps的形式导出题目',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
             /**
              * 竞赛部分
              */
