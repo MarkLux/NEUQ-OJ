@@ -50,7 +50,7 @@ class SolutionRepository extends AbstractRepository
                 ->leftJoin('users','solutions.user_id','=','users.id')
                 ->where($param)
                 ->where('solutions.problem_id','>','0')
-                ->select('solutions.id','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','users.name')
+                ->select('solutions.id','solutions.pass_rate','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','users.name')
                 ->orderBy('created_at','desc')
                 ->skip($size * --$page)
                 ->take($size)
@@ -59,7 +59,7 @@ class SolutionRepository extends AbstractRepository
             return $this->model
                 ->leftJoin('users','solutions.user_id','=','users.id')
                 ->where('solutions.problem_id','>','0')
-                ->select('solutions.id','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','users.name')
+                ->select('solutions.id','solutions.pass_rate','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','users.name')
                 ->orderBy('created_at','desc')
                 ->skip($size * --$page)
                 ->take($size)
@@ -70,7 +70,7 @@ class SolutionRepository extends AbstractRepository
     {
         return $this->model
             ->leftJoin('users','solutions.user_id','=','users.id')
-            ->select('solutions.id','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','users.name')
+            ->select('solutions.id','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','solutions.pass_rate','users.name')
             ->where('solutions.id',$id)
             ->get();
     }
@@ -101,7 +101,7 @@ class SolutionRepository extends AbstractRepository
             ->where('problem_group_id',$groupId)
             ->where('problem_num','>=','0')
             ->leftJoin('users','users.id','=','solutions.user_id')
-            ->select('users.id','users.name','solutions.result','solutions.created_at','solutions.problem_num')
+            ->select('users.id','users.name','solutions.result','solutions.created_at','solutions.pass_rate','solutions.problem_num')
             //注意时间的选择标准，judge_time是批量更新的，应该根据创建时间来排序
             ->orderBy('users.id', 'desc')
             ->orderBy('solutions.created_at','desc')
