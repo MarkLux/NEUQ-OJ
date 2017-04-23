@@ -104,7 +104,7 @@ class NewsController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:100',
             'content' => 'required',
-            'importance' => 'required|integer|min:0|max:3',
+            'importance' => 'required|integer|min:-1|max:4',
         ]);
 
         if ($validator->fails()) {

@@ -160,7 +160,7 @@ class UserService implements UserServiceInterface
             'email' => $data['email'],
             'mobile' => $data['mobile'],
             'password' => Utils::pwGen($data['password']),
-            'school' => $data['school'] ? $data['school'] : "Unknown",
+            'school' => isset($data['school']) ? $data['school'] : "Unknown",
             'status' => 0
         ];
 
