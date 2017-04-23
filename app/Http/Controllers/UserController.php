@@ -214,7 +214,7 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'string|min:0|max:100',
             'school' => 'string|min:0|max:100',
-            'signature' => 'string|min:0|max:512',
+            'signature' => 'string|min:0|max:512'
         ]);
 
         if ($validator->fails()) {
@@ -230,9 +230,10 @@ class UserController extends Controller
 
         $data = [];
 
-        if ($name != null) $data[] = ['name' => $name];
-        if ($school != null) $data[] = ['school' => $school];
-        if ($signature != null) $data[] = ['signature' => $signature];
+        if ($name != null) $data['name'] = $name;
+        if ($school != null) $data['school'] = $school;
+        if ($signature != null) $data['signature'] = $signature;
+
 
         if (!empty($data))
             if (!$this->userService->updateUserById($id, $data))

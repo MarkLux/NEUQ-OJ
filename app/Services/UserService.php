@@ -84,8 +84,9 @@ class UserService implements UserServiceInterface
 
     public function updateUserById(int $userId, array $data): bool
     {
-        if ($this->userRepo->update($data, $userId))
+        if ($this->userRepo->update($data, $userId)) {
             return true;
+        }
         else
             return false;
     }
