@@ -23,6 +23,7 @@ class NewsRepository extends AbstractRepository
     public function getLatestNews(int $size,array $columns=['*'])
     {
         return $this->model
+            ->where('importance','<>','0')
             ->orderBy('updated_at','desc')
             ->take($size)
             ->get($columns);
