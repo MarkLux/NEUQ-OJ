@@ -105,9 +105,14 @@ class Utils
         return True;
     }
 
-    public static function getProblemDataPath(int $problemId):string
+    public static function getProblemDataPath(int $problemId): string
     {
-        return '/home/judge/data/'.$problemId.'/';
+        return '/home/judge/data/' . $problemId . '/';
 //        return '/Users/lumin/OJDATA/data/'.$problemId.'/';
+    }
+
+    public static function genXmlStr(array $problems): string
+    {
+
     }
 }
