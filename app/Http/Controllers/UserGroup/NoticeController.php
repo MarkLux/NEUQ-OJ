@@ -148,7 +148,7 @@ class NoticeController extends Controller
             throw new InnerError("Fail to delete Notice");
 
         return response()->json([
-            'code' => 0
+            'code' => 0,
         ]);
     }
 

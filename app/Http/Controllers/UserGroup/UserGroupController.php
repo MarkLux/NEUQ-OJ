@@ -53,10 +53,13 @@ class UserGroupController extends Controller
             unset($group['password']);
         }
 
+
         return response()->json([
             'code' => 0,
-            'data' => $groups,
-            'page_count' => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+            'data' => [
+                'groups' => $groups,
+                'total_count' => $total_count
+            ],
         ]);
     }
 
@@ -195,8 +198,10 @@ class UserGroupController extends Controller
 
         return response()->json([
             "code" => 0,
-            "data" => $data,
-            "page_count" => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+            "data" => [
+                'groups' => $data,
+                'total_count' => $total_count
+            ]
         ]);
     }
 
