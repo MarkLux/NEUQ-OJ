@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 use Illuminate\Support\Facades\Hash;
+use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\UserGroup\NoticeNotExistException;
 use NEUQOJ\Exceptions\UserGroup\UserGroupIsFullException;
 use NEUQOJ\Exceptions\PasswordErrorException;
@@ -18,6 +19,7 @@ use NEUQOJ\Exceptions\UserGroup\UserGroupNotExistException;
 use NEUQOJ\Exceptions\UserGroup\UserInGroupException;
 use NEUQOJ\Exceptions\UserGroup\UserNotInGroupException;
 use NEUQOJ\Exceptions\UserNotExistException;
+use NEUQOJ\Facades\Permission;
 use NEUQOJ\Repository\Eloquent\GroupNoticeRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRepository;
@@ -215,8 +217,11 @@ class UserGroupService implements UserGroupServiceInterface
     //易主
     public function changeGroupOwner(int $groupId, int $newOwnerId): bool
     {
-        if (!$this->userRepo->get($newOwnerId)->first() == null)
+        if ($this->userRepo->get($newOwnerId)->first() == null)
             throw new UserNotExistException();
+
+        if (!Permission::checkPermission($newOwnerId,['create-user-group']))
+            throw new NoPermissionException();
 
         $data = ['owner_id' => $newOwnerId];
         return $this->userGroupRepo->update($data, $groupId) == 1;

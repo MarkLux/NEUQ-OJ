@@ -14,9 +14,9 @@ use NEUQOJ\Repository\Models\UserGroup;
 
 interface UserGroupServiceInterface
 {
-    /*
-  *基本信息部分
-  */
+    /**
+    *基本信息部分
+    */
 
     function getGroupById(int $id,array $columns = ['*']);
 

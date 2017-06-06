@@ -40,7 +40,10 @@ class UserGroupController extends Controller
         $size = $request->input('size',20);
         $page = $request->input('page',1);
 
-        $groups = $this->userGroupService->getGroups($page,$size,['owner_name','owner_id','id','is_closed','password','name','created_at'])->toArray();
+        $groups = $this->userGroupService->getGroups($page,$size, [
+            'owner_name','owner_id','id','is_closed',
+            'password','name','created_at','max_size'
+        ])->toArray();
 
         //添加小组是否公开的标记
         foreach ($groups as &$group)
@@ -61,6 +64,15 @@ class UserGroupController extends Controller
                 'total_count' => $total_count
             ],
         ]);
+    }
+
+    public function getCreatedUserGroups(Request $request)
+    {
+        if (!Permission::checkPermission($request->user->id,['create-user-group'])) {
+            throw new NoPermissionException();
+        }
+
+        $groups = $this->userGroupService->getGroupBy('owner_id',$request->user->id,['']);
     }
 
     /**
@@ -241,12 +253,10 @@ class UserGroupController extends Controller
         if(!$this->userGroupService->isGroupExistById($groupId))
             throw new UserGroupNotExistException();
 
-        if(!$this->userGroupService->isUserGroupOwner($request->user->id,$groupId))
-            throw new NoPermissionException();
-
         //检查密码
         if(!Utils::pwCheck($request->password,$request->user->password))
             throw new PasswordErrorException();
+
 
         //检查当前登录用户是否是组的拥有者
         if(!$this->userGroupService->isUserGroupOwner($request->user->id,$groupId))
@@ -278,7 +288,7 @@ class UserGroupController extends Controller
             throw new NoPermissionException();
 
         //检查密码
-        if(!Hash::check($request->password,$request->user->password))
+        if(!Utils::pwCheck($request->password,$request->user->password))
             throw new PasswordErrorException();
 
         if(!$this->userGroupService->closeGroup($groupId))
@@ -306,7 +316,7 @@ class UserGroupController extends Controller
             throw new NoPermissionException();
 
         //检查密码
-        if(!Hash::check($request->password,$request->user->password))
+        if(!Utils::pwCheck($request->password,$request->user->password))
             throw new PasswordErrorException();
 
         if(!$this->userGroupService->openGroup($groupId))

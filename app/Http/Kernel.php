@@ -15,8 +15,9 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middleware = [
+        \NEUQOJ\Http\Middleware\EnableCrossRequestMiddleware::class,
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
-        \NEUQOJ\Http\Middleware\EnableCrossRequestMiddleware::class
+
     ];
 
     /**
@@ -26,6 +27,7 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
+            \NEUQOJ\Http\Middleware\EnableCrossRequestMiddleware::class,
             \NEUQOJ\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
