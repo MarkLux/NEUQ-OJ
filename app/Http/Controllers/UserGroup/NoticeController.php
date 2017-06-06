@@ -63,7 +63,7 @@ class NoticeController extends Controller
         return response()->json([
             "code" => 0,
             "data" => $data,
-            "page_count" => ($total_count%$size)?intval($total_count/$size+1):($total_count/$size)
+            "total_count" => $total_count
         ]);
     }
 

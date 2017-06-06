@@ -26,10 +26,10 @@ use NEUQOJ\Repository\Eloquent\UserGroupRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRelationRepository;
 use NEUQOJ\Repository\Models\UserGroup;
-use NEUQOJ\Services\Contracts\UserGroupServiceInterface;
 use NEUQOJ\Repository\Models\User;
 use NEUQOJ\Exceptions\InnerError;
 use Illuminate\Support\Facades\DB;
+use NEUQOJ\Services\Contracts\UserGroupServiceInterface;
 
 
 class UserGroupService implements UserGroupServiceInterface
@@ -39,6 +39,7 @@ class UserGroupService implements UserGroupServiceInterface
     private $relationRepo;
     private $noticeRepo;
     private $problemGroupRepo;
+
 //    private $deletionService;
 
     public function __construct(
@@ -57,7 +58,15 @@ class UserGroupService implements UserGroupServiceInterface
 
 
     /**
-     * 基本获取部分
+     * ---------------------------
+     * ---------------------------
+     * -------用户组基本内容--------
+     * ---------------------------
+     * ---------------------------
+     */
+
+    /**
+     * 基本获取函数
      */
 
     public function getGroupById(int $groupId, array $columns = ['*'])
@@ -86,25 +95,7 @@ class UserGroupService implements UserGroupServiceInterface
     }
 
     /**
-     * 搜索
-     */
-
-    public function searchGroupsCount(string $keyword): int
-    {
-        $pattern = '%' . $keyword . '%';//在这里定义模式串
-        //未支持嵌套
-        return $this->userGroupRepo->getWhereLikeCount($pattern);
-    }
-
-    public function searchGroupsBy(string $keyword, int $page = 1, int $size = 15)
-    {
-        $pattern = '%' . $keyword . '%';
-
-        return $this->userGroupRepo->getWhereLike($pattern, $page, $size);
-    }
-
-    /**
-     * 辅助检测函数
+     * 辅助判断
      */
 
     public function isGroupExistById(int $groupId): bool
@@ -127,55 +118,12 @@ class UserGroupService implements UserGroupServiceInterface
         return false;
     }
 
-    public function isUserGroupFull(int $groupId): bool
-    {
-        $group = $this->getGroupById($groupId);
-
-        if ($group == null)
-            throw new UserGroupNotExistException();
-
-        $size = $this->relationRepo->getMemberCountById($groupId);
-
-        if ($size >= $group->max_size)
-            return true;
-        else
-            return false;
-    }
-
-    public function isUserGroupStudent(int $userId, int $groupId): bool
-    {
-        $relation = $this->relationRepo->getByMult([
-            'user_id' => $userId,
-            'group_id' => $groupId
-        ])->first();
-
-        if ($relation == null)
-            return false;
-        return true;
-    }
-
-    public function isUserInGroup(int $userId, int $groupId): bool
-    {
-        return ($this->isUserGroupStudent($userId, $groupId) || $this->isUserGroupOwner($userId, $groupId));
-    }
-
-    public function isUserGroupOwner(int $userId, int $groupId): bool
-    {
-        $group = $this->userGroupRepo->get($groupId)->first();
-
-        if ($group == null)
-            throw new UserGroupNotExistException();
-
-        if ($group->owner_id == $userId)
-            return true;
-        return false;
-    }
-
-    /*
-     *基本操作部分
+    /**
+     * 管理
      */
 
-    //创建
+    // 创建
+
     public function createUserGroup(User $owner, array $data): int
     {
         if ($this->isGroupExistByName($owner->id, $data['name']))
@@ -187,7 +135,8 @@ class UserGroupService implements UserGroupServiceInterface
         return $this->userGroupRepo->insertWithId($data);
     }
 
-    //删除
+    // 删除
+
     public function deleteGroup(User $user, int $groupId): bool
     {
         // 要删除很多关系 相关模型基本都设立了软删除功能
@@ -197,7 +146,7 @@ class UserGroupService implements UserGroupServiceInterface
 
         $flag = false;
 
-        DB::transaction(function () use ($groupId, $user,&$flag) {
+        DB::transaction(function () use ($groupId, $user, &$flag) {
             $this->userGroupRepo->deleteWhere(['id' => $groupId]);
 
             $this->relationRepo->deleteWhere(['group_id' => $groupId]);
@@ -214,13 +163,21 @@ class UserGroupService implements UserGroupServiceInterface
         return $flag;
     }
 
+    // 更新
+
+    public function updateGroup(array $data, int $groupId): bool
+    {
+        return $this->userGroupRepo->update($data, $groupId) == 1;
+    }
+
     //易主
+
     public function changeGroupOwner(int $groupId, int $newOwnerId): bool
     {
         if ($this->userRepo->get($newOwnerId)->first() == null)
             throw new UserNotExistException();
 
-        if (!Permission::checkPermission($newOwnerId,['create-user-group']))
+        if (!Permission::checkPermission($newOwnerId, ['create-user-group']))
             throw new NoPermissionException();
 
         $data = ['owner_id' => $newOwnerId];
@@ -241,7 +198,102 @@ class UserGroupService implements UserGroupServiceInterface
         return $this->userGroupRepo->update($data, $groupId) == 1;
     }
 
+    /**
+     * 搜索
+     */
+
+    public function searchGroupsCount(string $keyword): int
+    {
+        $pattern = '%' . $keyword . '%';//在这里定义模式串
+        //未支持嵌套
+        return $this->userGroupRepo->getWhereLikeCount($pattern);
+    }
+
+    public function searchGroupsBy(string $keyword, int $page = 1, int $size = 15)
+    {
+        $pattern = '%' . $keyword . '%';
+
+        return $this->userGroupRepo->getWhereLike($pattern, $page, $size);
+    }
+
+    /**
+     * ------------------------------
+     * ------------------------------
+     * -------------成员部分----------
+     * ------------------------------
+     * ------------------------------
+     */
+
+    /**
+     * 基本获取
+     */
+
+    public function getGroupMembersCount(int $groupId): int
+    {
+        return $this->relationRepo->getMemberCountById($groupId);
+    }
+
+    public function getGroupMembers(int $groupId, int $page, int $size)
+    {
+        //TODO 可能需要join一些信息
+
+        return $this->relationRepo->paginate($page, $size, ['group_id' => $groupId]);
+    }
+
+    /**
+     * 用户判断
+     */
+
+    public function isUserInGroup(int $userId, int $groupId): bool
+    {
+        return ($this->isUserGroupStudent($userId, $groupId) || $this->isUserGroupOwner($userId, $groupId));
+    }
+
+    public function isUserGroupStudent(int $userId, int $groupId): bool
+    {
+        $relation = $this->relationRepo->getByMult([
+            'user_id' => $userId,
+            'group_id' => $groupId
+        ])->first();
+
+        if ($relation == null)
+            return false;
+        return true;
+    }
+
+    public function isUserGroupOwner(int $userId, int $groupId): bool
+    {
+        $group = $this->userGroupRepo->get($groupId)->first();
+
+        if ($group == null)
+            throw new UserGroupNotExistException();
+
+        if ($group->owner_id == $userId)
+            return true;
+        return false;
+    }
+
+    /**
+     * 加入和退出
+     */
+
+    public function isUserGroupFull(int $groupId): bool
+    {
+        $group = $this->getGroupById($groupId);
+
+        if ($group == null)
+            throw new UserGroupNotExistException();
+
+        $size = $this->relationRepo->getMemberCountById($groupId);
+
+        if ($size >= $group->max_size)
+            return true;
+        else
+            return false;
+    }
+
     //加入
+
     public function joinGroupByPassword(User $user, UserGroup $group, string $password): bool
     {
         //检测用户组的开放状态
@@ -299,15 +351,10 @@ class UserGroupService implements UserGroupServiceInterface
 
     }
 
-    //更新组信息
-    public function updateGroup(array $data, int $groupId): bool
-    {
-        return $this->userGroupRepo->update($data, $groupId) == 1;
-    }
-
     /**
-     * 成员部分
+     * 管理
      */
+
     public function updateUserInfo(int $userId, int $groupId, array $data): bool
     {
         if (!$this->isGroupExistById($groupId))
@@ -322,20 +369,8 @@ class UserGroupService implements UserGroupServiceInterface
         ];
 
         return $this->relationRepo->updateWhere($condition, $data);
-
     }
 
-    public function getGroupMembersCount(int $groupId): int
-    {
-        return $this->relationRepo->getMemberCountById($groupId);
-    }
-
-    public function getGroupMembers(int $groupId, int $page, int $size)
-    {
-        //TODO 可能需要join一些信息
-
-        return $this->relationRepo->paginate($page, $size, ['group_id' => $groupId]);
-    }
 
     /*
      *从某个组中删除用户（删除关系）
@@ -366,10 +401,6 @@ class UserGroupService implements UserGroupServiceInterface
      * 小组信息
      */
 
-    public function getGroupIndex(int $groupId, User $user)
-    {
-        // TODO: 需要参考页面原型去组织信息
-    }
 
     /**
      * 公告板
@@ -382,7 +413,7 @@ class UserGroupService implements UserGroupServiceInterface
 
     public function getGroupNotices(int $groupId, int $page, int $size)
     {
-        return $this->noticeRepo->paginate($page, $size, ['group_id' => $groupId], ['title', 'created_at']);
+        return $this->noticeRepo->paginate($page, $size, ['group_id' => $groupId], ['id', 'title', 'created_at']);
     }
 
     public function addNotice(int $groupId, array $data): bool
