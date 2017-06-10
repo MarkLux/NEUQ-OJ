@@ -30,19 +30,19 @@ interface UserGroupServiceInterface
 
     function getGroupCount():int;
 
-    function getGroupIndex(int $userId,int $groupId);
+//    function getGroupIndex(int $userId,int $groupId);
 
-    function getUpdateGroup(int $groupId);
+//    function getUpdateGroup(int $groupId);
 
     // 辅助判断
 
-    function isGroupExistByName(int $ownerId,string $name):bool;
+//    function isGroupExistByName(int $ownerId,string $name):bool;
 
     function isGroupExistById(int $id):bool;
 
     // 管理
 
-    function createUserGroup(User $owner,array $data):int;
+    function createUserGroup(int $ownerId,array $data,array $users=[]):int;
 
     function deleteGroup(User $user,int $groupId);
 

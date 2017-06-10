@@ -168,49 +168,9 @@ class PrivilegeTableSeeder extends Seeder
                 'updated_at' => $current
             ],
             [
-                'name' => 'update-any-user-group',
-                'display_name' => '修改所有用户组',
-                'description' => '更新任意一个用户组的基本信息',
-                'created_at' => $current,
-                'updated_at' => $current
-            ],
-            [
-                'name' => 'delete-any-user-group',
-                'display_name' => '删除任意用户组',
-                'description' => '删除任意一个用户组',
-                'created_at' => $current,
-                'updated_at' => $current
-            ],
-            [
-                'name' => 'add-homework',
-                'display_name' => '任意添加作业',
-                'description' => '为任意一个用户组添加一个作业',
-                'created_at' => $current,
-                'updated_at' => $current
-            ],
-
-            /**
-             * 作业部分
-             */
-
-            [
-                'name' => 'update-any-homework',
-                'display_name' => '修改任意作业',
-                'description' => '更新任意一个作业',
-                'created_at' => $current,
-                'updated_at' => $current
-            ],
-            [
-                'name' => 'delete-any-homework',
-                'display_name' => '删除任意作业',
-                'description' => '删除任意一个作业',
-                'created_at' => $current,
-                'updated_at' => $current
-            ],
-            [
-                'name' => 'access-any-homework',
-                'display_name' => '进入任意作业',
-                'description' => '获取任意一个作业的权限',
+                'name' => 'manage-user-group',
+                'display_name' => '管理用户组',
+                'description' => '管理任意一个用户组',
                 'created_at' => $current,
                 'updated_at' => $current
             ],
