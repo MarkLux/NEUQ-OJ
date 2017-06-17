@@ -22,6 +22,8 @@ interface UserGroupServiceInterface
 
     function getGroupById(int $id,array $columns = ['*']);
 
+    function getGroupDetail(int $id);
+
     function getGroupBy(string $param,string $value,array $columns=['*']);
 
     function getGroupByMult(array $condition,array $columns = ['*']);
@@ -42,17 +44,17 @@ interface UserGroupServiceInterface
 
     // 管理
 
-    function createUserGroup(int $ownerId,array $data,array $users=[]):int;
+    function createUserGroup(array $data,array $userIds=[]):int;
 
-    function deleteGroup(User $user,int $groupId);
+    function deleteGroup(int $groupId):bool;
 
     function updateGroup(array $data,int $groupId):bool;
 
     function changeGroupOwner(int $groupId,int $newOwnerId):bool;
 
-    function closeGroup(int $groupId):bool;
-
-    function openGroup(int $groupId):bool;
+//    function closeGroup(int $groupId):bool;
+//
+//    function openGroup(int $groupId):bool;
 
     // 搜索
 
@@ -76,24 +78,28 @@ interface UserGroupServiceInterface
 
     function isUserGroupOwner(int $userId,int $groupId):bool;
 
-    function isUserInGroup(int $userId,int $groupId):bool;
+//    function isUserInGroup(int $userId,int $groupId):bool;
 
     // 加入和退出
 
     function isUserGroupFull(int $groupId):bool;
 
-    function joinGroupByPassword(User $user,UserGroup $group,string $password):bool;
+    // 验证的逻辑写到控制器里去
 
-    function joinGroupWithoutPassword(User $user,UserGroup $group):bool;
+//    function joinGroupByPassword(int $userId,int $groupId,string $password):bool;
+//
+//    function joinGroupWithoutPassword(User $user,UserGroup $group):bool;
 
 
     // 管理
 
-    function addMember(int $groupId,array $userIds):bool;
+    function addMember(int $groupId,$userId):bool;
 
-    function deleteMember(int $groupId,array $userIds):bool;
+    function addMembers(int $groupId,array $userIds):bool;
 
-    function updateMemberInfo(array $userInfo,int $groupId):bool;
+    function deleteMember(int $groupId,array $userIds);
+
+    function updateMemberInfo(int $userId,int $groupId,array $data):bool;
 
 
     /**
@@ -110,7 +116,7 @@ interface UserGroupServiceInterface
 
     // 管理
 
-    function addNotice(int $groupId,array $data):bool;
+    function addNotice(array $data):bool;
 
     function deleteNotice(int $noticeId):bool;
 

@@ -8,28 +8,32 @@
 
 namespace NEUQOJ\Services;
 
+use Illuminate\Support\Facades\DB;
+use NEUQOJ\Exceptions\UserGroup\UserInGroupException;
 use NEUQOJ\Repository\Eloquent\GroupNoticeRepository;
+use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\UserGroupRepository;
 use NEUQOJ\Repository\Eloquent\UserRepository;
-use NEUQOJ\Repository\Models\User;
-use NEUQOJ\Repository\Models\UserGroup;
 use NEUQOJ\Services\Contracts\UserGroupServiceInterface;
 
 class UserGroupService implements UserGroupServiceInterface
 {
     private $userGroupRepo;
     private $userRepo;
-    private $userGroupRealitonRepo;
+    private $userGroupRelationRepo;
     private $noticeRepo;
+    private $problemGroupRepo;
 
     public function __construct(UserGroupRepository $userGroupRepo,UserRepository $userRepo,
-                                UserGroupRelationRepository $userGroupRealitonRepo,GroupNoticeRepository $noticeRepo)
+                                UserGroupRelationRepository $userGroupRelationRepo,
+                                GroupNoticeRepository $noticeRepo,ProblemGroupRepository $problemGroupRepo)
     {
         $this->userGroupRepo = $userGroupRepo;
         $this->userRepo = $userRepo;
-        $this->userGroupRealitonRepo = $userGroupRealitonRepo;
+        $this->userGroupRelationRepo = $userGroupRelationRepo;
         $this->noticeRepo = $noticeRepo;
+        $this->problemGroupRepo = $problemGroupRepo;
     }
 
     /**
@@ -41,6 +45,13 @@ class UserGroupService implements UserGroupServiceInterface
     function getGroupById(int $id, array $columns = ['*'])
     {
         return $this->userGroupRepo->get($id,$columns)->first();
+    }
+
+    // 这个真的蛋疼，为了join得到创建者的name等信息还要专门写一个函数。。。
+
+    function getGroupDetail(int $id)
+    {
+        return $this->userGroupRepo->getDetailInfo($id)->first();
     }
 
     function getGroupBy(string $param, string $value, array $columns = ['*'])
@@ -56,7 +67,7 @@ class UserGroupService implements UserGroupServiceInterface
     function getGroups(int $page, int $size, array $columns = ['*'])
     {
         // 分页获取用户组列表
-        return $this->userGroupRepo->paginate($page,$size,$columns);
+        return $this->userGroupRepo->paginate($page,$size,[],$columns);
     }
 
     function getGroupCount(): int
@@ -83,144 +94,212 @@ class UserGroupService implements UserGroupServiceInterface
         return !($this->getGroupById($id,['id']) == null);
     }
 
-    function createUserGroup(int $ownerId, array $data,array $users=[]): int
+    // 创建用户组，users是初始化的组内用户关系映射
+
+    function createUserGroup(array $data,array $users=[]): int
     {
+        $gid = -1;
+
+        if (!empty($users)) {
+            DB::transaction(function () use ($data,$users,&$gid) {
+                $gid = $this->userGroupRepo->insertWithId($data);
+                foreach ($users as &$user) {
+                    $user['group_id'] = $gid;
+                    // 其余的属性要提前设置好
+                }
+                $this->userGroupRelationRepo->insert($users);
+            });
+            return $gid;
+        } else {
+            $gid = $this->userGroupRepo->insertWithId($data);
+            return $gid;
+        }
 
     }
 
-    function deleteGroup(User $user, int $groupId)
+    // 删除用户组将删除大量资源，后期优化时应该思考一下性能影响
+
+    function deleteGroup(int $groupId):bool
     {
-        // TODO: Implement deleteGroup() method.
+        $flag = false;
+
+        DB::transaction(function ()use(&$flag,$groupId){
+            // 基本组
+            $this->userGroupRepo->deleteWhere(['id' => $groupId]);
+            // 用户关系
+            $this->userGroupRelationRepo->deleteWhere(['group_id' => $groupId]);
+            // 作业
+            $this->problemGroupRepo->deleteWhere(['user_group_id' => $groupId]);
+            // 公告
+            $this->noticeRepo->deleteWhere(['group_id' => $groupId]);
+            // 考虑是否清理solutions
+
+            $flag = true;
+        });
+
+        return $flag;
     }
+
+    // 更新用户组基本设置
 
     function updateGroup(array $data, int $groupId): bool
     {
-        // TODO: Implement updateGroup() method.
+        // 控制器里注意限制组装data时能更新的字段
+        return $this->userGroupRepo->update($data,$groupId) == 1;
     }
 
     function changeGroupOwner(int $groupId, int $newOwnerId): bool
     {
-        // TODO: Implement changeGroupOwner() method.
+        return $this->userGroupRepo->update(['owner_id' => $newOwnerId],$groupId) == 1;
     }
 
-    function closeGroup(int $groupId): bool
-    {
-        // TODO: Implement closeGroup() method.
-    }
-
-    function openGroup(int $groupId): bool
-    {
-        // TODO: Implement openGroup() method.
-    }
+    // 搜索
 
     function searchGroupsCount(string $keyword): int
     {
-        // TODO: Implement searchGroupsCount() method.
+       $pattern = '%'.$keyword.'%';
+
+       return $this->userGroupRepo->getWhereLikeCount($pattern);
     }
 
     function searchGroupsBy(string $keyword, int $page = 1, int $size = 20)
     {
-        // TODO: Implement searchGroupsBy() method.
+        $pattern = '%'.$keyword.'%';
+
+        return $this->userGroupRepo->getWhereLike($pattern,$page,$size);
     }
 
-    function getGroupMembers(int $groupId, int $page, int $size)
+    /**
+     * 成员部分
+     */
+
+    function getGroupMembers(int $groupId, int $page = 1, int $size = 20)
     {
-        // TODO: Implement getGroupMembers() method.
+        return $this->userGroupRelationRepo->getGroupMembers($groupId,$page,$size);
     }
 
     function getGroupMembersCount(int $groupId): int
     {
-        // TODO: Implement getGroupMembersCount() method.
+        return $this->userGroupRelationRepo->getMemberCountById($groupId);
     }
 
     function isUserGroupStudent(int $userId, int $groupId): bool
     {
-        // TODO: Implement isUserGroupStudent() method.
+        return !($this->userGroupRelationRepo
+                ->getByMult(['user_id' => $userId,'group_id' => $groupId])
+                ->first() == null);
     }
 
     function isUserGroupOwner(int $userId, int $groupId): bool
     {
-        // TODO: Implement isUserGroupOwner() method.
+        return $this->userGroupRepo->get($groupId,['owner_id'])->first()->owner_id == $userId;
     }
 
     function isUserInGroup(int $userId, int $groupId): bool
     {
-        // TODO: Implement isUserInGroup() method.
+        return  $this->isUserGroupStudent($userId,$groupId) || $this->isUserGroupOwner($userId,$groupId);
     }
 
     function isUserGroupFull(int $groupId): bool
     {
-        // TODO: Implement isUserGroupFull() method.
+        $maxSize = $this->userGroupRepo->get($groupId,['max_size'])->first()->max_size;
+
+        return $this->getGroupMembersCount($groupId) > $maxSize;
     }
 
-    function joinGroupByPassword(User $user, UserGroup $group, string $password): bool
+    function addMember(int $groupId, $userId): bool
     {
-        // TODO: Implement joinGroupByPassword() method.
+        // 不做判断的话可能引发插入异常
+
+        if ($this->isUserInGroup($userId,$groupId)) {
+            throw new UserInGroupException();
+        }
+
+        return $this->userGroupRelationRepo->insert(['user_id' => $userId,'group_id' => $groupId]) == 1;
     }
 
-    function joinGroupWithoutPassword(User $user, UserGroup $group): bool
+    function addMembers(int $groupId, array $users): bool
     {
-        // TODO: Implement joinGroupWithoutPassword() method.
+        // 先判断有没有重复的
+        // todo 可以考虑忽略已经在用户组里的，性能消耗自己做测试
+        // todo 类似的逻辑应该使用sql的exists语法来检查是否存在不合理的数据
+        $userIds = [];
+        foreach ($users as &$user) {
+            $userIds[] = $user['user_id'];
+            $user['group_id'] = $groupId;
+        }
+
+        if (!$this->userGroupRelationRepo->checkUsersIn($groupId,$userIds)) {
+            throw new UserInGroupException();
+        }
+
+        return $this->userGroupRelationRepo->insert($users) == count($users);
     }
 
-    function addMember(int $groupId, array $userIds): bool
+    function deleteMember(int $groupId, array $userIds)
     {
-        // TODO: Implement addMember() method.
+        return $this->userGroupRelationRepo->deleteMembers($groupId,$userIds);
     }
 
-    function deleteMember(int $groupId, array $userIds): bool
+    function updateMemberInfo(int $userId, int $groupId,array $data): bool
     {
-        // TODO: Implement deleteMember() method.
+        return $this->userGroupRelationRepo->updateWhere(['group_id' => $groupId,'user_id' => $userId],$data) == 1;
     }
 
-    function updateMemberInfo(array $userInfo, int $groupId): bool
-    {
-        // TODO: Implement updateMemberInfo() method.
-    }
+    /**
+     * 用户组新闻界面
+     */
 
     function getGroupNoticesCount(int $groupId): int
     {
-        // TODO: Implement getGroupNoticesCount() method.
+        return $this->noticeRepo->getWhereCount(['group_id' => $groupId]);
     }
 
     function getGroupNotices(int $groupId, int $page, int $size)
     {
-        // TODO: Implement getGroupNotices() method.
+        return $this->noticeRepo->paginate(['group_id' => $groupId],$page,$size,['id','title','created_at']);
     }
 
     function getSingleNotice(int $noticeId)
     {
-        // TODO: Implement getSingleNotice() method.
+       return $this->noticeRepo->get($noticeId)->first();
     }
 
-    function addNotice(int $groupId, array $data): bool
+    function addNotice(array $data): bool
     {
-        // TODO: Implement addNotice() method.
+        return $this->noticeRepo->insert($data) == 1;
     }
 
     function deleteNotice(int $noticeId): bool
     {
-        // TODO: Implement deleteNotice() method.
+        return $this->noticeRepo->deleteWhere(['id' => $noticeId]) == 1;
     }
 
     function updateNotice(int $noticeId, array $data): bool
     {
-        // TODO: Implement updateNotice() method.
+        return $this->noticeRepo->updateWhere(['id' => $noticeId],$data) == 1;
     }
 
     function isNoticeBelongToGroup(int $noticeId, int $groupId): bool
     {
-        // TODO: Implement isNoticeBelongToGroup() method.
+        $notice = $this->noticeRepo->get($noticeId,['group_id'])->first();
+
+        if ($notice != null) {
+            if ($notice->group_id == $groupId)
+                return true;
+        }
+
+        return false;
     }
 
     function isNoticeExist(int $noticeId): bool
     {
-        // TODO: Implement isNoticeExist() method.
+        return !($this->noticeRepo->get($noticeId,['id'])->first() == null);
     }
 
     function getGroupsUserIn(int $userId)
     {
-        // TODO: Implement getGroupsUserIn() method.
+        return $this->userGroupRelationRepo->getGroupsUserIn($userId);
     }
 
 }

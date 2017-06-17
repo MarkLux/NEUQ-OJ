@@ -26,12 +26,12 @@ class UserGroupRepository extends AbstractRepository
 
     function getWhereLikeCount(string $pattern):int
     {
-        //在三个字段中搜索
+        // 只检索标题
 
         return $this->model
             ->where('name','like',$pattern)
-            ->orWhere('owner_name','like',$pattern)
-            ->orWhere('description','like',$pattern)
+//            ->orWhere('owner_name','like',$pattern)
+//            ->orWhere('description','like',$pattern)
             ->count();
     }
 
@@ -42,12 +42,21 @@ class UserGroupRepository extends AbstractRepository
         {
             return $this->model
                 ->where('name','like',$pattern)
-                ->orWhere('owner_name','like',$pattern)
-                ->orWhere('description','like',$pattern)
+//                ->orWhere('owner_name','like',$pattern)
+//                ->orWhere('description','like',$pattern)
                 ->skip($size * --$page)
                 ->take($size)
                 ->get($columns);
         }
+    }
+
+    function getDetailInfo(int $groupId)
+    {
+        return $this->model
+            ->where('user_groups.id',$groupId)
+            ->leftJoin('users','user_groups.owner_id','=','users.id')
+            ->select('user_groups.*','users.name')
+            ->get();
     }
 
     function getTotalCount()

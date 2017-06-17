@@ -2,6 +2,7 @@
 namespace NEUQOJ\Repository\Eloquent;
 
 use Carbon\Carbon;
+use Closure;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use NEUQOJ\Repository\Contracts\RepositoryInterface;
@@ -165,6 +166,20 @@ abstract class AbstractRepository implements RepositoryInterface
                 ->skip($size * --$page)
                 ->take($size)
                 ->get($columns);
+    }
+
+    function getWhereCount(array $param = []):int
+    {
+        if (!empty($param)) {
+            return $this->model->where($param)->count();
+        }
+        else
+            return $this->model->count();
+    }
+
+    function whereExist(Closure $func)
+    {
+        return $this->model->whereExists($func)->get();
     }
 
     private function freshTimestamp(): Carbon

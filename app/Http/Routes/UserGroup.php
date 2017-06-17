@@ -11,18 +11,26 @@ Route::get('/user-groups','UserGroup\UserGroupController@getGroups');
 
 Route::group(['middleware' => 'token'],function (){
 
-    Route::get('/user/groups','UserGroup\UserGroupController@getGroupsUserIn');
+    Route::get('/user-groups/joined','UserGroup\UserGroupController@getMyGroups');
+    Route::get('/user-groups/created','UserGroup\UserGroupController@getCreatedGroups');
 
     Route::group(['prefix' => 'user-group'],function(){
         Route::post('/create','UserGroup\UserGroupController@createNewGroup');
-        Route::get('/{id}','UserGroup\UserGroupController@getIndex');
+        Route::get('/{id}','UserGroup\UserGroupController@getGroup');
+
+        // 成员部分
+
         Route::get('/{id}/members','UserGroup\UserGroupController@getMembers');
-        Route::post('/{id}/join-in','UserGroup\UserGroupController@joinGroup');
+        Route::post('/{id}/members/add','UserGroup\UserGroupController@addMembers');
+        Route::post('/{id}/members/delete','UserGroup\UserGroupController@deleteMembers');
+        Route::post('/{id}/members/update','UserGroup\UserGroupController@updateMemberInfo');
+        Route::post('/{id}/members/update/mine','UserGroup\UserGroupController@updateMyTag');
+
+        Route::post('/{id}/join','UserGroup\UserGroupController@joinGroup');
         Route::post('/{id}/quit','UserGroup\UserGroupController@quitGroup');
         Route::post('/{id}/change-owner','UserGroup\UserGroupController@changeOwner');
-        Route::post('/{id}/close','UserGroup\UserGroupController@closeGroup');
-        Route::post('/{id}/open','UserGroup\UserGroupController@openGroup');
         Route::post('/{id}/dismiss','UserGroup\UserGroupController@dismissGroup');
+        Route::post('/{id}/update','UserGroup\UserGroupController@updateGroupInfo');
 
         Route::group(['prefix' => 'notices'],function(){
             Route::post('/create','UserGroup\NoticeController@addNotice');

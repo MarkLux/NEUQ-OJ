@@ -1,7 +1,10 @@
 <?php
 namespace NEUQOJ\Common;
 
+use Dotenv\Exception\ValidationException;
 use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Support\Facades\Validator;
+use NEUQOJ\Exceptions\FormValidatorException;
 
 /**
  * Created by PhpStorm.
@@ -111,8 +114,12 @@ class Utils
 //        return '/Users/lumin/OJDATA/data/'.$problemId.'/';
     }
 
-    public static function genXmlStr(array $problems): string
+    public static function validateCheck(array $inputs,array $rules)
     {
+        $validator = Validator::make($inputs,$rules);
 
+        if ($validator->fails()) {
+            throw new FormValidatorException($validator->getMessageBag()->all());
+        }
     }
 }

@@ -174,6 +174,13 @@ class PrivilegeTableSeeder extends Seeder
                 'created_at' => $current,
                 'updated_at' => $current
             ],
+            [
+                'name' => 'access-user-group',
+                'display_name' => '查看用户组',
+                'description' => '查看任意一个用户组的所有信息',
+                'created_at' => $current,
+                'updated_at' => $current
+            ],
 
             /**
              * 系统管理部分

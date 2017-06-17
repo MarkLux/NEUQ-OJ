@@ -80,7 +80,7 @@ class SolutionRepository extends AbstractRepository
         return $this->model->whereIn($param, $data)->delete();
     }
 
-    public function getWhereCount(array $params)
+    public function getWhereCount(array $params = []):int
     {
         return $this->model->where($params)->count();
     }
