@@ -36,7 +36,12 @@ class AdminController extends Controller
         if (!Permission::checkPermission($request->user->id, ['import-problems']))
             throw new NoPermissionException();
 
+        if (!$request->hasFile('fps')) {
+            throw new InnerError("no file to upload");
+        }
+
         $file = $request->file('fps');
+        dd($file);
 
         $isPublic = $request->input('is_public', 1);
         $creatorId = $request->user->id;

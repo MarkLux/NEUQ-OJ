@@ -11,7 +11,15 @@ use NEUQOJ\Repository\Models\User;
 
 interface HomeworkServiceInterface
 {
-    function getProblem(int $groupId,int $problemNum);
+    /**
+     * 基本获取
+     */
+
+    function getHomeWorkById(int $id,array $columns=['*']);
+
+    function getHomeWorkInGroup(int $groupId,int $type,int $page,int $size,array $columns=['*']);
+
+    function getProblem(int $problemGroupId,int $problemNum);
     //基本获取函数
 
     function getHomework(int $id,array $columns=['*']);

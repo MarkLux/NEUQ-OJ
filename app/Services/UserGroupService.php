@@ -257,7 +257,7 @@ class UserGroupService implements UserGroupServiceInterface
 
     function getGroupNotices(int $groupId, int $page, int $size)
     {
-        return $this->noticeRepo->paginate(['group_id' => $groupId],$page,$size,['id','title','created_at']);
+        return $this->noticeRepo->paginate($page,$size,['group_id' => $groupId],['id','title','created_at']);
     }
 
     function getSingleNotice(int $noticeId)

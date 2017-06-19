@@ -99,11 +99,13 @@ class FreeProblemSetService implements FreeProblemSetServiceInterface
                 'spj' => $spj
             ];
 
+            // todo 这里有个顺序问题，如果题目插入后文件目录创建不成功这个题目得想办法回滚一下
+
             $problemId = $this->problemRepo->insertWithId($problem);
 
             // 样例
 
-            if (!File::makeDirectory(Utils::getProblemDataPath($problemId), $mode = 0755))
+            if (!File::makeDirectory(Utils::getProblemDataPath($problemId),0755))
                 return false;
 
             $this->makeData($problemId, 'sample.in', $sampleInput);

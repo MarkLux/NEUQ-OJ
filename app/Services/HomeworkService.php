@@ -56,9 +56,7 @@ class HomeworkService implements HomeworkServiceInterface
 
     public function getProblem(int $groupId, int $problemNum)
     {
-        $problem =  $this->problemGroupService->getProblemByNum($groupId,$problemNum);
-
-        return $problem;
+        return $this->problemGroupService->getProblemByNum($groupId,$problemNum);
     }
 
     public function getHomework(int $id, array $columns = ['*'])
