@@ -74,12 +74,12 @@ class UserGroupController extends Controller
 
     public function getGroup(Request $request, int $groupId)
     {
-        if (!Permission::checkPermission($request->user->id, ['access-user-group'])) {
-            if (!$this->userGroupService->isUserInGroup($request->user->id, $groupId)) {
-                throw new NoPermissionException();
-            }
-        }
 
+//        if (!Permission::checkPermission($request->user->id, ['access-user-group'])) {
+//            if (!$this->userGroupService->isUserInGroup($request->user->id, $groupId)) {
+//                throw new NoPermissionException();
+//            }
+//        }
         return response()->json([
             'code' => 0,
             'data' => $this->userGroupService->getGroupDetail($groupId)
@@ -311,7 +311,10 @@ class UserGroupController extends Controller
 
         return response()->json([
             'code' => 0,
-            'data' => $this->userGroupService->getGroupBy('owner_id',$request->user->id,['id','name','created_at','privacy','is_closed','max_size'])
+            'data' => [
+                'groups' => $this->userGroupService
+                    ->getGroupBy('owner_id',$request->user->id,['id','name','created_at','privacy','is_closed','max_size'])
+            ]
         ]);
     }
 

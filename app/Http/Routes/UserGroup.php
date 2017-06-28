@@ -40,8 +40,9 @@ Route::group(['middleware' => 'token'], function () {
         Route::post('/{groupId}/notice/{noticeId}/update', 'UserGroup\NoticeController@updateNotice');
 
 
-        Route::post('/{id}/add-homework', 'HomeworkController@addHomework');
-        Route::get('/{id}/homeworks', 'HomeworkController@getHomeworks');
+        Route::post('/{id}/homework/create', 'HomeworkController@addHomework');
+        Route::get('/{id}/homework', 'HomeworkController@getHomeworks');
+        Route::get('/{id}/exam','HomeworkController@getExams');
     });
 });
 

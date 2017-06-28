@@ -9,6 +9,7 @@
 namespace NEUQOJ\Http\Controllers;
 
 
+use Carbon\Carbon;
 use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
@@ -35,21 +36,37 @@ class HomeworkController extends Controller
 
     public function addHomework(Request $request, int $groupId)
     {
+//        dd($request->all());
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:100',
+            'start_time' => 'date|after:now',
             'end_time' => 'required|date|after:now',
             'langmask' => 'array',
+            'type' => 'required|integer|min:2|max:3',
             'problems' => 'required|array'
         ]);
 
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
+        // 权限检查
+
+        if (!Permission::checkPermission($request->user->id,['manage-user-group'])) {
+            if (!$this->userGroupService->isUserGroupOwner($request->user->id,$groupId)) {
+                throw new NoPermissionException();
+            }
+        }
+
         $info = [
             'title' => $request->input('title'),
+            'start_time' => $request->input('start_time',new Carbon()),
+            'type' => $request->input('type'),
             'end_time' => $request->input('end_time'),
             'langmask' => $request->input('langmask'),
-            'description' => $request->input('description', null)
+            'description' => $request->input('description', null),
+            'creator_id' => $request->user->id,
+            'private' => 2
         ];
 
 
@@ -61,7 +78,7 @@ class HomeworkController extends Controller
                 throw new FormValidatorException(['problems set format error!']);
         }
 
-        $homeworkId = $this->homeworkService->addHomework($request->user, $groupId, $info, $request->problems);
+        $homeworkId = $this->homeworkService->createHomework($groupId, $info, $request->problems);
 
         //创建
         if ($homeworkId == -1)
@@ -79,7 +96,7 @@ class HomeworkController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'page' => 'integer|min:0',
-            'size' => 'integer|min:0|max:100'
+            'size' => 'integer|min:0|max:50'
         ]);
 
         if ($validator->fails())
@@ -88,10 +105,12 @@ class HomeworkController extends Controller
         $page = $request->input('page', 1);
         $size = $request->input('size', 20);
 
-        if (!$this->userGroupService->isUserInGroup($request->user->id, $groupId))
-            throw new NoPermissionException();
+        if (!Permission::checkPermission($request->user->id,['access-user-group'])) {
+            if (!$this->userGroupService->isUserInGroup($request->user->id, $groupId))
+                throw new NoPermissionException();
+        }
 
-        $homeworks = $this->homeworkService->getHomeworksInGroup($groupId, $page, $size);
+        $homeworks = $this->homeworkService->getHomeworks($groupId, $page, $size,2);
 
         return response()->json([
             'code' => 0,

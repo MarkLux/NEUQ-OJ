@@ -8,8 +8,6 @@
 
 namespace NEUQOJ\Services\Contracts;
 
-use NEUQOJ\Repository\Models\User;
-
 interface ContestServiceInterface
 {
     function getAllContests(int $page,int $size);

@@ -55,7 +55,7 @@ class UserGroupRepository extends AbstractRepository
         return $this->model
             ->where('user_groups.id',$groupId)
             ->leftJoin('users','user_groups.owner_id','=','users.id')
-            ->select('user_groups.*','users.name')
+            ->select('user_groups.*','users.name as owner_name')
             ->get();
     }
 
