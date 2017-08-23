@@ -24,9 +24,8 @@ class CreateSolutionsTable extends Migration
             $table->bigInteger('problem_group_id')->nullable();
             $table->integer('problem_num')->nullable()->default('-1');
             $table->integer('code_length');
-            $table->timestamp('judgetime')->nullable();//不要修改这个字段的命名
+            $table->timestamp('judge_time')->nullable();
             $table->decimal('pass_rate')->nullable();
-            $table->integer('lint_error')->nullable();
             $table->string('judger', 45)->nullable();
             $table->timestamps();
         });

@@ -19,16 +19,19 @@ use NEUQOJ\Facades\Permission;
 use NEUQOJ\Repository\Models\Token;
 use NEUQOJ\Services\ProblemService;
 use NEUQOJ\Services\TokenService;
+use NEUQOJ\Services\UserService;
 
 class ProblemController extends Controller
 {
     private $problemService;
     private $tokenService;
+    private $userService;
 
-    public function __construct(ProblemService $problemService, TokenService $tokenService)
+    public function __construct(ProblemService $problemService, TokenService $tokenService, UserService $userService)
     {
         $this->problemService = $problemService;
         $this->tokenService = $tokenService;
+        $this->userService = $userService;
     }
 
     private function getValidateRules()
@@ -96,7 +99,7 @@ class ProblemController extends Controller
 
         $userId = $request->user->id;
 
-        $data = $this->problemService->getProblemByCreatorId($userId,$page,$size);
+        $data = $this->problemService->getProblemByCreatorId($userId, $page, $size);
 
         return response()->json([
             'code' => 0,
@@ -153,8 +156,8 @@ class ProblemController extends Controller
             'hint' => $request->input('hint'),
             'spj' => $request->input('spj'),
             'is_public' => $request->input('is_public'),
-            'input' => $request->input('input',null),
-            'output' => $request->input('output',null)
+            'input' => $request->input('input', null),
+            'output' => $request->input('output', null)
         ];
 
         $testData = [
@@ -225,7 +228,7 @@ class ProblemController extends Controller
         $validator = Validator::make($request->all(), [
             'source_code' => 'required|string|min:2',
             'private' => 'required|boolean',
-            'language' => 'required|integer|min:0|max:17'
+            'language' => 'required|integer|min:0|max:3'
         ]);
 
         if ($validator->fails())
@@ -247,15 +250,19 @@ class ProblemController extends Controller
             'user_id' => $request->user->id
         ];
 
-        $solutionId = $this->problemService->submitProblem($problemId, $data);
+        $result = $this->problemService->submitProblem($problemId, $data);
 
-        if (!$solutionId)
-            throw new InnerError("Fail to Submit :problem id" . $problemId);
+        if ($result['result'] == 1) {
+            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1, 'solved' => $request->user->solved + 1]);
+        } else {
+            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
+        }
 
         return response()->json([
             'code' => 0,
             'data' => [
-                'solution_id' => $solutionId
+                'result_code' => $result['result'],
+                'result_data' => $result['data']
             ]
         ]);
     }
@@ -269,7 +276,7 @@ class ProblemController extends Controller
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        if (!Permission::checkPermission($request->user->id,['get-run-data']))
+        if (!Permission::checkPermission($request->user->id, ['get-run-data']))
             throw new NoPermissionException();
 
         if (!$this->problemService->isProblemExist($problemId))
@@ -331,7 +338,7 @@ class ProblemController extends Controller
 
         $problem = $this->problemService->getProblemById($problemId);
 
-        if (!Permission::checkPermission($request->user->id,['delete-any-problem'])) {
+        if (!Permission::checkPermission($request->user->id, ['delete-any-problem'])) {
             //判断是否是创建者
             if ($request->user->id != $problem['creator_id'])
                 throw new NoPermissionException();

@@ -9,61 +9,59 @@
 namespace NEUQOJ\Services;
 
 
+use Carbon\Carbon;
 use NEUQOJ\Common\Utils;
+use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
+use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
 use NEUQOJ\Facades\Permission;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemTagRelationRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Repository\Eloquent\SourceCodeRepository;
 use NEUQOJ\Repository\Models\User;
-use NEUQOJ\Services\Contracts\ProblemServiceInterface;
 use Illuminate\Support\Facades\File;
 use NEUQOJ\Repository\Eloquent\ProblemRepository;
 use Illuminate\Support\Facades\DB;
 
-class ProblemService implements ProblemServiceInterface
+class ProblemService
 {
 
     private $problemRepo;
     private $solutionRepo;
     private $sourceRepo;
-//    private $deletionService;
     private $tagRelationRepo;
     private $problemGroupRelationRepo;
     private $converter;
+    private $judgeService;
 
     //获取对应题目数据的磁盘储存路径
 
-    private function getPath(int $problemId):string
+    private function getPath(int $problemId): string
     {
         return Utils::getProblemDataPath($problemId);
     }
 
-    private function adjustRawProblem($problems)
-    {
-        // todo 解耦
-    }
-
     public function __construct(
-        ProblemRepository $problemRepository,SolutionRepository $solutionRepository,
+        ProblemRepository $problemRepository, SolutionRepository $solutionRepository,
         SourceCodeRepository $sourceCodeRepository,
-        ProblemTagRelationRepository $tagRelationRepository,ProblemGroupRelationRepository $problemGroupRelationRepository
+        ProblemTagRelationRepository $tagRelationRepository, ProblemGroupRelationRepository $problemGroupRelationRepository,
+        JudgeService $judgeService
     )
     {
         $this->problemRepo = $problemRepository;
         $this->solutionRepo = $solutionRepository;
-//        $this->deletionService = $deletionService;
         $this->sourceRepo = $sourceCodeRepository;
         $this->tagRelationRepo = $tagRelationRepository;
         $this->problemGroupRelationRepo = $problemGroupRelationRepository;
+        $this->judgeService = $judgeService;
         $this->converter = app('CommonMarkService');
     }
 
     /**
      * 添加题目
      */
-    public function addProblem(User $user,array $problemData,array $testData):int
+    public function addProblem(User $user, array $problemData, array $testData): int
     {
         $problemData['creator_id'] = $user->id;
         $problemData['creator_name'] = $user->name;
@@ -81,30 +79,21 @@ class ProblemService implements ProblemServiceInterface
         $path = $this->getPath($id);
 
         //创建文件目录
-        if(!File::makeDirectory($path,  $mode = 0755))
+        if (!File::makeDirectory($path, $mode = 0755))
             return -1;
 
         //4个文件
-        File::put($path.'sample.in',$problemData['sample_input']);
+        File::put($path . 'sample.in', $problemData['sample_input']);
 
-        File::put($path.'sample.out',$problemData['sample_output']);
+        File::put($path . 'sample.out', $problemData['sample_output']);
 
-        File::put($path.'test.in', $testData['input']);
+        File::put($path . 'test.in', $testData['input']);
 
-        File::put($path.'test.out', $testData['output']);
+        File::put($path . 'test.out', $testData['output']);
+
+        // todo 同步判题数据
 
         return $id;
-    }
-
-    // 批量导入
-
-    public function addProblems(array $problems)
-    {
-        $problemIds = [];
-
-        foreach ($problems as $problem) {
-            // todo 完成此处批量生成的逻辑
-        }
     }
 
     /**
@@ -113,34 +102,32 @@ class ProblemService implements ProblemServiceInterface
 
     public function canUserAccessProblem(int $userId, int $problemId): bool
     {
-        if (!Permission::checkPermission($userId,['access-any-problem'])) {
+        if (!Permission::checkPermission($userId, ['access-any-problem'])) {
             throw new NoPermissionException();
         }
 
-        $problem = $this->problemRepo->get($problemId,['is_public','creator_id'])->first();
-        if($problem == null) return false;
-        if($problem->is_public == 0&&$problem->creator_id != $userId) return false;
+        $problem = $this->problemRepo->get($problemId, ['is_public', 'creator_id'])->first();
+        if ($problem == null) return false;
+        if ($problem->is_public == 0 && $problem->creator_id != $userId) return false;
         return true;
     }
 
-    public function getTotalPublicCount():int
+    public function getTotalPublicCount(): int
     {
         return $this->problemRepo->getTotalPublicCount();
     }
 
-    public function getTotalCount():int
+    public function getTotalCount(): int
     {
         return $this->problemRepo->getTotalCount();
     }
 
-    public function getProblems(int $userId = -1,int $page,int $size)
+    public function getProblems(int $userId = -1, int $page, int $size)
     {
-        if (Permission::checkPermission($userId,['access-any-problem'])) {
-            $problems = $this->problemRepo->getProblemsByAdmin($page,$size)->toArray();
-        }
-        else
-            $problems = $this->problemRepo->getProblems($page,$size)->toArray();
-
+        if (Permission::checkPermission($userId, ['access-any-problem'])) {
+            $problems = $this->problemRepo->getProblemsByAdmin($page, $size)->toArray();
+        } else
+            $problems = $this->problemRepo->getProblems($page, $size)->toArray();
 
         //重新组织数组形式
         $data = [];
@@ -150,28 +137,23 @@ class ProblemService implements ProblemServiceInterface
         $problemIds[] = $problems[0]['id'];
 
         $tags = [];
-        if($problems[0]['tag_id'] != null)
-            $tags[] = ['tag_title' => $problems[0]['name'] , 'tag_id' => $problems[0]['tag_id']];
+        if ($problems[0]['tag_id'] != null)
+            $tags[] = ['tag_title' => $problems[0]['name'], 'tag_id' => $problems[0]['tag_id']];
 
-        if(count($problems) > 1)
-        {
-            for($i=1;$i<count($problems);$i++)
-            {
-                if($singleProblem['id'] == $problems[$i]['id'])
-                {
-                    if($problems[$i]['tag_id'] != null)
-                        $tags[] = ['tag_title' => $problems[$i]['name'] , 'tag_id' => $problems[$i]['tag_id']];
-                }
-                else
-                {
+        if (count($problems) > 1) {
+            for ($i = 1; $i < count($problems); $i++) {
+                if ($singleProblem['id'] == $problems[$i]['id']) {
+                    if ($problems[$i]['tag_id'] != null)
+                        $tags[] = ['tag_title' => $problems[$i]['name'], 'tag_id' => $problems[$i]['tag_id']];
+                } else {
                     $singleProblem['tags'] = $tags;
                     unset($singleProblem['tag_id']);
                     unset($singleProblem['tag_title']);
                     $data[] = $singleProblem;
                     $singleProblem = $problems[$i];
                     $tags = [];
-                    if($problems[$i]['tag_id'] != null)
-                        $tags[] = ['tag_title' => $problems[$i]['name'] , 'tag_id' => $problems[$i]['tag_id']];
+                    if ($problems[$i]['tag_id'] != null)
+                        $tags[] = ['tag_title' => $problems[$i]['name'], 'tag_id' => $problems[$i]['tag_id']];
                 }
 
                 $problemIds[] = $problems[$i]['id'];
@@ -209,7 +191,7 @@ class ProblemService implements ProblemServiceInterface
 //            }
 //        }
 
-        if($userId != -1) {
+        if ($userId != -1) {
             $problemIds = [];
 
             foreach ($data as $problem) {
@@ -222,32 +204,30 @@ class ProblemService implements ProblemServiceInterface
 
             foreach ($userStatuses as $userStatus) {
                 $subIds[$userStatus['problem_id']] = true;
-                if($userStatus['result'] == 4) $acIds[$userStatus['problem_id']] = true;
+                if ($userStatus['result'] == 4) $acIds[$userStatus['problem_id']] = true;
             }
 
             foreach ($data as &$problem) {
-                if (isset($subIds[$problem['id']]))
-                {
-                    if(isset($acIds[$problem['id']]))
+                if (isset($subIds[$problem['id']])) {
+                    if (isset($acIds[$problem['id']]))
                         $problem['user_status'] = 'Y';
                     else
                         $problem['user_status'] = 'N';
-                }
-                else $problem['user_status'] = null;
+                } else $problem['user_status'] = null;
             }
         }
 
         return $data;
     }
 
-    public function getProblemByCreatorId(int $userId,int $page,int $size,array $columns = ['*'])
+    public function getProblemByCreatorId(int $userId, int $page, int $size, array $columns = ['*'])
     {
         $count = $this->problemRepo->getWhereCount(['creator_id' => $userId]);
 
         $problems = null;
 
         if ($count > 0) {
-            $problems = $this->problemRepo->paginate($page,$size,['creator_id' => $userId],$columns);
+            $problems = $this->problemRepo->paginate($page, $size, ['creator_id' => $userId], $columns);
         }
 
         return [
@@ -258,36 +238,33 @@ class ProblemService implements ProblemServiceInterface
 
     //组织数据 转化md为markdown
 
-    public function getProblemById(int $problemId,array $columns = ['*'])
+    public function getProblemById(int $problemId, array $columns = ['*'])
     {
-        return $this->problemRepo->get($problemId,$columns)->first();
+        return $this->problemRepo->get($problemId, $columns)->first();
     }
 
     public function getProblemIndex(int $problemId)
     {
         //join过的表不能再简单的用原表主键找   
-        $problems = $this->problemRepo->getBy('problems.id',$problemId)->toArray();
+        $problems = $this->problemRepo->getBy('problems.id', $problemId)->toArray();
         //拿到的全部的数据
 
-        if(count($problems) == 0)
+        if (count($problems) == 0)
             return false;
 
         //重新组装
         $data = $problems[0];
         $data['tags'] = [];
 
-        if(count($problems)>1)
-        {
+        if (count($problems) > 1) {
             foreach ($problems as $problem)
                 $data['tags'][] = [
                     'tag_id' => $problem['tag_id'],
                     'tag_title' => $problem['name']
                 ];
 
-        }
-        else
-        {
-            if($data['tag_id']!=null)
+        } else {
+            if ($data['tag_id'] != null)
                 $data['tags'][] = [
                     'tag_id' => $data['tag_id'],
                     'tag_title' => $data['name']
@@ -301,27 +278,24 @@ class ProblemService implements ProblemServiceInterface
 
     public function getProblemBy(string $param, $value)
     {
-        $problems = $this->problemRepo->getBy($param,$value)->toArray();
+        $problems = $this->problemRepo->getBy($param, $value)->toArray();
         //拿到的全部的数据
 
-        if(empty($problems))
+        if (empty($problems))
             return false;
 
         //重新组装
         $data = $problems[0];
         $data['tags'] = [];
 
-        if(count($problems)>1)
-        {
+        if (count($problems) > 1) {
             foreach ($problems as $problem)
                 $data['tags'][] = [
                     'tag_id' => $problem['tag_id'],
                     'tag_title' => $problem['tag_title']
                 ];
-        }
-        else
-        {
-            if($data['tag_id']!=null)
+        } else {
+            if ($data['tag_id'] != null)
                 $data['tags'] = [
                     'tag_id' => $data['tag_id'],
                     'tag_title' => $data['tag_title']
@@ -334,43 +308,41 @@ class ProblemService implements ProblemServiceInterface
         return $data;
     }
 
-    public function getProblemByMult(array $condition,array $columns = ['*'])
+    public function getProblemByMult(array $condition, array $columns = ['*'])
     {
         //缺少组装
-        return $this->problemRepo->getByMult($condition,$columns)->first()->toArray();
+        return $this->problemRepo->getByMult($condition, $columns)->first()->toArray();
     }
 
     public function isProblemExist(int $problemId): bool
     {
-        return $this->problemRepo->get($problemId,['id'])->first()!=null;
+        return $this->problemRepo->get($problemId, ['id'])->first() != null;
     }
 
     /**
      * 修改题目信息
      */
 
-    public function updateProblem(int $problemId, array $problemData,array $testData):bool
+    public function updateProblem(int $problemId, array $problemData, array $testData): bool
     {
         //数据必须经过过滤 默认不更新testData（耗时）
-        if($this->problemRepo->update($problemData,$problemId)!=1)
+        if ($this->problemRepo->update($problemData, $problemId) != 1)
             return false;
 
         //更新输入输出测试数据
         $path = $this->getPath($problemId);
 
-        if(File::isDirectory($path))
-        {
-            File::put($path.'sample.in',$problemData['sample_input']);
+        if (File::isDirectory($path)) {
+            File::put($path . 'sample.in', $problemData['sample_input']);
 
-            File::put($path.'sample.out',$problemData['sample_output']);
+            File::put($path . 'sample.out', $problemData['sample_output']);
 
-            File::put($path.'test.in', $testData['input']);
+            File::put($path . 'test.in', $testData['input']);
 
-            File::put($path.'test.out', $testData['output']);
+            File::put($path . 'test.out', $testData['output']);
 
             return true;
-        }
-        else
+        } else
             return false;
     }
 
@@ -378,12 +350,18 @@ class ProblemService implements ProblemServiceInterface
      * 提交题目
      */
 
-    public function submitProblem(int $problemId,array $data,int $problemNum = -1):int
+    public function submitProblem(int $problemId, array $data, int $problemNum = -1)
     {
         //写入solution和source_code
         //插入顺序必须是先插入source_code获取id然后再给solution不然一定会编译错误。
         //提交成功后返回solution_id否则返回0
         //题目组中的题目插入时附带题目编号，默认-1
+
+        $problem = $this->problemRepo->get($problemId, ['id', 'time_limit', 'memory_limit', 'submit', 'accepted'])->first();
+
+        if ($problem == null) {
+            throw new ProblemNotExistException();
+        }
 
         $code = [
             'source' => $data['source_code'],
@@ -405,28 +383,82 @@ class ProblemService implements ProblemServiceInterface
 
         //开启事务处理
 
-        DB::transaction(function ()use(&$solutionId,$code,$solutionData){
-            //请注意！如果要在闭包里改变外部变量的值必须传引用
+        DB::transaction(function () use (&$solutionId, $code, $solutionData) {
             $solutionId = $this->sourceRepo->insertWithId($code);
             $solutionData['id'] = $solutionId;
             $this->solutionRepo->insert($solutionData);
         });
 
+        // 开始判题
 
-        return $solutionId;
+        if ($solutionId == 0) {
+            throw new InnerError("Fail to create solution");
+        }
+
+        $result = $this->judgeService->judge([
+            'src' => $data['source_code'],
+            'language' => Utils::switchLanguage($data['language']),
+            'max_cpu_time' => $problem->time_limit * 1000,
+            'max_memory' => $problem->memory_limit * 1024 * 1024,
+            'test_case_id' => $problemId
+        ]);
+
+        if ($result == null || $result->code == -1 || $result->code == -3) {
+            $this->solutionRepo->update(['result' => -1,'judger' => $result->judgerName,'judge_time' => Carbon::now()], $solutionId);
+            return [
+                'result' => -1,
+                'data' => isset($result->data) ? $result->data : 'Unknown Error'
+            ];
+        } else if ($result->code == -2) {
+            // 编译错误
+            DB::transaction(function () use ($solutionId, $problem,$result) {
+                $this->solutionRepo->update(['result' => 2,'judger' => $result->judgerName,'judge_time' => Carbon::now()], $solutionId);
+                $this->problemRepo->update(['submit' => $problem->submit + 1], $problem->id);
+            });
+            return [
+                'result' => -2,
+                'data' => $result->data,
+            ];
+        } else {
+            if (!empty($result->data->UnPassed)) {
+                // 有错误
+                DB::transaction(function () use ($solutionId, $problem,$result) {
+                    $passRate = floatval(count($result->data->Passed)/(count($result->data->Passed)+count($result->data->UnPassed)));
+                    $this->solutionRepo->update(['result' => 3,'judger' => $result->judgerName,'pass_rate'=>$passRate,'judge_time' => Carbon::now()],$solutionId);
+                    $this->problemRepo->update(['submit' => $problem->submit +1],$problem->id);
+                });
+
+                return [
+                    'result' => 3,
+                    'data' => $result->data
+                ];
+            }else{
+                // AC
+                DB::transaction(function () use ($solutionId, $problem,$result) {
+                    $passRate = 1.0;
+                    $this->solutionRepo->update(['result' => 1,'judger' => $result->judgerName,'pass_rate'=>$passRate,'judge_time' => Carbon::now()],$solutionId);
+                    $this->problemRepo->update(['submit' => $problem->submit +1,'accepted' => $problem->accepted +1],$problem->id);
+                });
+
+                return [
+                    'result' => 1,
+                    'data' => $result->data
+                ];
+            }
+        }
     }
 
     /**
-     * 删除题目（软删除并加入日志）
+     * 删除题目
      */
 
-    public function deleteProblem(User $user,int $problemId): bool
+    public function deleteProblem(User $user, int $problemId): bool
     {
         $flag = false;
 
-        DB::transaction(function () use($user,$problemId,&$flag){
+        DB::transaction(function () use ($user, $problemId, &$flag) {
             // 删除题目表
-           $this->problemRepo->deleteWhere(['id'=>$problemId]);
+            $this->problemRepo->deleteWhere(['id' => $problemId]);
 
             // 删除tag关系表
 
@@ -443,7 +475,7 @@ class ProblemService implements ProblemServiceInterface
 
         $path = $this->getPath($problemId);
 
-        if(File::isDirectory($path))
+        if (File::isDirectory($path))
             return File::deleteDirectory($path);
 
         return $flag;
@@ -455,43 +487,38 @@ class ProblemService implements ProblemServiceInterface
 
     public function searchProblemsCount(string $likeName): int
     {
-       $pattern = "%".$likeName."%";
-       return $this->problemRepo->getWhereLikeCount($pattern);
+        $pattern = "%" . $likeName . "%";
+        return $this->problemRepo->getWhereLikeCount($pattern);
     }
 
-    public function searchProblems(int $userId = -1,string $likeName, int $start, int $size)
+    public function searchProblems(int $userId = -1, string $likeName, int $start, int $size)
     {
-        $pattern = "%".$likeName."%";
+        $pattern = "%" . $likeName . "%";
 
-        $problems = $this->problemRepo->getWhereLike($pattern,$start,$size)->toArray();
+        $problems = $this->problemRepo->getWhereLike($pattern, $start, $size)->toArray();
 
         //重新组织数组形式
         $data = [];
 
         $singleProblem = $problems[0];
         $tags = [];
-        if($problems[0]['tag_id'] != null)
-            $tags[] = ['tag_title' => $problems[0]['name'] , 'tag_id' => $problems[0]['tag_id']];
+        if ($problems[0]['tag_id'] != null)
+            $tags[] = ['tag_title' => $problems[0]['name'], 'tag_id' => $problems[0]['tag_id']];
 
-        if(count($problems) > 1)
-        {
-            for($i=1;$i<count($problems);$i++)
-            {
-                if($singleProblem['id'] == $problems[$i]['id'])
-                {
-                    if($problems[$i]['tag_id'] != null)
-                        $tags[] = ['tag_title' => $problems[$i]['name'] , 'tag_id' => $problems[$i]['tag_id']];
-                }
-                else
-                {
+        if (count($problems) > 1) {
+            for ($i = 1; $i < count($problems); $i++) {
+                if ($singleProblem['id'] == $problems[$i]['id']) {
+                    if ($problems[$i]['tag_id'] != null)
+                        $tags[] = ['tag_title' => $problems[$i]['name'], 'tag_id' => $problems[$i]['tag_id']];
+                } else {
                     $singleProblem['tags'] = $tags;
                     unset($singleProblem['tag_id']);
                     unset($singleProblem['tag_title']);
                     $data[] = $singleProblem;
                     $singleProblem = $problems[$i];
                     $tags = [];
-                    if($problems[$i]['tag_id'] != null)
-                        $tags[] = ['tag_title' => $problems[$i]['name'] , 'tag_id' => $problems[$i]['tag_id']];
+                    if ($problems[$i]['tag_id'] != null)
+                        $tags[] = ['tag_title' => $problems[$i]['name'], 'tag_id' => $problems[$i]['tag_id']];
                 }
             }
         }
@@ -504,7 +531,7 @@ class ProblemService implements ProblemServiceInterface
 
         //组织用户解题情况
 
-        if($userId != -1) {
+        if ($userId != -1) {
             $problemIds = [];
 
             foreach ($data as $problem) {
@@ -517,18 +544,16 @@ class ProblemService implements ProblemServiceInterface
 
             foreach ($userStatuses as $userStatus) {
                 $subIds[$userStatus['problem_id']] = true;
-                if($userStatus['result'] == 4) $acIds[$userStatus['problem_id']] = true;
+                if ($userStatus['result'] == 4) $acIds[$userStatus['problem_id']] = true;
             }
 
             foreach ($data as &$problem) {
-                if (isset($subIds[$problem['id']]))
-                {
-                    if(isset($acIds[$problem['id']]))
+                if (isset($subIds[$problem['id']])) {
+                    if (isset($acIds[$problem['id']]))
                         $problem['user_status'] = 'Y';
                     else
                         $problem['user_status'] = 'N';
-                }
-                else $problem['user_status'] = null;
+                } else $problem['user_status'] = null;
             }
         }
 
@@ -539,22 +564,20 @@ class ProblemService implements ProblemServiceInterface
      * 以文件形式获取题解数据
      */
 
-    public function getRunDataPath(int $problemId,string $name)
+    public function getRunDataPath(int $problemId, string $name)
     {
         $path = $this->getPath($problemId);
 
-        if(File::isDirectory($path))
-        {
-            switch ($name)
-            {
+        if (File::isDirectory($path)) {
+            switch ($name) {
                 case "test_in":
-                    return $path."test.in";
+                    return $path . "test.in";
                 case "test_out":
-                    return $path."test.out";
+                    return $path . "test.out";
                 case "sample_in":
-                    return $path."sample.in";
+                    return $path . "sample.in";
                 case "sample_out":
-                    return $path."sample.out";
+                    return $path . "sample.out";
                 default:
                     return null;
             }

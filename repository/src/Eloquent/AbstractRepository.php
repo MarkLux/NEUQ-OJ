@@ -7,12 +7,6 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use NEUQOJ\Repository\Contracts\RepositoryInterface;
 
-/**
- * Created by PhpStorm.
- * User: hotown
- * Date: 16-10-11
- * Time: 下午9:39
- */
 abstract class AbstractRepository implements RepositoryInterface
 {
     /** @var Model $model */

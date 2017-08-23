@@ -4,7 +4,9 @@ namespace NEUQOJ\Repository\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class RuntimeInfo extends Model
+class JudgeServer extends Model
 {
-    //
+    protected $hidden = [
+        'rpc_token',
+    ];
 }

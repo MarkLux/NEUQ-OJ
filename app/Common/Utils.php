@@ -5,6 +5,7 @@ use Dotenv\Exception\ValidationException;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
 
 /**
  * Created by PhpStorm.
@@ -120,6 +121,22 @@ class Utils
 
         if ($validator->fails()) {
             throw new FormValidatorException($validator->getMessageBag()->all());
+        }
+    }
+
+    public static function switchLanguage(int $langCode)
+    {
+        switch ($langCode) {
+            case 0:
+                return 'c';
+            case 1:
+                return 'cpp';
+            case 2:
+                return 'java';
+            case 3:
+                return 'py2';
+            default:
+                throw new LanguageErrorException();
         }
     }
 }

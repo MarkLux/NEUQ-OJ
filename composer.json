@@ -10,7 +10,8 @@
         "predis/predis": "~1.0",
         "league/commonmark": "^0.15.3",
         "mews/captcha": "^2.1",
-        "qiniu/php-sdk": "^7.1"
+        "qiniu/php-sdk": "^7.1",
+        "rmccue/requests": "^1.7"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
