@@ -416,7 +416,7 @@ class ProblemService
                 $this->problemRepo->update(['submit' => $problem->submit + 1], $problem->id);
             });
             return [
-                'result' => -2,
+                'result' => 2,
                 'data' => $result->data,
             ];
         } else {
@@ -436,12 +436,12 @@ class ProblemService
                 // AC
                 DB::transaction(function () use ($solutionId, $problem,$result) {
                     $passRate = 1.0;
-                    $this->solutionRepo->update(['result' => 1,'judger' => $result->judgerName,'pass_rate'=>$passRate,'judge_time' => Carbon::now()],$solutionId);
+                    $this->solutionRepo->update(['result' => 4,'judger' => $result->judgerName,'pass_rate'=>$passRate,'judge_time' => Carbon::now()],$solutionId);
                     $this->problemRepo->update(['submit' => $problem->submit +1,'accepted' => $problem->accepted +1],$problem->id);
                 });
 
                 return [
-                    'result' => 1,
+                    'result' => 4,
                     'data' => $result->data
                 ];
             }

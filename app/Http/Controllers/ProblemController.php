@@ -252,7 +252,7 @@ class ProblemController extends Controller
 
         $result = $this->problemService->submitProblem($problemId, $data);
 
-        if ($result['result'] == 1) {
+        if ($result['result'] == 4) {
             $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1, 'solved' => $request->user->solved + 1]);
         } else {
             $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
