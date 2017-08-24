@@ -15,21 +15,16 @@ use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Repository\Eloquent\SourceCodeRepository;
 use NEUQOJ\Services\Contracts\SolutionServiceInterface;
 
-class SolutionService implements SolutionServiceInterface
+class SolutionService
 {
     private $solutionRepo;
-    private $compileInfoRepo;
-    private $runtimeInfoRepo;
     private $sourceCodeRepo;
 
     public function __construct(
-        SolutionRepository $solutionRepository,CompileInfoRepository $compileInfoRepository,
-        RuntimeInfoRepository $runtimeInfoRepository,SourceCodeRepository $sourceCodeRepository
+        SolutionRepository $solutionRepository,SourceCodeRepository $sourceCodeRepository
     )
     {
         $this->solutionRepo = $solutionRepository;
-        $this->compileInfoRepo = $compileInfoRepository;
-        $this->runtimeInfoRepo = $runtimeInfoRepository;
         $this->sourceCodeRepo = $sourceCodeRepository;
     }
 
@@ -51,16 +46,6 @@ class SolutionService implements SolutionServiceInterface
     public function getSolutionCount(): int
     {
        return $this->solutionRepo->getTotalCount();
-    }
-
-    public function getCompileInfo(int $solutionId)
-    {
-        return $this->compileInfoRepo->get($solutionId,['*'],'solution_id')->first();
-    }
-
-    public function getRuntimeInfo(int $solutionId)
-    {
-        return $this->runtimeInfoRepo->get($solutionId,['*'],'solution_id')->first();
     }
 
     public function getSourceCode(int $solutionId)

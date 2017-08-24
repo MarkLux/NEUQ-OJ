@@ -25,7 +25,7 @@ use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
 
-class ContestService implements ContestServiceInterface
+class ContestService
 {
     private $problemGroupService;
     private $problemGroupRelationRepo;
@@ -450,7 +450,7 @@ class ContestService implements ContestServiceInterface
         return true;
     }
 
-    public function submitProblem(int $userId, int $groupId, int $problemNum, array $data): int
+    public function submitProblem(int $userId, int $groupId, int $problemNum, array $data)
     {
         //先检测用户能不能提交
         $group = $this->problemGroupRepo->get($groupId, ['private', 'type', 'langmask', 'start_time', 'end_time'])->first();

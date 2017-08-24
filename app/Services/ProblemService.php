@@ -82,14 +82,16 @@ class ProblemService
         if (!File::makeDirectory($path, $mode = 0755))
             return -1;
 
-        //4个文件
+        //多个文件
         File::put($path . 'sample.in', $problemData['sample_input']);
 
         File::put($path . 'sample.out', $problemData['sample_output']);
 
-        File::put($path . 'test.in', $testData['input']);
+        for ($i = 0; $i < count($testData); $i++) {
+            File::put($path . $i . '.in', $testData[$i]['input']);
 
-        File::put($path . 'test.out', $testData['output']);
+            File::put($path . $i . '.out', $testData[$i]['output']);
+        }
 
         // todo 同步判题数据
 
@@ -337,9 +339,10 @@ class ProblemService
 
             File::put($path . 'sample.out', $problemData['sample_output']);
 
-            File::put($path . 'test.in', $testData['input']);
-
-            File::put($path . 'test.out', $testData['output']);
+            for ($i = 0; $i < count($testData); $i++) {
+                File::put($path . $i . '.in', $testData[$i]['input']);
+                File::put($path . $i . '.out', $testData[$i]['output']);
+            }
 
             return true;
         } else
@@ -404,15 +407,15 @@ class ProblemService
         ]);
 
         if ($result == null || $result->code == -1 || $result->code == -3) {
-            $this->solutionRepo->update(['result' => -1,'judger' => $result->judgerName,'judge_time' => Carbon::now()], $solutionId);
+            $this->solutionRepo->update(['result' => -1, 'judger' => $result->judgerName, 'judge_time' => Carbon::now()], $solutionId);
             return [
                 'result' => -1,
                 'data' => isset($result->data) ? $result->data : 'Unknown Error'
             ];
         } else if ($result->code == -2) {
             // 编译错误
-            DB::transaction(function () use ($solutionId, $problem,$result) {
-                $this->solutionRepo->update(['result' => 2,'judger' => $result->judgerName,'judge_time' => Carbon::now()], $solutionId);
+            DB::transaction(function () use ($solutionId, $problem, $result) {
+                $this->solutionRepo->update(['result' => 2, 'judger' => $result->judgerName, 'judge_time' => Carbon::now()], $solutionId);
                 $this->problemRepo->update(['submit' => $problem->submit + 1], $problem->id);
             });
             return [
@@ -422,22 +425,22 @@ class ProblemService
         } else {
             if (!empty($result->data->UnPassed)) {
                 // 有错误
-                DB::transaction(function () use ($solutionId, $problem,$result) {
-                    $passRate = floatval(count($result->data->Passed)/(count($result->data->Passed)+count($result->data->UnPassed)));
-                    $this->solutionRepo->update(['result' => 3,'judger' => $result->judgerName,'pass_rate'=>$passRate,'judge_time' => Carbon::now()],$solutionId);
-                    $this->problemRepo->update(['submit' => $problem->submit +1],$problem->id);
+                DB::transaction(function () use ($solutionId, $problem, $result) {
+                    $passRate = floatval(count($result->data->Passed) / (count($result->data->Passed) + count($result->data->UnPassed)));
+                    $this->solutionRepo->update(['result' => 3, 'judger' => $result->judgerName, 'pass_rate' => $passRate, 'judge_time' => Carbon::now()], $solutionId);
+                    $this->problemRepo->update(['submit' => $problem->submit + 1], $problem->id);
                 });
 
                 return [
                     'result' => 3,
                     'data' => $result->data
                 ];
-            }else{
+            } else {
                 // AC
-                DB::transaction(function () use ($solutionId, $problem,$result) {
+                DB::transaction(function () use ($solutionId, $problem, $result) {
                     $passRate = 1.0;
-                    $this->solutionRepo->update(['result' => 4,'judger' => $result->judgerName,'pass_rate'=>$passRate,'judge_time' => Carbon::now()],$solutionId);
-                    $this->problemRepo->update(['submit' => $problem->submit +1,'accepted' => $problem->accepted +1],$problem->id);
+                    $this->solutionRepo->update(['result' => 4, 'judger' => $result->judgerName, 'pass_rate' => $passRate, 'judge_time' => Carbon::now()], $solutionId);
+                    $this->problemRepo->update(['submit' => $problem->submit + 1, 'accepted' => $problem->accepted + 1], $problem->id);
                 });
 
                 return [
@@ -569,19 +572,7 @@ class ProblemService
         $path = $this->getPath($problemId);
 
         if (File::isDirectory($path)) {
-            switch ($name) {
-                case "test_in":
-                    return $path . "test.in";
-                case "test_out":
-                    return $path . "test.out";
-                case "sample_in":
-                    return $path . "sample.in";
-                case "sample_out":
-                    return $path . "sample.out";
-                default:
-                    return null;
-            }
-
+            return $path.$name;
         }
 
         return null;

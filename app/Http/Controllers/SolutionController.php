@@ -24,6 +24,7 @@ class SolutionController extends Controller
     public function __construct(SolutionService $service)
     {
         $this->solutionService = $service;
+        $this->middleware('token');
     }
 
     public function getSolutions(Request $request)
@@ -73,32 +74,6 @@ class SolutionController extends Controller
         return response()->json([
             'code' =>0,
             'data' => $data
-        ]);
-    }
-
-    public function getCompileInfo(int $solutionId)
-    {
-        $compileInfo = $this->solutionService->getCompileInfo($solutionId);
-
-        if($compileInfo==null)
-            throw new CompileInfoNotExistException();
-
-        return response()->json([
-            'code' => 0,
-            'data' => $compileInfo
-        ]);
-    }
-
-    public function getRuntimeInfo(int $solutionId)
-    {
-        $runtimeInfo = $this->solutionService->getRuntimeInfo($solutionId);
-
-        if($runtimeInfo==null)
-            throw new RuntimeInfoNotExistException();
-
-        return response()->json([
-            'code' => 0,
-            'data' => $runtimeInfo
         ]);
     }
 

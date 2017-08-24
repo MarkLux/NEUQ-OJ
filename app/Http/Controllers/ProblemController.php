@@ -160,10 +160,7 @@ class ProblemController extends Controller
             'output' => $request->input('output', null)
         ];
 
-        $testData = [
-            'input' => $request->input('test_input'),
-            'output' => $request->input('test_output')
-        ];
+        $testData = $request->input('test_data',[]);
 
         $id = $this->problemService->addProblem($request->user, $problemData, $testData);
 

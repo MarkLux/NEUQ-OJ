@@ -201,22 +201,26 @@ class ContestController extends Controller
         $data = [
             'source_code' => $request->input('source_code'),
             'private' => $request->input('private'),
-            'code_length' => strlen($request->input('source_code')),//好像有点问题
+            'code_length' => strlen($request->input('source_code')),
             'ip' => $request->ip(),
             'problem_group_id' => $contestId,
             'language' => $request->input('language'),
             'user_id' => $request->user->id
         ];
 
-        $solutionId = $this->contestService->submitProblem($request->user->id, $contestId, $problemNum, $data);
+        $result = $this->contestService->submitProblem($request->user->id, $contestId, $problemNum, $data);
 
-        if (!$solutionId)
-            throw new InnerError("Fail to Submit :contest " . $contestId . " problem " . $problemNum);
+        if ($result['result'] == 4) {
+            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1, 'solved' => $request->user->solved + 1]);
+        } else {
+            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
+        }
 
         return response()->json([
             'code' => 0,
             'data' => [
-                'solution_id' => $solutionId
+                'result_code' => $result['result'],
+                'result_data' => $result['data']
             ]
         ]);
     }
