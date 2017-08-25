@@ -54,7 +54,7 @@ class ProblemController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'page' => 'integer|min:1',
-            'size' => 'integer|min:1|max:40'
+            'size' => 'integer|min:1|max:100'
         ]);
 
         if ($validator->fails())

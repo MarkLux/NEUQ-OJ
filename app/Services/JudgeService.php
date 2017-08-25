@@ -9,7 +9,9 @@
 namespace NEUQOJ\Services;
 
 
+use Mockery\Exception;
 use NEUQOJ\Exceptions\Judge\JudgeServerNotExistException;
+use NEUQOJ\Exceptions\Judge\JudgeServerStatusErrorException;
 use NEUQOJ\Repository\Eloquent\JudgeServerRepository;
 
 class JudgeService
@@ -17,7 +19,7 @@ class JudgeService
     private $judgeServerRepo;
     private $cacheService;
 
-    public function __construct(JudgeServerRepository $judgeServerRepo,CacheService $cacheService)
+    public function __construct(JudgeServerRepository $judgeServerRepo, CacheService $cacheService)
     {
         $this->judgeServerRepo = $judgeServerRepo;
         $this->cacheService = $cacheService;
@@ -35,7 +37,12 @@ class JudgeService
         foreach ($judgeServers as &$judgeServer) {
             if ($judgeServer->status == 1) {
                 $serverURL = "http://" . $judgeServer->host . ":" . $judgeServer->port;
-                $pong = \Requests::get($serverURL . '/ping', ['token' => $judgeServer->rpc_token]);
+                try {
+                    $pong = \Requests::get($serverURL . '/ping', ['token' => $judgeServer->rpc_token]);
+                } catch (\Exception $e) {
+                    $judgeServer->status = -1;
+                    $judgeServer->info = null;
+                }
                 if ($pong->status_code != 200) {
                     $judgeServer->status = -1;
                     $judgeServer->info = null;
@@ -58,7 +65,11 @@ class JudgeService
             throw new JudgeServerNotExistException();
         }
         $serverURL = "http://" . $server->host . ":" . $server->port;
-        $pong = \Requests::get($serverURL . '/ping', ['token' => $server->rpc_token]);
+        try {
+            $pong = \Requests::get($serverURL . '/ping', ['token' => $server->rpc_token]);
+        } catch (\Exception $e) {
+            throw new JudgeServerStatusErrorException();
+        }
         if ($pong->status_code != 200) {
             return null;
         } else {
@@ -66,9 +77,9 @@ class JudgeService
         }
     }
 
-    public function updateServer(int $id,array $data)
+    public function updateServer(int $id, array $data)
     {
-        return $this->judgeServerRepo->update($data,$id) == 1;
+        return $this->judgeServerRepo->update($data, $id) == 1;
     }
 
     public function deleteServer(int $id)
@@ -79,7 +90,7 @@ class JudgeService
     private function getBestServer()
     {
         // 调度算法
-        $servers = $this->judgeServerRepo->getBy('status',1,['id','name','host','port','rpc_token']);
+        $servers = $this->judgeServerRepo->getBy('status', 1, ['id', 'name', 'host', 'port', 'rpc_token']);
 
         $bestserver = [
             'server' => null,
@@ -88,10 +99,14 @@ class JudgeService
 
         foreach ($servers as $server) {
             $serverURL = "http://" . $server->host . ":" . $server->port;
-            $pong = \Requests::get($serverURL . '/ping', ['token' => $server->rpc_token]);
-            if ($pong->status_code == 200&&!isset($pong->code)) {
+            try {
+                $pong = \Requests::get($serverURL . '/ping', ['token' => $server->rpc_token]);
+            } catch (\Exception $exception) {
+                continue;
+            }
+            if ($pong->status_code == 200 && !isset($pong->code)) {
                 $pong = json_decode($pong->body);
-                $load = 400*$pong->cpu[0] + 0.6*$pong->memory;
+                $load = 400 * $pong->cpu[0] + 0.6 * $pong->memory;
                 if ($load < $bestserver['load']) {
                     $bestserver = [
                         'server' => $server,
@@ -106,13 +121,17 @@ class JudgeService
     public function judge(array $data)
     {
         $server = $this->getBestServer();
-        $serverURL = 'http://'.$server->host.':'.$server->port.'/judge';
-        $result = \Requests::post($serverURL,['token' => $server->rpc_token,'Content-Type' => 'application/json'],json_encode($data));
-        if ($result->success){
+        $serverURL = 'http://' . $server->host . ':' . $server->port . '/judge';
+        try {
+            $result = \Requests::post($serverURL, ['token' => $server->rpc_token, 'Content-Type' => 'application/json'], json_encode($data));
+        }catch (Exception $e){
+            throw new JudgeServerStatusErrorException();
+        }
+        if ($result->success) {
             $result = json_decode($result->body);
             $result->judgerName = $server->name;
             return $result;
-        }else{
+        } else {
             return null;
         }
     }

@@ -10,11 +10,9 @@ namespace NEUQOJ\Http\Controllers;
 
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
-use NEUQOJ\Exceptions\Problem\CompileInfoNotExistException;
-use NEUQOJ\Exceptions\Problem\RuntimeInfoNotExistException;
 use NEUQOJ\Exceptions\Problem\SolutionNotExistException;
-use NEUQOJ\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use NEUQOJ\Facades\Permission;
 use NEUQOJ\Services\SolutionService;
 
 class SolutionController extends Controller
@@ -29,7 +27,7 @@ class SolutionController extends Controller
 
     public function getSolutions(Request $request)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'page' => 'integer|min:1',
             'size' => 'integer|min:1',
             'problem_id' => 'integer',
@@ -38,25 +36,29 @@ class SolutionController extends Controller
             'user_id' => 'integer'
         ]);
 
-        if($validator->fails())
+        if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
-        $page = $request->input('page',1);
-        $size = $request->input('size',20);
-        $problemId = $request->input('problem_id',-1);
-        $result = $request->input('result',-1);
-        $language = $request->input('language',-1);
-        $userId = $request->input('user_id',-1);
+        $page = $request->input('page', 1);
+        $size = $request->input('size', 20);
+        $problemId = $request->input('problem_id', -1);
+        $result = $request->input('result', -1);
+        $language = $request->input('language', -1);
 
         $condition = [];
-        if($problemId != -1) $condition['problem_id'] = $problemId;
-        if($result!=-1) $condition['result'] = $result;
-        if($language!=-1) $condition['language'] = $language;
-        if($userId!=-1) $condition['user_id'] = $userId;
+        if ($problemId != -1) $condition['problem_id'] = $problemId;
+        if ($result != -1) $condition['result'] = $result;
+        if ($language != -1) $condition['language'] = $language;
 
-        $data = $this->solutionService->getAllSolutions($page,$size,$condition);
-//        $total_count = $this->solutionService->getSolutionCount();
-        //数据量太大，如果统计数据总数会导致严重延迟
+
+        if (Permission::checkPermission($request->user->id, ['view-solutions'])) {
+            $userId = $request->input('user_id', -1);
+            if ($userId != -1) $condition['user_id'] = $userId;
+        } else {
+            $condition['user_id'] = $request->user->id;
+        }
+
+        $data = $this->solutionService->getAllSolutions($page, $size, $condition);
 
         return response()->json([
             'code' => 0,
@@ -72,7 +74,7 @@ class SolutionController extends Controller
         unset($data['id']);
 
         return response()->json([
-            'code' =>0,
+            'code' => 0,
             'data' => $data
         ]);
     }
@@ -81,7 +83,7 @@ class SolutionController extends Controller
     {
         //TODO :检查权限
 
-        if(!$this->solutionService->isSolutionExist($solutionId))
+        if (!$this->solutionService->isSolutionExist($solutionId))
             throw new SolutionNotExistException();
 
         $sourceCode = $this->solutionService->getSourceCode($solutionId);
