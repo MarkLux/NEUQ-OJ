@@ -21,4 +21,6 @@ Route::group(['middleware' => 'token'], function () {
 
     Route::post('/problems/import','AdminController@importProblems');
     Route::post('/problems/export','AdminController@exportProblems');
+
+    Route::post('/admin/users/generate/prefix','AdminController@generateUsersByPrefix');
 });

@@ -4,15 +4,24 @@ namespace NEUQOJ\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Facades\Permission;
+use NEUQOJ\Services\AdminService;
 use NEUQOJ\Services\FreeProblemSetService;
 use NEUQOJ\Services\UserService;
 
 class AdminController extends Controller
 {
+    private $adminService;
+
+    public function __construct(AdminService $adminService)
+    {
+        $this->adminService = $adminService;
+    }
+
     public function lockUser(UserService $userService, $id)
     {
         if ($userService->lockUser($id))
@@ -91,5 +100,25 @@ class AdminController extends Controller
         ];
 
         return response()->view('xml', ['problems' => $problems], 200, $headers);
+    }
+
+    public function generateUsersByPrefix(Request $request)
+    {
+        Utils::validateCheck($request->all(),[
+            'prefix' => 'required|string|max:45',
+            'num' => 'required|integer',
+            'names' => 'array'
+        ]);
+
+        // todo check permission
+
+        $names = $request->input('names',[]);
+
+        $users = $this->adminService->generateUsersByPrefix($request->prefix,$request->num,$names);
+
+        return response()->json([
+            'code' => 0,
+            'data' => $users
+        ]);
     }
 }
