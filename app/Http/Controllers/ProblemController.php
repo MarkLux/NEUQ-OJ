@@ -16,7 +16,6 @@ use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
 use NEUQOJ\Facades\Permission;
-use NEUQOJ\Repository\Models\Token;
 use NEUQOJ\Services\ProblemService;
 use NEUQOJ\Services\TokenService;
 use NEUQOJ\Services\UserService;
