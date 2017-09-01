@@ -9,10 +9,13 @@
 Route::group(['middleware' => 'token'],function(){
     Route::post('/problem/create','ProblemController@addProblem');
     Route::post('/problem/{id}/submit','ProblemController@submitProblem');
-    Route::get('/problem/{id}/rundata','ProblemController@getRunData');
     Route::post('/problem/{id}/delete','ProblemController@deleteProblem');
     Route::post('/problem/{id}/update','ProblemController@updateProblem');
     Route::get('/problems/mine','ProblemController@getMyProblems');
+    Route::get('/problem/{problemId}/rundata','RunDataController@getRunDataList');
+    Route::get('/problem/rundata','RunDataController@getRunData');
+    Route::post('/problem/{id}/rundata/add','RunDataController@uploadRunData');
+    Route::post('/problem/rundata/delete','RunDataController@deleteRunData');
 });
 
 Route::group(['middleware' => 'user'],function(){
