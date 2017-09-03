@@ -12,6 +12,7 @@ Route::group(['prefix' => 'judge'],function (){
         Route::post('/','JudgeController@addServer');
         Route::get('/all','JudgeController@getAll');
         Route::get('/{id}/info','JudgeController@getServerInfo');
+        Route::get('/{id}','JudgeController@getServer');
         Route::post('/{serverId}/update','JudgeController@updateServer');
         Route::get('/{serverId}/delete','JudgeController@deleteServer');
     });

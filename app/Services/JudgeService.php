@@ -30,6 +30,11 @@ class JudgeService
         return $this->judgeServerRepo->all();
     }
 
+    public function getSingleJudger(int $id)
+    {
+        return $this->judgeServerRepo->get($id);
+    }
+
     public function getAllJudgeServerInfo()
     {
         $judgeServers = $this->judgeServerRepo->all();

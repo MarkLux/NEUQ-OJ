@@ -11,6 +11,7 @@ namespace NEUQOJ\Http\Controllers;
 use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\InnerError;
 use Illuminate\Http\Request;
+use NEUQOJ\Exceptions\Judge\JudgeServerNotExistException;
 use NEUQOJ\Facades\Permission;
 use NEUQOJ\Services\JudgeService;
 
@@ -114,6 +115,18 @@ class JudgeController extends Controller
         return response()->json([
             'code' => 0,
             'data' => $this->judgeService->refreshServerStatus($id)
+        ]);
+    }
+
+    public function getServer(Request $request,int $id)
+    {
+        $server = $this->judgeService->getSingleJudger($id);
+        if ($server == null) {
+            throw new JudgeServerNotExistException();
+        }
+        return response()->json([
+            'code' => 0,
+            'data' => $server
         ]);
     }
 }
