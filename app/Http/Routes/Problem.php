@@ -15,7 +15,7 @@ Route::group(['middleware' => 'token'],function(){
     Route::get('/problem/{problemId}/rundata','RunDataController@getRunDataList');
     Route::post('/rundata','RunDataController@getRunData');
     Route::post('/problem/{id}/rundata/add','RunDataController@uploadRunData');
-    Route::post('/rundata/delete','RunDataController@deleteRunData');
+    Route::post('/rundata/{id}/delete','RunDataController@deleteRunData');
 });
 
 Route::group(['middleware' => 'user'],function(){

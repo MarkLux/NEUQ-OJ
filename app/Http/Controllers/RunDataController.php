@@ -16,15 +16,17 @@ use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Facades\Permission;
 use Illuminate\Http\Request;
+use NEUQOJ\Services\JudgeService;
 use NEUQOJ\Services\RunDataService;
 
 class RunDataController extends Controller
 {
     private $runDataService;
-
-    public function __construct(RunDataService $runDataService)
+    private $judgeService;
+    public function __construct(RunDataService $runDataService,JudgeService $judgeService)
     {
         $this->runDataService = $runDataService;
+        $this->judgeService = $judgeService;
         $this->middleware("token");
     }
 
@@ -87,15 +89,18 @@ class RunDataController extends Controller
 
         $testFile->move(Utils::getProblemDataPath($problemId),$testFile->getClientOriginalName());
 
+        $data = $this->judgeService->rsyncTestCase($problemId);
+
         return response()->json([
             'code' => 0,
+            'data' => $data
         ]);
     }
 
-    public function deleteRunData(Request $request)
+    public function deleteRunData(Request $request,int $id)
     {
         Utils::validateCheck($request->all(),[
-            'file_path' => 'required|string'
+            'file_path' => 'required|string',
         ]);
 
         if (!Permission::checkPermission($request->user->id, ['get-run-data'])) {
@@ -108,8 +113,11 @@ class RunDataController extends Controller
 
         File::delete($request->file_path);
 
+        $data = $this->judgeService->rsyncTestCase($id);
+
         return response()->json([
-            'code' => 0
+            'code' => 0,
+            'data' => $data
         ]);
     }
 }

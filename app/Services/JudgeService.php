@@ -140,4 +140,31 @@ class JudgeService
             return null;
         }
     }
+
+    public function rsyncTestCase(int $testcaseId)
+    {
+        $judgeServers = $this->judgeServerRepo->all();
+        $succeed = [];
+        $failed = [];
+        foreach ($judgeServers as $judgeServer) {
+            $serverURL = "http://" . $judgeServer->host . ":" . $judgeServer->port;
+            try {
+                $pong = \Requests::get($serverURL . '/sync?tid=' .$testcaseId, ['token' => $judgeServer->rpc_token]);
+            } catch (\Exception $e) {
+                $failed[] = $judgeServer->id;
+            }
+            if ($pong->status_code == 200) {
+                $pong = json_decode($pong->body);
+                if ($pong->code == 0) {
+                    $succeed[] = $judgeServer->id;
+                }
+            }else{
+                $failed[] = $judgeServer->id;
+            }
+        }
+        return [
+            'succeed' => $succeed,
+            'failed' => $failed
+        ];
+    }
 }

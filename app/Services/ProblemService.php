@@ -61,7 +61,7 @@ class ProblemService
     /**
      * 添加题目
      */
-    public function addProblem(User $user, array $problemData, array $testData): int
+    public function addProblem(User $user, array $problemData, array $testData)
     {
         $problemData['creator_id'] = $user->id;
         $problemData['creator_name'] = $user->name;
@@ -93,9 +93,10 @@ class ProblemService
             File::put($path . $i . '.out', $testData[$i]['output']);
         }
 
-        // todo 同步判题数据
+        $data = $this->judgeService->rsyncTestCase($id);
+        $data['id'] = $id;
 
-        return $id;
+        return $data;
     }
 
     /**

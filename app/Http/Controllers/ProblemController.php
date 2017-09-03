@@ -161,16 +161,14 @@ class ProblemController extends Controller
 
         $testData = $request->input('test_data',[]);
 
-        $id = $this->problemService->addProblem($request->user, $problemData, $testData);
+        $data= $this->problemService->addProblem($request->user, $problemData, $testData);
 
-        if ($id == -1)
+        if ($data['id'] == -1)
             throw new InnerError("Fail to add problem");
 
         return response()->json([
             'code' => 0,
-            'data' => [
-                'problem_id' => $id
-            ]
+            'data' => $data
         ]);
     }
 
