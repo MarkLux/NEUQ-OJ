@@ -13,9 +13,9 @@ Route::group(['middleware' => 'token'],function(){
     Route::post('/problem/{id}/update','ProblemController@updateProblem');
     Route::get('/problems/mine','ProblemController@getMyProblems');
     Route::get('/problem/{problemId}/rundata','RunDataController@getRunDataList');
-    Route::get('/problem/rundata','RunDataController@getRunData');
+    Route::post('/rundata','RunDataController@getRunData');
     Route::post('/problem/{id}/rundata/add','RunDataController@uploadRunData');
-    Route::post('/problem/rundata/delete','RunDataController@deleteRunData');
+    Route::post('/rundata/delete','RunDataController@deleteRunData');
 });
 
 Route::group(['middleware' => 'user'],function(){

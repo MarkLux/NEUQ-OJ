@@ -36,8 +36,6 @@ include 'Routes/Tag.php';
 
 include 'Routes/Judge.php';
 
-//include 'Routes/Captcha.php';
-
 Route::get('/', function () {
     return 'here is the main page!!';
 });

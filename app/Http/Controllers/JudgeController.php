@@ -11,6 +11,7 @@ namespace NEUQOJ\Http\Controllers;
 use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\InnerError;
 use Illuminate\Http\Request;
+use NEUQOJ\Facades\Permission;
 use NEUQOJ\Services\JudgeService;
 
 class JudgeController extends Controller
@@ -20,7 +21,7 @@ class JudgeController extends Controller
     public function __construct(JudgeService $judgeService)
     {
         $this->judgeService = $judgeService;
-//        $this->middleware('token');
+        $this->middleware('token');
     }
 
     public function index(Request $request)
@@ -67,6 +68,44 @@ class JudgeController extends Controller
                 'id' => $serverId,
                 'info' => $serverInfo
             ]
+        ]);
+    }
+
+    public function updateServer(Request $request,int $serverId)
+    {
+        Utils::validateCheck($request->all(),[
+            'name' => 'required|unique:judge_servers',
+            'rpc_token' => 'string|max:255',
+            'host' => 'required',
+            'port' => 'required',
+            'status' => 'required|integer',
+        ]);
+
+        $server = [
+            'name' => $request->name,
+            'rpc_token' => $request->rpc_token,
+            'host' => $request->host,
+            'port' => $request->port,
+            'status' => $request->status,
+        ];
+
+        if (!$this->judgeService->updateServer($serverId,$server)) {
+            throw new InnerError("Fail to update server info");
+        }
+
+        return response()->json([
+            'code' => 0
+        ]);
+    }
+
+    public function deleteServer(Request $request,int $serverId)
+    {
+        if (!$this->judgeService->deleteServer($serverId)) {
+            throw new InnerError("Fail to delete server");
+        }
+
+        return response()->json([
+            'code' => 0
         ]);
     }
 

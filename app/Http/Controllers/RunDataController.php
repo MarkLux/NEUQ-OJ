@@ -15,7 +15,7 @@ use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Facades\Permission;
-use NEUQOJ\Http\Requests\Request;
+use Illuminate\Http\Request;
 use NEUQOJ\Services\RunDataService;
 
 class RunDataController extends Controller
