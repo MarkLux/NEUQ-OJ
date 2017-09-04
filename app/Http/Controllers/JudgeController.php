@@ -75,7 +75,6 @@ class JudgeController extends Controller
     public function updateServer(Request $request,int $serverId)
     {
         Utils::validateCheck($request->all(),[
-            'name' => 'required|unique:judge_servers',
             'rpc_token' => 'string|max:255',
             'host' => 'required',
             'port' => 'required',
@@ -83,7 +82,6 @@ class JudgeController extends Controller
         ]);
 
         $server = [
-            'name' => $request->name,
             'rpc_token' => $request->rpc_token,
             'host' => $request->host,
             'port' => $request->port,
