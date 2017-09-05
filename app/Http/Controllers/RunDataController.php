@@ -23,7 +23,8 @@ class RunDataController extends Controller
 {
     private $runDataService;
     private $judgeService;
-    public function __construct(RunDataService $runDataService,JudgeService $judgeService)
+
+    public function __construct(RunDataService $runDataService, JudgeService $judgeService)
     {
         $this->runDataService = $runDataService;
         $this->judgeService = $judgeService;
@@ -66,7 +67,12 @@ class RunDataController extends Controller
             throw new InnerError('File Not Exist');
         }
 
-        return response()->download($request->file_path);
+        return response()->download($request->file_path, [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Headers' => 'Origin, Content-Type, Cookie, Accept,token,Accept,X-Requested-With',
+            'Access-Control-Allow-Methods' => 'GET, POST, PATCH,DELETE,PUT, OPTIONS',
+            'Access-Control-Allow-Credentials' => 'true'
+        ]);
     }
 
     public function uploadRunData(Request $request, int $problemId)
@@ -87,7 +93,7 @@ class RunDataController extends Controller
 
         // save the file into target dir
 
-        $testFile->move(Utils::getProblemDataPath($problemId),$testFile->getClientOriginalName());
+        $testFile->move(Utils::getProblemDataPath($problemId), $testFile->getClientOriginalName());
 
         $data = $this->judgeService->rsyncTestCase($problemId);
 
@@ -97,9 +103,9 @@ class RunDataController extends Controller
         ]);
     }
 
-    public function deleteRunData(Request $request,int $id)
+    public function deleteRunData(Request $request, int $id)
     {
-        Utils::validateCheck($request->all(),[
+        Utils::validateCheck($request->all(), [
             'file_path' => 'required|string',
         ]);
 

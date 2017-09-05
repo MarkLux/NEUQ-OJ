@@ -88,9 +88,9 @@ class ProblemService
         File::put($path . '/sample.out', $problemData['sample_output']);
 
         for ($i = 0; $i < count($testData); $i++) {
-            File::put($path.'/' . $i . '.in', $testData[$i]['input']);
+            File::put($path . '/' . $i . '.in', $testData[$i]['input']);
 
-            File::put($path.'/' . $i . '.out', $testData[$i]['output']);
+            File::put($path . '/' . $i . '.out', $testData[$i]['output']);
         }
 
         $data = $this->judgeService->rsyncTestCase($id);
@@ -573,7 +573,7 @@ class ProblemService
         $path = $this->getPath($problemId);
 
         if (File::isDirectory($path)) {
-            return $path.$name;
+            return $path . $name;
         }
 
         return null;
