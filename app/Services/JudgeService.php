@@ -148,12 +148,14 @@ class JudgeService
         $failed = [];
         foreach ($judgeServers as $judgeServer) {
             $serverURL = "http://" . $judgeServer->host . ":" . $judgeServer->port;
+            $exception = false;
             try {
                 $pong = \Requests::get($serverURL . '/sync?tid=' .$testcaseId, ['token' => $judgeServer->rpc_token]);
             } catch (\Exception $e) {
                 $failed[] = $judgeServer->id;
+                $exception = true;
             }
-            if ($pong->status_code == 200) {
+            if (!$exception&&$pong->status_code == 200) {
                 $pong = json_decode($pong->body);
                 if ($pong->code == 0) {
                     $succeed[] = $judgeServer->id;
