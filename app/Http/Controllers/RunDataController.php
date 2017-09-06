@@ -28,7 +28,7 @@ class RunDataController extends Controller
     {
         $this->runDataService = $runDataService;
         $this->judgeService = $judgeService;
-        $this->middleware("token");
+//        $this->middleware("token");
     }
 
     public function getRunDataList(Request $request, int $problemId)
@@ -87,7 +87,9 @@ class RunDataController extends Controller
 
         $testFile = $request->file('upload');
 
-        if ($testFile->extension() != 'in' && $testFile->extension() != 'out') {
+        $ext = $testFile->getClientOriginalExtension();
+
+        if ($ext != 'in' && $ext != 'out') {
             throw new FormValidatorException(['invalid file extension']);
         }
 
