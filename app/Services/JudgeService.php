@@ -158,8 +158,6 @@ class JudgeService
                 if ($pong->code == 0) {
                     $succeed[] = $judgeServer->id;
                 }
-            }else{
-                $failed[] = $judgeServer->id;
             }
         }
         return [

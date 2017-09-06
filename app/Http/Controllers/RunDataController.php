@@ -67,7 +67,7 @@ class RunDataController extends Controller
             throw new InnerError('File Not Exist');
         }
 
-        return response()->download($request->file_path, [
+        return response()->download($request->file_path,null, [
             'Access-Control-Allow-Origin' => '*',
             'Access-Control-Allow-Headers' => 'Origin, Content-Type, Cookie, Accept,token,Accept,X-Requested-With',
             'Access-Control-Allow-Methods' => 'GET, POST, PATCH,DELETE,PUT, OPTIONS',
