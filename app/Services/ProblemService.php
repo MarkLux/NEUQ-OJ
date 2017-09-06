@@ -105,8 +105,8 @@ class ProblemService
 
     public function canUserAccessProblem(int $userId, int $problemId): bool
     {
-        if (!Permission::checkPermission($userId, ['access-any-problem'])) {
-            throw new NoPermissionException();
+        if (Permission::checkPermission($userId, ['access-any-problem'])) {
+            return true;
         }
 
         $problem = $this->problemRepo->get($problemId, ['is_public', 'creator_id'])->first();
