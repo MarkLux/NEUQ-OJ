@@ -399,6 +399,11 @@ class ProblemService
             throw new InnerError("Fail to create solution");
         }
 
+        if ($data['language'] == 2) {
+            // 为java增加内存限制
+            $problem->memory_limit *= 2;
+        }
+
         $result = $this->judgeService->judge([
             'src' => $data['source_code'],
             'language' => Utils::switchLanguage($data['language']),

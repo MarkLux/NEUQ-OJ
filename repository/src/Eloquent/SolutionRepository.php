@@ -50,7 +50,7 @@ class SolutionRepository extends AbstractRepository
                 ->leftJoin('users','solutions.user_id','=','users.id')
                 ->where($param)
                 ->where('solutions.problem_id','>','0')
-                ->select('solutions.id','solutions.pass_rate','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','users.name')
+                ->select('solutions.id','solutions.pass_rate','solutions.problem_id','solutions.user_id','solutions.time','solutions.memory','solutions.result','solutions.language','solutions.code_length','solutions.created_at','solutions.judger','users.name')
                 ->orderBy('created_at','desc')
                 ->skip($size * --$page)
                 ->take($size)
