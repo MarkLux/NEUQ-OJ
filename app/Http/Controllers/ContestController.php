@@ -248,7 +248,7 @@ class ContestController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:100',
-            'start_time' => 'required|date|after:now',
+            'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',
             'private' => 'required|min:0|max:2',
             'password' => 'string',
