@@ -374,7 +374,7 @@ class ContestService
                         $rank[$userCnt]['score'] += $problemScores[$solution['problem_num']];
                     }
 
-                } else if ($solution['result'] > 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
+                } else if ($solution['result'] != 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
                     $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
 
                 //刷新总时间，注意所有时间全部以秒级正整数方式保存
@@ -400,7 +400,7 @@ class ContestService
                             $rank[$userCnt]['time'] += 1200 * $rank[$userCnt]['problem_wa_num'][$solution['problem_num']];
                     }
                     //如果已经ac过这个题目，不再考虑
-                } else if ($solution['result'] > 4)//错误
+                } else if ($solution['result'] != 4)//错误
                 {
                     if (isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']]++;
