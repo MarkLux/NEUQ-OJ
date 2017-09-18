@@ -474,9 +474,9 @@ class ContestService
             if ($admission == null) throw new NoPermissionException();
         }
 
-        //检查语言
-        if (!$this->problemGroupService->checkLang($data['language'], $group->langmask))
-            throw new LanguageErrorException();
+//        //检查语言
+//        if (!$this->problemGroupService->checkLang($data['language'], $group->langmask))
+//            throw new LanguageErrorException();
 
         //获取题目id
         $relation = $this->problemGroupRelationRepo->getByMult(['problem_group_id' => $groupId, 'problem_num' => $problemNum], ['problem_id', 'problem_num'])->first();
