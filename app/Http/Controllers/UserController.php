@@ -69,9 +69,9 @@ class UserController extends Controller
 
         //正式上线时，激活这里的邮件验证服务
 
-        $user = $this->userService->getUserById($userId, ['id', 'name', 'email']);
+//        $user = $this->userService->getUserById($userId, ['id', 'name', 'email']);
 
-        $this->verifyService->sendVerifyEmail($user);
+//        $this->verifyService->sendVerifyEmail($user);
 
         return response()->json([
             'code' => 0,

@@ -162,7 +162,7 @@ class UserService implements UserServiceInterface
             'mobile' => $data['mobile'],
             'password' => Utils::pwGen($data['password']),
             'school' => isset($data['school']) ? $data['school'] : "Unknown",
-            'status' => 0
+            'status' => 1 // 邮件激活在这里设定
         ];
 
         $id = $this->userRepo->insertWithId($user);
