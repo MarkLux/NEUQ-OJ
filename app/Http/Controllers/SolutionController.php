@@ -81,7 +81,6 @@ class SolutionController extends Controller
 
     public function getSourceCode(int $solutionId)
     {
-        //TODO :检查权限
 
         if (!$this->solutionService->isSolutionExist($solutionId))
             throw new SolutionNotExistException();

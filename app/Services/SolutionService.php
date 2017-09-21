@@ -53,6 +53,21 @@ class SolutionService
         return $this->sourceCodeRepo->get($solutionId,['source','private','created_at'],'solution_id')->first();
     }
 
+    public function isUserAc(int $userId,int $problemId):bool
+    {
+        $solution = $this->solutionRepo->getByMult([
+            'user_id' => $userId,
+            'problem_id' => $problemId,
+            'result' => 4
+        ],['id'])->first();
+
+        if ($solution == null) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function isSolutionExist(int $solutionId):bool
     {
         $solution = $this->solutionRepo->get($solutionId,['id']);

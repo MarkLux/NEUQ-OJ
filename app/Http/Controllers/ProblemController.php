@@ -17,6 +17,7 @@ use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
 use NEUQOJ\Facades\Permission;
 use NEUQOJ\Services\ProblemService;
+use NEUQOJ\Services\SolutionService;
 use NEUQOJ\Services\TokenService;
 use NEUQOJ\Services\UserService;
 
@@ -25,12 +26,14 @@ class ProblemController extends Controller
     private $problemService;
     private $tokenService;
     private $userService;
+    private $solutionService;
 
-    public function __construct(ProblemService $problemService, TokenService $tokenService, UserService $userService)
+    public function __construct(ProblemService $problemService, TokenService $tokenService, UserService $userService, SolutionService $solutionService)
     {
         $this->problemService = $problemService;
         $this->tokenService = $tokenService;
         $this->userService = $userService;
+        $this->solutionService = $solutionService;
     }
 
     private function getValidateRules()
@@ -159,9 +162,9 @@ class ProblemController extends Controller
             'output' => $request->input('output', null)
         ];
 
-        $testData = $request->input('test_data',[]);
+        $testData = $request->input('test_data', []);
 
-        $data= $this->problemService->addProblem($request->user, $problemData, $testData);
+        $data = $this->problemService->addProblem($request->user, $problemData, $testData);
 
         if ($data['id'] == -1)
             throw new InnerError("Fail to add problem");
@@ -247,7 +250,11 @@ class ProblemController extends Controller
         $result = $this->problemService->submitProblem($problemId, $data);
 
         if ($result['result'] == 4) {
-            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1, 'solved' => $request->user->solved + 1]);
+            if (!$this->solutionService->isUserAc($request->user->id, $problemId)) {
+                $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1, 'solved' => $request->user->solved + 1]);
+            } else {
+                $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
+            }
         } else {
             $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
         }
