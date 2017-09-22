@@ -94,6 +94,15 @@ class SolutionRepository extends AbstractRepository
             ->get($columns);
     }
 
+    public function getContestStatus(int $userId,int $contestId,array $columns = ['*'])
+    {
+        return $this->model
+            ->where('user_id',$userId)
+            ->where('problem_group_id',$contestId)
+            ->where('problem_num','>','-1')
+            ->get($columns);
+    }
+
     //题目组通用排行榜功能
     public function getRankList(int $groupId)
     {
