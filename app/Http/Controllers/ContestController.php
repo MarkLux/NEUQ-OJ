@@ -302,8 +302,6 @@ class ContestController extends Controller
     public function getUpdatePanel(Request $request, int $contestId)
     {
         //先检查是否是创建者或者管理员
-
-
         if (!Permission::checkPermission($request->user->id, ['update-any-contest'])) {
             if (!$this->contestService->isUserContestCreator($request->user->id, $contestId))
                 throw new NoPermissionException();

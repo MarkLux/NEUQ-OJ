@@ -81,24 +81,24 @@ class ContestService
 
         //获取用户解题状态
 
-//        if($userId != -1)
-//        {
-//            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
-//            $status = [];
-//
-//            foreach ($userStatuses as $userStatus)
-//            {
-//                $status[$userStatus['problem_id']] = $userStatus['result'];
-//            }
-//            foreach ($problemInfo as &$info) {
-//
-//                if(isset($status[$info->pid]))
-//                    $info->user_status = $status[$info->pid]==4?'Y':'N';
-//                else
-//                    $info->user_status = null;
-//            }
+        if($userId != -1)
+        {
+            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id',$userId,'problem_id',$problemIds,['problem_id','result'])->toArray();
+            $status = [];
 
-//        }
+            foreach ($userStatuses as $userStatus)
+            {
+                $status[$userStatus['problem_id']] = $userStatus['result'];
+            }
+            foreach ($problemInfo as &$info) {
+
+                if(isset($status[$info->pid]))
+                    $info->user_status = $status[$info->pid]==4?'Y':'N';
+                else
+                    $info->user_status = null;
+            }
+
+        }
 
         if ($userId != -1) {
             $problemIds = [];
