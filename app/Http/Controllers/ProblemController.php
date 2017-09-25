@@ -46,6 +46,7 @@ class ProblemController extends Controller
             'source' => 'max:100',
             'time_limit' => 'required|integer',
             'memory_limit' => 'required|integer|max:512',
+            'test_output' => 'required',
             'spj' => 'required|max:1',
             'is_public' => 'required|boolean'
         ];
@@ -177,7 +178,9 @@ class ProblemController extends Controller
     public function updateProblem(Request $request, int $problemId)
     {
         //表单验证
-        $validator = Validator::make($request->all(), $this->getValidateRules());
+        $rules = $this->getValidateRules();
+        unset($rules['test_output']);
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
@@ -211,7 +214,7 @@ class ProblemController extends Controller
 //            'output' => $request->input('test_output')
 //        ];
 
-        if (!$this->problemService->updateProblem($problemId, $problemData, $testData))
+        if (!$this->problemService->updateProblem($problemId, $problemData))
             throw new InnerError("fail to update problem");
 
         return response()->json([
