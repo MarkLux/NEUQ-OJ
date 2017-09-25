@@ -326,28 +326,31 @@ class ProblemService
      * 修改题目信息
      */
 
-    public function updateProblem(int $problemId, array $problemData, array $testData): bool
+    public function updateProblem(int $problemId, array $problemData): bool
     {
         //数据必须经过过滤 默认不更新testData（耗时）
-        if ($this->problemRepo->update($problemData, $problemId) != 1)
+        if ($this->problemRepo->update($problemData, $problemId) != 1) {
             return false;
-
-        //更新输入输出测试数据
-        $path = $this->getPath($problemId);
-
-        if (File::isDirectory($path)) {
-            File::put($path . 'sample.in', $problemData['sample_input']);
-
-            File::put($path . 'sample.out', $problemData['sample_output']);
-
-            for ($i = 0; $i < count($testData); $i++) {
-                File::put($path . $i . '.in', $testData[$i]['input']);
-                File::put($path . $i . '.out', $testData[$i]['output']);
-            }
-
+        } else {
             return true;
-        } else
-            return false;
+        }
+
+//        //更新输入输出测试数据
+//        $path = $this->getPath($problemId);
+//
+//        if (File::isDirectory($path)) {
+//            File::put($path . 'sample.in', $problemData['sample_input']);
+//
+//            File::put($path . 'sample.out', $problemData['sample_output']);
+//
+//            for ($i = 0; $i < count($testData); $i++) {
+//                File::put($path . $i . '.in', $testData[$i]['input']);
+//                File::put($path . $i . '.out', $testData[$i]['output']);
+//            }
+//
+//            return true;
+//        } else
+//            return false;
     }
 
     /**

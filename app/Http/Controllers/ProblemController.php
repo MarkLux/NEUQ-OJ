@@ -43,7 +43,6 @@ class ProblemController extends Controller
             'description' => 'required',//题目描述应该是富文本 这里保存的是html代码或者markdown代码
             'difficulty' => 'required|integer|min:1|max:5',
             'sample_output' => 'required',
-            'test_output' => 'required',
             'source' => 'max:100',
             'time_limit' => 'required|integer',
             'memory_limit' => 'required|integer|max:512',
@@ -207,10 +206,10 @@ class ProblemController extends Controller
             'is_public' => $request->input('is_public')
         ];
 
-        $testData = [
-            'input' => $request->input('test_input'),
-            'output' => $request->input('test_output')
-        ];
+//        $testData = [
+//            'input' => $request->input('test_input'),
+//            'output' => $request->input('test_output')
+//        ];
 
         if (!$this->problemService->updateProblem($problemId, $problemData, $testData))
             throw new InnerError("fail to update problem");
