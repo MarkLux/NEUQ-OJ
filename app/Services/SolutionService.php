@@ -21,16 +21,16 @@ class SolutionService
     private $sourceCodeRepo;
 
     public function __construct(
-        SolutionRepository $solutionRepository,SourceCodeRepository $sourceCodeRepository
+        SolutionRepository $solutionRepository, SourceCodeRepository $sourceCodeRepository
     )
     {
         $this->solutionRepo = $solutionRepository;
         $this->sourceCodeRepo = $sourceCodeRepository;
     }
 
-    public function getAllSolutions(int $page, int $size,array $condition)
+    public function getAllSolutions(int $page, int $size, array $condition)
     {
-        return $this->solutionRepo->getAllSolutions($page,$size,$condition);
+        return $this->solutionRepo->getAllSolutions($page, $size, $condition);
     }
 
     public function getSolution(int $solutionId)
@@ -40,39 +40,39 @@ class SolutionService
 
     public function getSolutionBy(string $param, $value, array $columns = ['*'])
     {
-        return $this->solutionRepo->getBy($param,$value,$columns);
+        return $this->solutionRepo->getBy($param, $value, $columns);
     }
 
     public function getSolutionCount(): int
     {
-       return $this->solutionRepo->getTotalCount();
+        return $this->solutionRepo->getTotalCount();
     }
 
     public function getSourceCode(int $solutionId)
     {
-        return $this->sourceCodeRepo->get($solutionId,['source','private','created_at'],'solution_id')->first();
+        return $this->sourceCodeRepo->get($solutionId, ['source', 'private', 'created_at'], 'solution_id')->first();
     }
 
-    public function isUserAc(int $userId,int $problemId):bool
+    public function isUserAc(int $userId, int $problemId): bool
     {
-        $solution = $this->solutionRepo->getByMult([
+        $count = $this->solutionRepo->getWhereCount([
             'user_id' => $userId,
             'problem_id' => $problemId,
             'result' => 4
-        ],['id'])->first();
+        ]);
 
-        if ($solution == null) {
+        if ($count <= 1) {
             return false;
+        } else {
+            return true;
         }
-
-        return true;
     }
 
-    public function isSolutionExist(int $solutionId):bool
+    public function isSolutionExist(int $solutionId): bool
     {
-        $solution = $this->solutionRepo->get($solutionId,['id']);
+        $solution = $this->solutionRepo->get($solutionId, ['id']);
 
-        if($solution == null)
+        if ($solution == null)
             return false;
         return true;
     }
