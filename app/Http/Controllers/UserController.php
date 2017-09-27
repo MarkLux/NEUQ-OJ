@@ -196,7 +196,7 @@ class UserController extends Controller
             $role = "user";
         }
 
-        $user = $this->userService->getUserById($id, ['id', 'email', 'mobile', 'submit', 'solved', 'password', 'name', 'school', 'signature', 'created_at']);
+        $user = $this->userService->getUserById($id, ['id', 'submit', 'solved', 'name', 'school', 'signature', 'created_at']);
 
         if ($user == null) throw new UserNotExistException();
 
