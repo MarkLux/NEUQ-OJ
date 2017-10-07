@@ -342,12 +342,6 @@ class ContestService
                     $rank[$userCnt]['score'] = 0;
                 }
 
-                // 跳过所有判题异常，不计入成绩
-
-                if ($solution['result'] == -1) {
-                    continue;
-                }
-
                 //判断第一个数据
 
                 if ($solution['result'] == 4) {
@@ -359,7 +353,7 @@ class ContestService
                         $rank[$userCnt]['score'] += $problemScores[$solution['problem_num']];
                     }
 
-                } else if ($solution['result'] != 4) //没有ac,我在这里多考虑一下编译中、运行中、等待中的情况 跳过这几种情况
+                } else if ($solution['result'] != 4 && $solution['result'] != -1) //没有ac,但是不计算判题系统异常的情况
                     $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
 
                 //刷新总时间，注意所有时间全部以秒级正整数方式保存
