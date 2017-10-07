@@ -83,7 +83,7 @@ class ContestService
 
         if ($userId != -1) {
 //            $userStatuses = $this->solutionRepo->getSolutionsIn('user_id', $userId, 'problem_id', $problemIds, ['problem_id', 'result'])->toArray();
-            $userStatuses = $this->solutionRepo->getContestStatus($userId,$groupId,['problem_id','result'])->toArray();
+            $userStatuses = $this->solutionRepo->getContestStatus($userId, $groupId, ['problem_id', 'result'])->toArray();
 
             $subIds = $acIds = [];
 
@@ -285,7 +285,7 @@ class ContestService
         return $this->problemGroupService->resetGroupAdmissions($groupId, $users);
     }
 
-    public function getRankList(int $groupId,bool $byScore = false)
+    public function getRankList(int $groupId, bool $byScore = false)
     {
         $group = $this->problemGroupService->getProblemGroup($groupId, ['title', 'type', 'start_time', 'end_time', 'status']);
 
@@ -294,15 +294,15 @@ class ContestService
 
         //先检查是否存在缓存
 
-        $cacheKey = 'contest_'.$groupId;
+        $cacheKey = 'contest_' . $groupId;
 
         if ($this->cacheService->isCacheExist($cacheKey)) {
             $ranks = $this->cacheService->getRankCache($cacheKey);
             if (!empty($ranks)) {
                 // 不能理解的是，为什么有序存入redis的数组取出来又变成无序的了
                 if ($byScore) {
-                    usort($ranks,['NEUQOJ\Common\Utils','scoreCmpObj']);
-                }else {
+                    usort($ranks, ['NEUQOJ\Common\Utils', 'scoreCmpObj']);
+                } else {
                     usort($ranks, ['NEUQOJ\Common\Utils', 'rankCmpObj']);
                 }
                 return $ranks;
@@ -313,10 +313,9 @@ class ContestService
         $solutions = $this->solutionRepo->getRankList($groupId)->toArray();
 
         if ($byScore) {
-            $problemRelations = $this->problemGroupRelationRepo->getBy('problem_group_id',$groupId,['problem_num','problem_score'])->toArray();
+            $problemRelations = $this->problemGroupRelationRepo->getBy('problem_group_id', $groupId, ['problem_num', 'problem_score'])->toArray();
             $problemScores = [];
-            foreach ($problemRelations as $problemRelation)
-            {
+            foreach ($problemRelations as $problemRelation) {
                 $problemScores[$problemRelation['problem_num']] = $problemRelation['problem_score'];
             }
         }
@@ -341,6 +340,12 @@ class ContestService
 
                 if ($byScore) {
                     $rank[$userCnt]['score'] = 0;
+                }
+
+                // 跳过所有判题异常，不计入成绩
+
+                if ($solution['result'] == -1) {
+                    continue;
                 }
 
                 //判断第一个数据
@@ -392,8 +397,8 @@ class ContestService
         }
 
         if ($byScore) {
-            usort($rank,['NEUQOJ\Common\Utils','scoreCmpArr']);
-        }else{
+            usort($rank, ['NEUQOJ\Common\Utils', 'scoreCmpArr']);
+        } else {
             usort($rank, ['NEUQOJ\Common\Utils', 'rankCmpArr']);
         }
 
