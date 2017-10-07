@@ -44,6 +44,8 @@ class ProblemController extends Controller
             'difficulty' => 'required|integer|min:1|max:5',
             'sample_output' => 'required',
             'source' => 'max:100',
+            'input' => 'string',
+            'output' => 'string',
             'time_limit' => 'required|integer',
             'memory_limit' => 'required|integer|max:512',
             'test_output' => 'required',
@@ -206,7 +208,9 @@ class ProblemController extends Controller
             'memory_limit' => $request->input('memory_limit'),
             'hint' => $request->input('hint'),
             'spj' => $request->input('spj'),
-            'is_public' => $request->input('is_public')
+            'is_public' => $request->input('is_public'),
+            'input' => $request->input('input', null),
+            'output' => $request->input('output', null)
         ];
 
 //        $testData = [
