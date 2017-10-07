@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class JudgeServer extends Model
 {
-    protected $hidden = [
-        'rpc_token',
-    ];
+//    protected $hidden = [
+//        'rpc_token',
+//    ];
 }
