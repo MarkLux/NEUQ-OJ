@@ -41,7 +41,8 @@ class AdminService implements AdminServiceInterface
             $users[] = [
                 'email' => $email,
                 'password'=>Utils::pwGen($password),
-                'name' => (isset($names[$i-1])?$names[$i-1]:'noname')
+                'name' => (isset($names[$i-1])?$names[$i-1]:'noname'),
+                'status' => 1
             ];
             $emails[] = $email;
             $passwords[] = $password;
