@@ -224,7 +224,7 @@ class UserController extends Controller
 
         $id = $request->user->id;
 
-        $name = $request->input('mobile', null);
+        $name = $request->input('name', null);
         $school = $request->input('school', null);
         $signature = $request->input('signature', null);
 
