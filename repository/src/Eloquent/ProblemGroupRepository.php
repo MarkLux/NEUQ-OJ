@@ -65,15 +65,15 @@ class ProblemGroupRepository extends AbstractRepository
         if(!empty($param))
             return $this->model
                 ->where($param)
-                ->orderBy('created_at','desc')
                 ->orderBy('start_time','desc')
+                ->orderBy('created_at','desc')
                 ->skip($size * --$page)
                 ->take($size)
                 ->get($columns);
         else
             return $this->model
-                ->orderBy('created_at','desc')
                 ->orderBy('start_time','desc')
+                ->orderBy('created_at','desc')
                 ->skip($size * --$page)
                 ->take($size)
                 ->get($columns);

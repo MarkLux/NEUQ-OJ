@@ -26,7 +26,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
     function get(int $id, array $columns = ['*'], string $primary = 'id',string $orderBy=null,string $order=null)
     {
-        if ($order!=null) {
+        if ($orderBy!=null) {
             return $this->model
                 ->where($primary,$id)
                 ->orderBy($orderBy,$order)
