@@ -49,7 +49,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
 
     public function getProblemGroup(int $groupId, array $columns = ['*'])
     {
-        return $this->problemGroupRepo->get($groupId, $columns,'id','start_at','desc')->first();
+        return $this->problemGroupRepo->get($groupId, $columns,'id','start_time','desc')->first();
     }
 
     //注意可能是多条
