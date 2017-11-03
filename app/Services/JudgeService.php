@@ -128,8 +128,11 @@ class JudgeService
         $server = $this->getBestServer();
         $serverURL = 'http://' . $server->host . ':' . $server->port . '/judge';
         try {
-            $result = \Requests::post($serverURL, ['token' => $server->rpc_token, 'Content-Type' => 'application/json'], json_encode($data));
-        }catch (Exception $e){
+            $result = \Requests::post($serverURL, ['token' => $server->rpc_token, 'Content-Type' => 'application/json'], json_encode($data),[
+                'timeout' => 20,
+                'connect_timeout' => 20
+            ]);
+        }catch (\Exception $e){
             throw new JudgeServerStatusErrorException();
         }
         if ($result->success) {
