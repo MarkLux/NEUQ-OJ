@@ -8,9 +8,11 @@
 
 Route::get('/contests','ContestController@getAllContests');
 Route::get('/contest/{id}/ranklist','ContestController@getRankList');
+Route::get('/contest/{id}/excelranklist','ContestController@excelRankList');
 Route::get('/contest/search','ContestController@searchContest');
 
 Route::group(['middleware' => 'user'],function(){
+
     Route::get('/contest/{id}','ContestController@getContestIndex');
     Route::get('/contest/{cid}/problem/{pnum}','ContestController@getProblem');
     Route::get('/contest/{id}/status','ContestController@getStatus');

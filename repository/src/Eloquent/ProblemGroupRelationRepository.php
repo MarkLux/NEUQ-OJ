@@ -51,7 +51,11 @@ class ProblemGroupRelationRepository extends AbstractRepository
 
         return DB::select(DB::raw($sql));
     }
-
+    public function getProblemIdArrayIngroup(int $groupId)
+    {
+        $PArray=DB::table('problem_group_relations')->select('problem_id')->where('problem_group_id',$groupId)->get();
+        return $PArray;
+    }
     //根据题目组中的题号获取题目，无视题目可见性
     public function getProblemByNum(int $groupId,int $problemNum)
     {

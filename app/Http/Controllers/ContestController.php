@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 use NEUQOJ\Common\Utils;
 use NEUQOJ\Exceptions\FormValidatorException;
 use NEUQOJ\Exceptions\PasswordErrorException;
@@ -118,6 +119,18 @@ class ContestController extends Controller
             'code' => 0,
             'data' => $ranks
         ]);
+    }
+    public function excelRankList(int $contestId)
+    {
+        if (!$this->contestService->isContestExist($contestId))
+            throw new ContestNotExistException();
+        $ranks=$this->contestService->makeExcelArray($contestId);
+        //生成Excel下载链接
+        Excel::create($this->contestService->getContestTitle($contestId)['title'],function($excel) use ($ranks) {
+            $excel->sheet('Rank', function ($sheet) use ($ranks) {
+                $sheet->rows($ranks);
+            });
+        })->export('xls');
     }
 
     public function getStatus(Request $request, int $contestId)

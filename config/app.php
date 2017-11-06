@@ -161,8 +161,8 @@ return [
         NEUQOJ\Providers\EventServiceProvider::class,
         NEUQOJ\Providers\RouteServiceProvider::class,
         NEUQOJ\Providers\CommonMarkServiceProvider::class,
-        NEUQOJ\Providers\PermissionServiceProvider::class
-
+        NEUQOJ\Providers\PermissionServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class
     ],
 
     /*

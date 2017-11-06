@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use function GuzzleHttp\Psr7\str;
 use Hamcrest\Util;
 use Illuminate\Support\Facades\DB;
 use NEUQOJ\Common\Utils;
@@ -55,7 +56,14 @@ class ContestService
         //使用这个方法前请先检查contest是否存在。
         return $this->problemGroupService->getProblemGroup($contestId, $columns);
     }
-
+    public function getContestTitle(int $contestId,$columns = ['title'])
+    {
+        return $this->problemGroupService->getProblemGroup($contestId,$columns);
+    }
+    public function getContestProblemIdgroup(int $groupId){
+        $PArray=$this->problemGroupRelationRepo->getProblemIdArrayIngroup($groupId);
+        return $PArray;
+    }
     public function getContestIndex(int $userId = -1, int $groupId)
     {
         //检查权限
@@ -288,10 +296,19 @@ class ContestService
     public function getRankList(int $groupId, bool $byScore = false)
     {
         $group = $this->problemGroupService->getProblemGroup($groupId, ['title', 'type', 'start_time', 'end_time', 'status']);
-
+        //让FKArray的生存周期长一点,所以要先声明一下
+        $FKArray=[];
+        $solutions = $this->solutionRepo->getRankList($groupId)->toArray();
+        foreach ($solutions as $solution){
+            if ($solution['result']==4&&(!isset($FKArray[$solution['problem_num']][1])||$FKArray[$solution['problem_num']][1]>$solution['created_at']))
+            {
+                $FKArray[$solution['problem_num']][1]=$solution['created_at'];
+                $FKArray[$solution['problem_num']][0]=$solution['id'];
+            }
+        }
+        $FBArray['first_ac']=$FKArray;
         if ($group == null || $group->type != 1)
             return false;
-
         //先检查是否存在缓存
 
         $cacheKey = 'contest_' . $groupId;
@@ -305,12 +322,13 @@ class ContestService
                 } else {
                     usort($ranks, ['NEUQOJ\Common\Utils', 'rankCmpObj']);
                 }
+                $ranks=array_merge($ranks,$FBArray);
                 return $ranks;
             }
         }
 
         //正常mysql查询方法：
-        $solutions = $this->solutionRepo->getRankList($groupId)->toArray();
+
 
         if ($byScore) {
             $problemRelations = $this->problemGroupRelationRepo->getBy('problem_group_id', $groupId, ['problem_num', 'problem_score'])->toArray();
@@ -325,7 +343,12 @@ class ContestService
         $userId = -1;
 
         //组装排行榜
+//        foreach ($PArray as $value){
+//            $FKArray[array_values($value)[0]]=[];
+//        }
+
         foreach ($solutions as $solution) {
+
             if ($userId != $solution['id'])//新的用户
             {
                 //创建一个新的数组
@@ -396,9 +419,11 @@ class ContestService
             usort($rank, ['NEUQOJ\Common\Utils', 'rankCmpArr']);
         }
 
-        $this->cacheService->setRankCache($cacheKey, $rank, 60);
 
-        return $rank;
+        $this->cacheService->setRankCache($cacheKey, $rank, 60);
+        $ranks=array_merge($rank,$FBArray);
+        return $ranks;
+
     }
 
     public function searchContest(string $keyword, int $page, int $size)
@@ -517,5 +542,66 @@ class ContestService
             throw new PasswordErrorException();
 
         return $this->problemAdmissionRepo->insert(['user_id' => $userId, 'problem_group_id' => $groupId]) == 1;
+    }
+    public function makeExcelArray($contestId)
+    {
+        //        拿到problem数组:例如:['1001','1002','1003']
+        $pArray=[];
+        $assistArray=[];
+        $X=0;
+        $pObj=$this->getContestProblemIdgroup($contestId);
+        $pObj=json_decode(json_encode($pObj),true);
+//        foreach($PObj as $P){
+//            $PArray[$X]=array_values($P)[0];
+//            $AssistArray[$X]='';
+//            $X++;
+//        }
+        foreach ($pObj as $P){
+            $pArray[$X]=chr(ord('A')+$X);
+            $assistArray[$X]='';
+            $X++;
+        }
+
+
+//        制作标题行
+        $first=['Rank','Id','Nick','TotalTime','Solve'];
+        $Title=array_merge($first,$pArray);
+//        将数组再包一层数组,为了下面的array_merge合并
+        $Titles[0]=$Title;
+//        Excel部分
+//        制作Excel需要的数组数据
+        $ranks = $this->getRankList($contestId);
+        unset($ranks['first_ac']);
+        $RANKID=1;
+        foreach ($ranks as &$rank) {
+            //转换class->array
+            if (is_object($rank)) {
+                $rank = array_values(json_decode(json_encode($rank), true));
+            } else
+                $rank = array_values($rank);
+
+            foreach ($rank[4] as $key => $value)
+            {
+                $assistArray[$key]='(-'.$value.')';
+            }
+            foreach ($rank[5] as $key => $value)
+            {
+                $value=date('H:i:s',$value);
+                $assistArray[$key]=$value.$assistArray[$key];
+            }
+            $X=0;
+            foreach($assistArray as $key => $value)
+            {
+                array_push($rank, $value);
+                $assistArray[$X] = '';
+                $X++;
+            }
+            unset($rank[5]);
+            unset($rank[4]);
+            $rank=array_merge([$RANKID],$rank);
+            $RANKID++;
+        }
+        $ranks=array_merge($Titles,$ranks);
+        return $ranks;
     }
 }
