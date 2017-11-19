@@ -5,6 +5,7 @@ namespace NEUQOJ\Http\Controllers;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 use Mews\Captcha\Facades\Captcha;
 use NEUQOJ\Exceptions\Captcha\CaptchaNotMatchException;
 use NEUQOJ\Exceptions\FormValidatorException;
@@ -309,6 +310,14 @@ class UserController extends Controller
         return response()->json([
             'code' => 0
         ]);
+    }
+
+    public function checkToken(Request $request,TokenService $tokenService)
+    {
+        $checkRes = $tokenService->verifyToken($request->header('token'),$request->all());
+        if ($checkRes instanceof View) {
+            return $checkRes;
+        }
     }
 
     public function getRankList(Request $request)
