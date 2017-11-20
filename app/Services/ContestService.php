@@ -19,6 +19,7 @@ use NEUQOJ\Exceptions\ProblemGroup\ContestNotAvailableException;
 use NEUQOJ\Exceptions\ProblemGroup\ContestNotExistException;
 use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
 use NEUQOJ\Facades\Permission;
+use NEUQOJ\Jobs\SendJugdeRequest;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
 use NEUQOJ\Services\Contracts\ContestServiceInterface;
 use NEUQOJ\Repository\Eloquent\ProblemGroupAdmissionRepository;
@@ -465,7 +466,12 @@ class ContestService
 
         $data['problem_group_id'] = $groupId;
 
-        return $this->problemService->submitProblem($relation->problem_id, $data, $relation->problem_num);
+//        return $this->problemService->submitProblem($relation->problem_id, $data, $relation->problem_num);
+        $solutionId = $this->problemService->beforeSubmit($relation->problem_id,$data,$relation->problem_num);
+
+        dispatch(new SendJugdeRequest($solutionId,$relation->problem_id,$data,$relation->problem_num,$userId,1));
+
+        return $solutionId;
     }
 
     public function isUserContestCreator(int $userId, int $groupId): bool

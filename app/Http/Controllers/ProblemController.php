@@ -16,6 +16,7 @@ use NEUQOJ\Exceptions\InnerError;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\Problem\ProblemNotExistException;
 use NEUQOJ\Facades\Permission;
+use NEUQOJ\Jobs\SendJugdeRequest;
 use NEUQOJ\Services\ProblemService;
 use NEUQOJ\Services\SolutionService;
 use NEUQOJ\Services\TokenService;
@@ -253,24 +254,28 @@ class ProblemController extends Controller
             'user_id' => $request->user->id
         ];
 
-        $result = $this->problemService->submitProblem($problemId, $data);
+//        $result = $this->problemService->submitProblem($problemId, $data);
 
-        if ($result['result'] == 4) {
-            if (!$this->solutionService->isUserAc($request->user->id, $problemId)) {
-                $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1, 'solved' => $request->user->solved + 1]);
-            } else {
-                $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
-            }
-        } else {
-            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
-        }
+//        if ($result['result'] == 4) {
+//            if (!$this->solutionService->isUserAc($request->user->id, $problemId)) {
+//                $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1, 'solved' => $request->user->solved + 1]);
+//            } else {
+//                $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
+//            }
+//        } else {
+//            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
+//        }
+        $solutionId = $this->problemService->beforeSubmit($problemId,$data);
+        //判题队列调度
+        $this->dispatch(new SendJugdeRequest($solutionId,$problemId,$data,-1,$request->user->id,2));
 
         return response()->json([
             'code' => 0,
-            'data' => [
-                'result_code' => $result['result'],
-                'result_data' => $result['data']
-            ]
+            'data' => ['solutionId'=>$solutionId]
+//            'data' => [
+//                'result_code' => $result['result'],
+//                'result_data' => $result['data']
+//            ]
         ]);
     }
 

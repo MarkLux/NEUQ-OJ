@@ -127,4 +127,15 @@ class JudgeController extends Controller
             'data' => $server
         ]);
     }
+
+    public function getJudgeResult(Request $request,int $solutionId){
+
+        //业务层先不加
+        $result = $this->judgeService->getJudgeResult($solutionId);
+
+        return response()->json([
+            'code'=> 0,
+            'answer'=>json_decode($result)
+        ]);
+    }
 }

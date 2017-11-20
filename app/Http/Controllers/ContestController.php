@@ -63,7 +63,7 @@ class ContestController extends Controller
         $page = $request->input('page', 1);
         $size = $request->input('size', 20);
 
-        $data = $this->contestService->getContestsByCreatorId($request->user->id,$page,$size);
+        $data = $this->contestService->getContestsByCreatorId($request->user->id, $page, $size);
 
         return response()->json([
             'code' => 0,
@@ -208,20 +208,23 @@ class ContestController extends Controller
             'user_id' => $request->user->id
         ];
 
-        $result = $this->contestService->submitProblem($request->user->id, $contestId, $problemNum, $data);
+        $solutionId = $this->contestService->submitProblem($request->user->id, $contestId, $problemNum, $data);
 
-        if ($result['result'] == 4) {
-            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1, 'solved' => $request->user->solved + 1]);
-        } else {
-            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
-        }
+//        if ($result['result'] == 4) {
+//            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1, 'solved' => $request->user->solved + 1]);
+//        } else {
+//            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
+//        }
 
         return response()->json([
             'code' => 0,
-            'data' => [
-                'result_code' => $result['result'],
-                'result_data' => $result['data']
+            'data'=>[
+                'solutionId'=>$solutionId
             ]
+//            'data' => [
+//                'result_code' => $result['result'],
+//                'result_data' => $result['data']
+//            ]
         ]);
     }
 
@@ -349,7 +352,7 @@ class ContestController extends Controller
         $users = $request->input('users', null);
         $private = $request->input('private', null);
         $password = $request->input('password', null);
-        $description = $request->input('description',null);
+        $description = $request->input('description', null);
 
         $newInfo = [];
 
@@ -359,7 +362,7 @@ class ContestController extends Controller
         if ($langmask != null) $newInfo['langmask'] = $langmask;
         if ($private != null) $newInfo['private'] = $private;
         if ($password != null) $newInfo['password'] = Utils::pwGen($password);
-        if ($description != null) $newInfo['description']  = $description;
+        if ($description != null) $newInfo['description'] = $description;
 
         if (!empty($newInfo)) {
             if (!$this->contestService->updateContestInfo($contestId, $newInfo))

@@ -42,4 +42,12 @@ class CacheService implements CacheServiceInterface
 
         return $ranks;
     }
+
+    public function setJudgeResult(string $key,array $res,$time){
+        Redis::setex($key,$time,json_encode($res));
+    }
+
+    public function getJudgeResult(string $solutionId){
+        return Redis::get('solution:'.$solutionId);
+    }
 }
