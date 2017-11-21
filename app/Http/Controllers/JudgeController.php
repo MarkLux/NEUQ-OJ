@@ -43,7 +43,7 @@ class JudgeController extends Controller
 
     public function addServer(Request $request)
     {
-        Utils::validateCheck($request->all(),[
+        Utils::validateCheck($request->all(), [
             'name' => 'required|unique:judge_servers',
             'rpc_token' => 'string|max:255',
             'host' => 'required',
@@ -72,9 +72,9 @@ class JudgeController extends Controller
         ]);
     }
 
-    public function updateServer(Request $request,int $serverId)
+    public function updateServer(Request $request, int $serverId)
     {
-        Utils::validateCheck($request->all(),[
+        Utils::validateCheck($request->all(), [
             'rpc_token' => 'string|max:255',
             'host' => 'required',
             'port' => 'required',
@@ -88,7 +88,7 @@ class JudgeController extends Controller
             'status' => $request->status,
         ];
 
-        if (!$this->judgeService->updateServer($serverId,$server)) {
+        if (!$this->judgeService->updateServer($serverId, $server)) {
             throw new InnerError("Fail to update server info");
         }
 
@@ -97,7 +97,7 @@ class JudgeController extends Controller
         ]);
     }
 
-    public function deleteServer(Request $request,int $serverId)
+    public function deleteServer(Request $request, int $serverId)
     {
         if (!$this->judgeService->deleteServer($serverId)) {
             throw new InnerError("Fail to delete server");
@@ -108,7 +108,7 @@ class JudgeController extends Controller
         ]);
     }
 
-    public function getServerInfo(Request $request,int $id)
+    public function getServerInfo(Request $request, int $id)
     {
         return response()->json([
             'code' => 0,
@@ -116,7 +116,7 @@ class JudgeController extends Controller
         ]);
     }
 
-    public function getServer(Request $request,int $id)
+    public function getServer(Request $request, int $id)
     {
         $server = $this->judgeService->getSingleJudger($id);
         if ($server == null) {
@@ -128,14 +128,27 @@ class JudgeController extends Controller
         ]);
     }
 
-    public function getJudgeResult(Request $request,int $solutionId){
+    public function getJudgeResult(Request $request, int $solutionId)
+    {
 
         //业务层先不加
         $result = $this->judgeService->getJudgeResult($solutionId);
 
+        if ($result == null)
+            return response()->json([
+                'code' => 0,
+                'data' => null
+
+            ]);
+
+        $result = json_decode($result);
+
         return response()->json([
-            'code'=> 0,
-            'answer'=>json_decode($result)
+            'code' => 0,
+            'data' => [
+                'result_code' => $result->result,
+                'result_data' => $result->data
+            ]
         ]);
     }
 }
