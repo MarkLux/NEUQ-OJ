@@ -185,9 +185,7 @@ class JudgeService
 
         $result = json_decode($result);
 
-        if ($result != null) {
 
-        }
         return $result;
     }
 }

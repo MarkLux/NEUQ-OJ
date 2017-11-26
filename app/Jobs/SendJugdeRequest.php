@@ -68,7 +68,7 @@ class SendJugdeRequest extends Job implements ShouldQueue
             if ($result['result'] == 4) {
                 if (!$solutionService->isUserAc($detail['user_id'], $detail['problem_id'])) {
 
-                    $userService->updateUserById($user, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
+                    $userService->updateUserById($user->id, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
                 } else {
 
                     $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
