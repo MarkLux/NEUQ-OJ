@@ -35,14 +35,15 @@ class SendJugdeRequest extends Job implements ShouldQueue
      * @param $headers
      * @param $body
      */
-    public function __construct($solutionId,$problemId, $data, $problemNum = -1, $userId, $type)
+    public function __construct($solutionId, $problemId, $data, $problemNum = -1, $userId, $type)
     {
         $this->problemId = $problemId;
         $this->data = $data;
         $this->problemNum = $problemNum;
         $this->userId = $userId;
         $this->solutionId = $solutionId;
-        $this->key = 'solution:'.$solutionId;
+        $this->key = 'solution:' . $solutionId;
+        $this->type = $type;
     }
 
 
@@ -52,49 +53,51 @@ class SendJugdeRequest extends Job implements ShouldQueue
      * @param ProblemService $problemService
      * @return void
      */
-    public function handle(CacheService $cacheService,ProblemService $problemService, UserService $userService, SolutionService $solutionService)
+    public function handle(CacheService $cacheService, ProblemService $problemService, UserService $userService, SolutionService $solutionService)
     {
-        $result = $problemService->submitProblem($this->solutionId,$this->problemId, $this->data, $this->problemNum);
+        $result = $problemService->submitProblem($this->solutionId, $this->problemId, $this->data, $this->problemNum);
         $res = [
             'result' => $result['result'],
             'data' => $result['data']
         ];
 
-            $detail = $solutionService->getSolution($this->solutionId);
-            $user = $userService->getUserById($detail['user_id']);
-            if ($this->type == 2) {
+        $detail = $solutionService->getSolution($this->solutionId);
+        $user = $userService->getUserById($detail['user_id']);
+        if ($this->type == 2) {
 
-                if ($result->result == 4) {
-                    if (!$solutionService->isUserAc($detail['user_id'], $detail['problem_id'])) {
+            if ($result['result'] == 4) {
+                if (!$solutionService->isUserAc($detail['user_id'], $detail['problem_id'])) {
 
-                        $userService->updateUserById($user, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
-                    } else {
-                        Redis
-                        $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
-                    }
+                    $userService->updateUserById($user, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
                 } else {
+
                     $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
                 }
             } else {
-                if ($this->type ==  1) {
+                $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
+            }
+        } else if ($this->type == 1) {
+
+                if ($result['result'] == 4) {
                     $userService->updateUserById($user->id, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
                 } else {
                     $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
                 }
             }
 
-        $cacheService->setJudgeResult($this->key,$res,100);
+            $cacheService->setJudgeResult($this->key, $res, 100);
 //        Redis::setex($this->key, 100, json_encode($res));
-    }
+        }
 
-    /**
-     * 要处理的失败任务。
-     *
-     *
-     * @return void
-     */
-    public function failed(CacheService $cacheService)
-    {
-        $cacheService->setJudgeResult($this->key,['result'=>-1],100);
+        /**
+         * 要处理的失败任务。
+         *
+         *
+         * @return void
+         */
+        public
+        function failed(CacheService $cacheService)
+        {
+            $cacheService->setJudgeResult($this->key, ['result' => -1], 100);
+        }
     }
-}
