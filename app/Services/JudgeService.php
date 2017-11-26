@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use Illuminate\Support\Facades\DB;
 use Mockery\Exception;
 use NEUQOJ\Exceptions\Judge\JudgeServerNotExistException;
 use NEUQOJ\Exceptions\Judge\JudgeServerStatusErrorException;
@@ -19,11 +20,15 @@ class JudgeService
 {
     private $judgeServerRepo;
     private $cacheService;
+    private $solutionService;
+    private $userService;
 
-    public function __construct(JudgeServerRepository $judgeServerRepo, CacheService $cacheService)
+    public function __construct(JudgeServerRepository $judgeServerRepo, CacheService $cacheService, SolutionService $solutionService, UserService $userService)
     {
         $this->judgeServerRepo = $judgeServerRepo;
         $this->cacheService = $cacheService;
+        $this->userService = $userService;
+        $this->solutionService = $solutionService;
     }
 
     public function getAllJudgeServer()
@@ -172,7 +177,17 @@ class JudgeService
         ];
     }
 
-    public function getJudgeResult($solutionId){
-        return $this->cacheService->getJudgeResult($solutionId);
+    public function getJudgeResult($solutionId, $user)
+    {
+
+
+        $result = $this->cacheService->getJudgeResult($solutionId);
+
+        $result = json_decode($result);
+
+        if ($result != null) {
+
+        }
+        return $result;
     }
 }

@@ -72,7 +72,7 @@ class SolutionController extends Controller
 
         $data['solution_id'] = $data['id'];
         unset($data['id']);
-
+        unset($data['problemNum']);
         return response()->json([
             'code' => 0,
             'data' => $data

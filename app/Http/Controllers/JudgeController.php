@@ -132,7 +132,7 @@ class JudgeController extends Controller
     {
 
         //业务层先不加
-        $result = $this->judgeService->getJudgeResult($solutionId);
+        $result = $this->judgeService->getJudgeResult($solutionId,$request->user);
 
         if ($result == null)
             return response()->json([
@@ -141,7 +141,7 @@ class JudgeController extends Controller
 
             ]);
 
-        $result = json_decode($result);
+
 
         return response()->json([
             'code' => 0,

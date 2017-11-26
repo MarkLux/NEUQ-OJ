@@ -60,29 +60,28 @@ class SendJugdeRequest extends Job implements ShouldQueue
             'data' => $result['data']
         ];
 
+            $detail = $solutionService->getSolution($this->solutionId);
+            $user = $userService->getUserById($detail['user_id']);
+            if ($this->type == 2) {
 
+                if ($result->result == 4) {
+                    if (!$solutionService->isUserAc($detail['user_id'], $detail['problem_id'])) {
 
-        $user = $userService->getUserById($this->userId, ['id', 'submit', 'solved']);
-
-        if ($this->type == 2) {
-
-            if ($result['result'] == 4) {
-                if (!$solutionService->isUserAc($user->id, $this->problemId)) {
-                    $userService->updateUserById($user->id, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
+                        $userService->updateUserById($user, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
+                    } else {
+                        Redis
+                        $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
+                    }
                 } else {
                     $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
                 }
             } else {
-                $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
+                if ($this->type ==  1) {
+                    $userService->updateUserById($user->id, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
+                } else {
+                    $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
+                }
             }
-        } else if ($this->type == 1) {
-            if ($result['result'] == 4) {
-                $userService->updateUserById($user->id, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
-            } else {
-                $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
-            }
-        }
-
 
         $cacheService->setJudgeResult($this->key,$res,100);
 //        Redis::setex($this->key, 100, json_encode($res));
