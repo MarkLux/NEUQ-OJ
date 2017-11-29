@@ -55,12 +55,13 @@ class SendJugdeRequest extends Job implements ShouldQueue
      */
     public function handle(CacheService $cacheService, ProblemService $problemService, UserService $userService, SolutionService $solutionService)
     {
+        $cacheService->setJudgeResult($this->key, ['result' => -2,'data'=>'开始判题'], 100);
         $result = $problemService->submitProblem($this->solutionId, $this->problemId, $this->data, $this->problemNum);
         $res = [
             'result' => $result['result'],
             'data' => $result['data']
         ];
-
+        $cacheService->setJudgeResult($this->key, $res, 100);
         $detail = $solutionService->getSolution($this->solutionId);
         $user = $userService->getUserById($detail['user_id']);
         if ($this->type == 2) {
@@ -85,19 +86,18 @@ class SendJugdeRequest extends Job implements ShouldQueue
                 }
             }
 
-            $cacheService->setJudgeResult($this->key, $res, 100);
-//        Redis::setex($this->key, 100, json_encode($res));
-        }
 
-        /**
-         * 要处理的失败任务。
-         *
-         *
-         * @return void
-         */
-        public
-        function failed(CacheService $cacheService)
-        {
-            $cacheService->setJudgeResult($this->key, ['result' => -1], 100);
-        }
+//        Redis::setex($this->key, 100, json_encode($res));
     }
+
+    /**
+     * 要处理的失败任务。
+     *
+     *
+     * @return void
+     */
+    public function failed(CacheService $cacheService)
+    {
+        $cacheService->setJudgeResult($this->key, ['result' => -1,'data'=>'服务器异常'], 100);
+    }
+}
