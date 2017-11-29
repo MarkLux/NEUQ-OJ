@@ -306,7 +306,13 @@ class ContestService
                 $FKArray[$solution['problem_num']][0]=$solution['id'];
             }
         }
-        $FBArray['first_ac']=$FKArray;
+        $FCArray=[];
+
+        foreach ($FKArray as $key => $value)
+        {
+            $FCArray[$key]=$value[0];
+        }
+        $FBArray['first_ac']=$FCArray;
         if ($group == null || $group->type != 1)
             return false;
         //先检查是否存在缓存
@@ -322,6 +328,9 @@ class ContestService
                 } else {
                     usort($ranks, ['NEUQOJ\Common\Utils', 'rankCmpObj']);
                 }
+                $ranks=[
+                    'rank_data'=>$ranks
+                ];
                 $ranks=array_merge($ranks,$FBArray);
                 return $ranks;
             }
@@ -418,9 +427,10 @@ class ContestService
         } else {
             usort($rank, ['NEUQOJ\Common\Utils', 'rankCmpArr']);
         }
-
-
         $this->cacheService->setRankCache($cacheKey, $rank, 60);
+        $rank=[
+            'rank_data'=>$rank
+        ];
         $ranks=array_merge($rank,$FBArray);
         return $ranks;
 
