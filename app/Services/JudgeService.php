@@ -9,20 +9,26 @@
 namespace NEUQOJ\Services;
 
 
+use Illuminate\Support\Facades\DB;
 use Mockery\Exception;
 use NEUQOJ\Exceptions\Judge\JudgeServerNotExistException;
 use NEUQOJ\Exceptions\Judge\JudgeServerStatusErrorException;
 use NEUQOJ\Repository\Eloquent\JudgeServerRepository;
+use Redis;
 
 class JudgeService
 {
     private $judgeServerRepo;
     private $cacheService;
+    private $solutionService;
+    private $userService;
 
-    public function __construct(JudgeServerRepository $judgeServerRepo, CacheService $cacheService)
+    public function __construct(JudgeServerRepository $judgeServerRepo, CacheService $cacheService, SolutionService $solutionService, UserService $userService)
     {
         $this->judgeServerRepo = $judgeServerRepo;
         $this->cacheService = $cacheService;
+        $this->userService = $userService;
+        $this->solutionService = $solutionService;
     }
 
     public function getAllJudgeServer()
@@ -123,16 +129,16 @@ class JudgeService
         return $bestserver['server'];
     }
 
-    public function judge(array $data)
+    public function judge(array $data, $solutionId)
     {
         $server = $this->getBestServer();
         $serverURL = 'http://' . $server->host . ':' . $server->port . '/judge';
         try {
-            $result = \Requests::post($serverURL, ['token' => $server->rpc_token, 'Content-Type' => 'application/json'], json_encode($data),[
+            $result = \Requests::post($serverURL, ['token' => $server->rpc_token, 'Content-Type' => 'application/json'], json_encode($data), [
                 'timeout' => 20,
                 'connect_timeout' => 20
             ]);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             throw new JudgeServerStatusErrorException();
         }
         if ($result->success) {
@@ -153,12 +159,12 @@ class JudgeService
             $serverURL = "http://" . $judgeServer->host . ":" . $judgeServer->port;
             $exception = false;
             try {
-                $pong = \Requests::get($serverURL . '/sync?tid=' .$testcaseId, ['token' => $judgeServer->rpc_token]);
+                $pong = \Requests::get($serverURL . '/sync?tid=' . $testcaseId, ['token' => $judgeServer->rpc_token]);
             } catch (\Exception $e) {
                 $failed[] = $judgeServer->id;
                 $exception = true;
             }
-            if (!$exception&&$pong->status_code == 200) {
+            if (!$exception && $pong->status_code == 200) {
                 $pong = json_decode($pong->body);
                 if ($pong->code == 0) {
                     $succeed[] = $judgeServer->id;
@@ -169,5 +175,17 @@ class JudgeService
             'succeed' => $succeed,
             'failed' => $failed
         ];
+    }
+
+    public function getJudgeResult($solutionId, $user)
+    {
+
+
+        $result = $this->cacheService->getJudgeResult($solutionId);
+
+        $result = json_decode($result);
+
+
+        return $result;
     }
 }

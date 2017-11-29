@@ -15,6 +15,7 @@ use NEUQOJ\Exceptions\ProblemGroup\LanguageErrorException;
 use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\ProblemGroup\HomeworkNotAvailableException;
 use NEUQOJ\Exceptions\ProblemGroup\HomeworkNotExistException;
+use NEUQOJ\Jobs\SendJugdeRequest;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRelationRepository;
 use NEUQOJ\Repository\Eloquent\ProblemGroupRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
@@ -349,7 +350,10 @@ class HomeworkService
 
         $data['problem_group_id'] = $groupId;
 
-        return $this->problemService->submitProblem($relation->problem_id, $data, $relation->problem_num);
+//        return $this->problemService->submitProblem($relation->problem_id, $data, $relation->problem_num);
+
+        dispatch(new SendJugdeRequest($relation->problem_id,$data,$relation->problem_num,$userId));
+        return true;
     }
 
 }

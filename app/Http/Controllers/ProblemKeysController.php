@@ -40,11 +40,7 @@ class ProblemKeysController extends Controller
         $user = $request->user;
         //判断是否是出题人
 
-        $problem = $userService->getUserById($user->id);
 
-        if ($problem->creator_id != $user->id)
-            if (!Permission::checkPermission($request->user->id, ['create-problem-key']))
-                throw new NoPermissionException();
         //整合数据
 
         $data = [
@@ -112,10 +108,7 @@ class ProblemKeysController extends Controller
 
         $user = $request->user;
 
-        $problem = $userService->getUserById($user->id);
-        if ($problem->creator_id != $user->id)//判断是否是出题人
-            if (!Permission::checkPermission($request->user->id, ['update-problem-key']))
-                throw new NoPermissionException();
+
 
         $data = array(
             'title' => $request->title,
