@@ -57,9 +57,9 @@ class UserService implements UserServiceInterface
     public function getUserBy(string $param, $value, array $columns = ['*'])
     {
         $user = $this->userRepo->getBy($param, $value, $columns)->first();
-        if ($user == null)
-            throw new UserNotExistException();
-        else
+//        if ($user == null)
+//            throw new UserNotExistException();
+//        else
             return $user;
     }
 
@@ -181,7 +181,8 @@ class UserService implements UserServiceInterface
             //旧用户登录查找
             $user = $this->getUserBy('login_name', $data['identifier']);
         }
-
+        if ($user == null)
+            $user = $this->getUserBy('email', $data['identifier']."@acmclub.cn");
         if ($user == null)
             throw new UserNotExistException();
 
@@ -192,7 +193,6 @@ class UserService implements UserServiceInterface
 
         if (!Utils::pwCheck($data['password'], $user->password))
             throw new PasswordErrorException();
-
         return $user;
     }
 
