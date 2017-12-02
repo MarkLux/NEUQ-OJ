@@ -65,7 +65,6 @@ class AdminService implements AdminServiceInterface
         {
             $newUsers[$i]['password'] = $passwords[$i];
         }
-
         return $newUsers;
     }
 }
