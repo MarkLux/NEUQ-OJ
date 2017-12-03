@@ -107,7 +107,7 @@ class SolutionController extends Controller
 
         $solutionId = $request->solution;
 
-        $solution = $this->solutionService->getSolution($solutionId);
+        $solution = $this->solutionService->getRawSolution($solutionId);
         $sourceCode = $this->solutionService->getSourceCode($solutionId);
 
         if ($solution == null) {
