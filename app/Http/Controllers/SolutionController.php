@@ -101,7 +101,7 @@ class SolutionController extends Controller
 
     public function rejudgeSolution(Request $request)
     {
-        if (!Permission::checkPermission($request->user->id,['rejudge_solution'])) {
+        if (!Permission::checkPermission($request->user->id,['rejudge-solution'])) {
             throw new NoPermissionException();
         }
 

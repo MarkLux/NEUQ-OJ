@@ -40,6 +40,12 @@ class SolutionService
         return $this->solutionRepo->getSolution($solutionId)->first();
     }
 
+    public function getRawSolution(int $solutionId)
+    {
+        // 不join其他信息
+        return $this->solutionRepo->get($solutionId)->first();
+    }
+
     public function getSolutionBy(string $param, $value, array $columns = ['*'])
     {
         return $this->solutionRepo->getBy($param, $value, $columns);
