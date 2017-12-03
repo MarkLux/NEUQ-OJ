@@ -25,7 +25,7 @@ class SendJugdeRequest extends Job implements ShouldQueue
     protected $data;
     protected $problemNum;
     protected $userId;
-    protected $type;//1 contestService 2 problemService
+    protected $type;//1 contestService 2 problemService 3 rejudge
     protected $solutionId;
     protected $key;
 
@@ -55,7 +55,7 @@ class SendJugdeRequest extends Job implements ShouldQueue
      */
     public function handle(CacheService $cacheService, ProblemService $problemService, UserService $userService, SolutionService $solutionService)
     {
-        $cacheService->setJudgeResult($this->key, ['result' => -2,'data'=>'开始判题'], 100);
+        $cacheService->setJudgeResult($this->key, ['result' => -2, 'data' => '开始判题'], 100);
         $result = $problemService->submitProblem($this->solutionId, $this->problemId, $this->data, $this->problemNum);
         $res = [
             'result' => $result['result'],
@@ -65,7 +65,7 @@ class SendJugdeRequest extends Job implements ShouldQueue
         $detail = $solutionService->getSolution($this->solutionId);
         $user = $userService->getUserById($detail['user_id']);
         if ($this->type == 2) {
-
+            // 单次普通提交
             if ($result['result'] == 4) {
                 if (!$solutionService->isUserAc($detail['user_id'], $detail['problem_id'])) {
 
@@ -78,16 +78,20 @@ class SendJugdeRequest extends Job implements ShouldQueue
                 $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
             }
         } else if ($this->type == 1) {
-
-                if ($result['result'] == 4) {
-                    $userService->updateUserById($user->id, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
-                } else {
-                    $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
+            // 比赛提交
+            if ($result['result'] == 4) {
+                $userService->updateUserById($user->id, ['submit' => $user->submit + 1, 'solved' => $user->solved + 1]);
+            } else {
+                $userService->updateUserById($user->id, ['submit' => $user->submit + 1]);
+            }
+        } else if ($this->type == 3) {
+            // 重判
+            if ($result['result'] == 4) {
+                if (!$solutionService->isUserAc($detail['user_id'], $detail['problem_id'])) {
+                    $userService->updateUserById($user->id, ['solved' => $user->solved + 1]);
                 }
             }
-
-
-//        Redis::setex($this->key, 100, json_encode($res));
+        }
     }
 
     /**
@@ -98,6 +102,6 @@ class SendJugdeRequest extends Job implements ShouldQueue
      */
     public function failed(CacheService $cacheService)
     {
-        $cacheService->setJudgeResult($this->key, ['result' => -1,'data'=>'服务器异常'], 100);
+        $cacheService->setJudgeResult($this->key, ['result' => -1, 'data' => '服务器异常'], 100);
     }
 }
