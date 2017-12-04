@@ -412,11 +412,11 @@ class ContestService
                             $rank[$userCnt]['time'] += 1200 * $rank[$userCnt]['problem_wa_num'][$solution['problem_num']];
                     }
                     //如果已经ac过这个题目，不再考虑
-                } else if ($solution['result'] != 4)//错误
+                } else if ($solution['result'] != 4 && $solution['result'] != -1)//错误
                 {
-                    if (isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
+                    if (!isset($rank[$userCnt]['problem_ac_sec'][$solution['problem_num']])&&isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']]++;
-                    else
+                    else if (!isset($rank[$userCnt]['problem_ac_sec'][$solution['problem_num']])&&!isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
                     //是否应该判断题目已经ac，如果ac了可以考虑不再增加错误了（虽然对罚时没有影响）
                 }
