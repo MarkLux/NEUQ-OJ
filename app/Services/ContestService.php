@@ -586,7 +586,7 @@ class ContestService
         $Titles[0]=$Title;
 //        Excel部分
 //        制作Excel需要的数组数据
-        $ranks = $this->getRankList($contestId);
+        $ranks = $this->getRankList($contestId)['rank_data'];
         unset($ranks['first_ac']);
         $RANKID=1;
         foreach ($ranks as &$rank) {
