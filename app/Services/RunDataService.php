@@ -27,8 +27,6 @@ class RunDataService
     {
         $dirPath = Utils::getProblemDataPath($problemId);
 
-        dd($dirPath);
-
         if (!File::isDirectory($dirPath)) {
             throw new InnerError("Fail to get Problem Data");
         }
