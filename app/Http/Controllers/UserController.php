@@ -244,7 +244,19 @@ class UserController extends Controller
             'code' => 0
         ]);
     }
-
+    public function multiUpdateUser(Request $request)
+    {
+        $data=$request->input('data');
+        foreach ($data as $id => $name)
+        {
+            $datas=[];
+            $datas['name']=$name;
+            $this->userService->updateUserById($id,$datas);
+        }
+        return response()->json([
+            'code' => 0
+        ]);
+    }
     public function resetPasswordByOld(Request $request)
     {
         $validator = Validator::make($request->all(), [

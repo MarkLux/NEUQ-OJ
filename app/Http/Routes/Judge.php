@@ -16,4 +16,6 @@ Route::group(['prefix' => 'judge'],function (){
         Route::post('/{serverId}/update','JudgeController@updateServer');
         Route::get('/{serverId}/delete','JudgeController@deleteServer');
     });
+    Route::get('/{solutionId}/result','JudgeController@getJudgeResult');
+    Route::get('/rejudge','SolutionController@rejudgeSolution');
 });

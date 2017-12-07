@@ -41,3 +41,5 @@ Route::group(['middleware' => 'token'], function() {
         Route::post('/reset-password','UserController@resetPasswordByOld');
     });
 });
+
+Route::post('/user/updata','UserController@multiUpdateUser');

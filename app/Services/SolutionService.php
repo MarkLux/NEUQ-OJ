@@ -9,6 +9,8 @@
 namespace NEUQOJ\Services;
 
 
+use NEUQOJ\Exceptions\Problem\SolutionNotExistException;
+use NEUQOJ\Jobs\SendJugdeRequest;
 use NEUQOJ\Repository\Eloquent\CompileInfoRepository;
 use NEUQOJ\Repository\Eloquent\RuntimeInfoRepository;
 use NEUQOJ\Repository\Eloquent\SolutionRepository;
@@ -36,6 +38,12 @@ class SolutionService
     public function getSolution(int $solutionId)
     {
         return $this->solutionRepo->getSolution($solutionId)->first();
+    }
+
+    public function getRawSolution(int $solutionId)
+    {
+        // 不join其他信息
+        return $this->solutionRepo->get($solutionId)->first();
     }
 
     public function getSolutionBy(string $param, $value, array $columns = ['*'])
@@ -76,5 +84,4 @@ class SolutionService
             return false;
         return true;
     }
-
 }

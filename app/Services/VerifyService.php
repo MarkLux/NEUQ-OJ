@@ -56,8 +56,7 @@ class VerifyService implements VerifyServiceInterface
         $preVerifyCode = $this->verifyCodeRepo->getByMult(['user_id' => $user->id,'type' => 1,'via' => 1])->first();
 
         //没有，新建
-        if($preVerifyCode == null)
-        {
+        if($preVerifyCode == null) {
             if($this->verifyCodeRepo->insert($verifyCode)!=1) return false;
         }
         else

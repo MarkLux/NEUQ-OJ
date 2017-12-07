@@ -10,9 +10,11 @@ namespace NEUQOJ\Http\Controllers;
 
 use Illuminate\Support\Facades\Validator;
 use NEUQOJ\Exceptions\FormValidatorException;
+use NEUQOJ\Exceptions\NoPermissionException;
 use NEUQOJ\Exceptions\Problem\SolutionNotExistException;
 use Illuminate\Http\Request;
 use NEUQOJ\Facades\Permission;
+use NEUQOJ\Jobs\SendJugdeRequest;
 use NEUQOJ\Services\SolutionService;
 
 class SolutionController extends Controller
@@ -72,7 +74,7 @@ class SolutionController extends Controller
 
         $data['solution_id'] = $data['id'];
         unset($data['id']);
-
+        unset($data['problemNum']);
         return response()->json([
             'code' => 0,
             'data' => $data
@@ -92,4 +94,38 @@ class SolutionController extends Controller
             'data' => $sourceCode
         ]);
     }
+
+    /**
+     * 重判题目
+     */
+
+    public function rejudgeSolution(Request $request)
+    {
+        if (!Permission::checkPermission($request->user->id,['rejudge-solution'])) {
+            throw new NoPermissionException();
+        }
+
+        $solutionId = $request->solution;
+
+        $solution = $this->solutionService->getRawSolution($solutionId);
+        $sourceCode = $this->solutionService->getSourceCode($solutionId);
+
+        if ($solution == null) {
+            throw new SolutionNotExistException();
+        }
+
+        $solution = $solution->toArray();
+
+        $solution['source_code'] = $sourceCode->source;
+
+        $this->dispatch(new SendJugdeRequest($solutionId,$solution['problem_id'],$solution,$solution['problem_num'],$solution['user_id'],3));
+
+        return response()->json([
+            'code' => 0,
+            'data' => [
+                'solution_id' => $solutionId
+            ]
+        ]);
+    }
+
 }

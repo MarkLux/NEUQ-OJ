@@ -353,16 +353,8 @@ class ProblemService
 //            return false;
     }
 
-    /**
-     * 提交题目
-     */
 
-    public function submitProblem(int $problemId, array $data, int $problemNum = -1)
-    {
-        //写入solution和source_code
-        //插入顺序必须是先插入source_code获取id然后再给solution不然一定会编译错误。
-        //提交成功后返回solution_id否则返回0
-        //题目组中的题目插入时附带题目编号，默认-1
+    public function beforeSubmit(int $problemId, array $data, int $problemNum = -1){
 
         $problem = $this->problemRepo->get($problemId, ['id', 'time_limit', 'memory_limit', 'submit', 'accepted'])->first();
 
@@ -402,6 +394,57 @@ class ProblemService
             throw new InnerError("Fail to create solution");
         }
 
+        return $solutionId;
+    }
+    /**
+     * 提交题目
+     */
+
+    public function submitProblem($solutionId,int $problemId, array $data, int $problemNum = -1)
+    {
+        //写入solution和source_code
+        //插入顺序必须是先插入source_code获取id然后再给solution不然一定会编译错误。
+        //提交成功后返回solution_id否则返回0
+        //题目组中的题目插入时附带题目编号，默认-1
+
+        $problem = $this->problemRepo->get($problemId, ['id', 'time_limit', 'memory_limit', 'submit', 'accepted'])->first();
+
+        if ($problem == null) {
+            throw new ProblemNotExistException();
+        }
+//
+//        $code = [
+//            'source' => $data['source_code'],
+//            'private' => $data['private']
+//        ];
+//
+//        $solutionId = 0;
+//
+//        $solutionData = [
+//            'problem_id' => $problemId,
+//            'problem_num' => $problemNum,
+//            'problem_group_id' => $data['problem_group_id'],
+//            'user_id' => $data['user_id'],
+//            'ip' => $data['ip'],
+//            'language' => $data['language'],
+//            'result' => 0,
+//            'code_length' => $data['code_length']
+//        ];
+//
+//        //开启事务处理
+//
+//        DB::transaction(function () use (&$solutionId, $code, $solutionData) {
+//            $solutionId = $this->sourceRepo->insertWithId($code);
+//            $solutionData['id'] = $solutionId;
+//            $this->solutionRepo->insert($solutionData);
+//        });
+//
+//        // 开始判题
+//
+//        if ($solutionId == 0) {
+//            throw new InnerError("Fail to create solution");
+//        }
+
         if ($data['language'] == 2) {
             // 为java增加内存限制
             $problem->memory_limit *= 2;
@@ -413,13 +456,14 @@ class ProblemService
             'max_cpu_time' => $problem->time_limit * 1000,
             'max_memory' => $problem->memory_limit * 1024 * 1024,
             'test_case_id' => $problemId
-        ]);
+        ],$solutionId);
 
         if ($result == null || $result->code == -1 || $result->code == -3) {
             $this->solutionRepo->update(['result' => -1, 'judger' => $result->judgerName, 'judge_time' => Carbon::now()], $solutionId);
             return [
                 'result' => -1,
-                'data' => isset($result->data) ? $result->data : 'Unknown Error'
+                'data' => isset($result->data) ? $result->data : 'Unknown Error',
+                'solutionId'=>$solutionId
             ];
         } else if ($result->code == -2) {
             // 编译错误
@@ -430,6 +474,7 @@ class ProblemService
             return [
                 'result' => 2,
                 'data' => $result->data,
+                'solutionId'=>$solutionId
             ];
         } else {
             if (!empty($result->data->UnPassed)) {
@@ -442,7 +487,8 @@ class ProblemService
 
                 return [
                     'result' => 3,
-                    'data' => $result->data
+                    'data' => $result->data,
+                    'solutionId'=>$solutionId
                 ];
             } else {
                 // AC
@@ -454,7 +500,8 @@ class ProblemService
 
                 return [
                     'result' => 4,
-                    'data' => $result->data
+                    'data' => $result->data,
+                    'solutionId'=>$solutionId
                 ];
             }
         }

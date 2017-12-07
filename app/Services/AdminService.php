@@ -35,9 +35,14 @@ class AdminService implements AdminServiceInterface
         //生成登录用的邮箱
         for($i = 1;$i <= $num;$i++)
         {
-            $email = $prefix.($i<10?'0'.$i:$i).'@neuqoj.com';
-            $password = strtoupper(substr(MD5($prefix.($i<10?'0'.$i:$i).rand(0,9999999)),0,10));
-
+            $email = $prefix.($i<10?'0'.$i:$i).'@acmclub.cn';
+            $password = strtoupper(substr(MD5($prefix.($i<10?'0'.$i:$i).rand(0,9999999)),0,6));
+            //去除密码中的1,0,O,l,I
+            $password = str_replace('1','2',$password);
+            $password = str_replace('0','2',$password);
+            $password = str_replace('O','2',$password);
+            $password = str_replace('l','2',$password);
+            $password = str_replace('I','2',$password);
             $users[] = [
                 'email' => $email,
                 'password'=>Utils::pwGen($password),
@@ -60,7 +65,6 @@ class AdminService implements AdminServiceInterface
         {
             $newUsers[$i]['password'] = $passwords[$i];
         }
-
         return $newUsers;
     }
 }
