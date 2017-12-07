@@ -111,7 +111,7 @@ class Utils
 
     public static function getProblemDataPath(int $problemId): string
     {
-        return '/home/ubuntu/testcases/' . $problemId;
+        return config('judger.testcases_path') .'/'.$problemId;
 //        return '/Users/mark/TestCases/'.$problemId;
     }
 
