@@ -7,11 +7,5 @@
  */
 
 return [
-    'servers' => [
-        [
-            'user' => 'ubuntu',
-            'host' => 'marklux.cn',
-            'testcases_path' => '/home/ubuntu/testcases'
-        ],
-    ]
+    'testcases_path' => '/home/oj/testcases',
 ];

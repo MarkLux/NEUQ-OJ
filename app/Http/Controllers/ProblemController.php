@@ -68,14 +68,18 @@ class ProblemController extends Controller
         $page = $request->input('page', 1);
         $size = $request->input('size', 20);
 
-        $total_count = $this->problemService->getTotalPublicCount();
-
         $userId = -1;
         //检测用户登陆状态
         if (isset($request->user))
             $userId = $request->user->id;
 
-        if (!empty($total_count))
+        if (Permission::checkPermission($userId, ['access-any-problem'])) {
+            $totalCount = $this->problemService->getTotalCount();
+        }else {
+            $totalCount = $this->problemService->getTotalPublicCount();
+        }
+
+        if (!empty($totalCount))
             $data = $this->problemService->getProblems($userId, $page, $size);
         else
             $data = null;
@@ -84,7 +88,7 @@ class ProblemController extends Controller
             'code' => 0,
             'data' => [
                 'problems' => $data,
-                'total_count' => $total_count
+                'total_count' => $totalCount
             ]
         ]);
     }
@@ -265,13 +269,13 @@ class ProblemController extends Controller
 //        } else {
 //            $this->userService->updateUserById($request->user->id, ['submit' => $request->user->submit + 1]);
 //        }
-        $solutionId = $this->problemService->beforeSubmit($problemId,$data);
+        $solutionId = $this->problemService->beforeSubmit($problemId, $data);
         //判题队列调度
-        $this->dispatch(new SendJugdeRequest($solutionId,$problemId,$data,-1,$request->user->id,2));
+        $this->dispatch(new SendJugdeRequest($solutionId, $problemId, $data, -1, $request->user->id, 2));
 
         return response()->json([
             'code' => 0,
-            'data' => ['solutionId'=>$solutionId]
+            'data' => ['solutionId' => $solutionId]
 //            'data' => [
 //                'result_code' => $result['result'],
 //                'result_data' => $result['data']
