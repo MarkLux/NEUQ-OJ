@@ -416,7 +416,7 @@ class ContestService
                 {
                     if (!isset($rank[$userCnt]['problem_ac_sec'][$solution['problem_num']])&&isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']]++;
-                    else if (!isset($rank[$userCnt]['problem_ac_sec'][$solution['problem_num']])&&!isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
+                    else if (!isset($rank[$userCnt]['problem_wa_num'][$solution['problem_num']]))
                         $rank[$userCnt]['problem_wa_num'][$solution['problem_num']] = 1;
                     //是否应该判断题目已经ac，如果ac了可以考虑不再增加错误了（虽然对罚时没有影响）
                 }
