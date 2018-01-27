@@ -391,9 +391,9 @@ class ContestService
 
                 //刷新总时间，注意所有时间全部以秒级正整数方式保存
 
-                if ($solution['result'] == 4) {
-                    $rank[$userCnt]['time'] += (strtotime($solution['created_at']) - strtotime($group->start_time));
-                }
+               // if ($solution['result'] == 4) {
+                 //   $rank[$userCnt]['time'] += (strtotime($solution['created_at']) - strtotime($group->start_time));
+               // }
 
                 $userId = $solution['id'];//标记用户
             } else {
