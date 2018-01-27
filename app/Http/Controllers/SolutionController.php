@@ -24,7 +24,7 @@ class SolutionController extends Controller
     public function __construct(SolutionService $service)
     {
         $this->solutionService = $service;
-        $this->middleware('token');
+        $this->middleware('token')->except('getStatistics');
     }
 
     public function getSolutions(Request $request)
@@ -126,6 +126,19 @@ class SolutionController extends Controller
                 'solution_id' => $solutionId
             ]
         ]);
+    }
+
+    public function getStatistics(Request $request)
+    {
+        $days = $request->get('days',12);
+
+        if ($days > 30) {
+            $days = 30;
+        }
+
+        return response()->json(
+            $this->solutionService->getSolutionStatistics($days)
+        );
     }
 
 }

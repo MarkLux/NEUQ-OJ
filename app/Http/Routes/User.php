@@ -11,7 +11,7 @@
 Route::post('/user/register','UserController@register');
 Route::get('/user/register','UserController@getCaptcha');
 Route::post('/user/token/check','UserController@checkToken');
-Route::post('/user/login','UserController@login');
+Route::post('/user/login','UserController@login')->middleware('bucket:login');
 
 Route::get('/user/active','UserController@active');
 

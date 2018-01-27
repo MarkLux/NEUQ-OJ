@@ -15,3 +15,5 @@ Route::get('/status/compile-info/{id}','SolutionController@getCompileInfo');
 Route::get('/status/runtime-info/{id}','SolutionController@getRuntimeInfo');
 
 Route::get('/status/source-code/{id}','SolutionController@getSourceCode');
+
+Route::get('/status/statistics','SolutionController@getStatistics');

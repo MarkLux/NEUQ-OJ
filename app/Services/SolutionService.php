@@ -21,13 +21,16 @@ class SolutionService
 {
     private $solutionRepo;
     private $sourceCodeRepo;
+    private $cacheService;
 
     public function __construct(
-        SolutionRepository $solutionRepository, SourceCodeRepository $sourceCodeRepository
+        SolutionRepository $solutionRepository, SourceCodeRepository $sourceCodeRepository,
+        CacheService $cacheService
     )
     {
         $this->solutionRepo = $solutionRepository;
         $this->sourceCodeRepo = $sourceCodeRepository;
+        $this->cacheService = $cacheService;
     }
 
     public function getAllSolutions(int $page, int $size, array $condition)
@@ -83,5 +86,26 @@ class SolutionService
         if ($solution == null)
             return false;
         return true;
+    }
+
+    public function getSolutionStatistics(int $day)
+    {
+        if (!$this->cacheService->isCacheExist(CacheService::$STATISTIC_KEY)) {
+            // 缓存过期，重新设置
+            $stat = $this->solutionRepo->getSolutionStatistics($day);
+            $submits = [
+                'day' => $this->solutionRepo->getTodaySubmits(),
+                'week' => $this->solutionRepo->getThisWeekSubmits(),
+                'month' => $this->solutionRepo->getThisMonthSubmits()
+            ];
+            $data = [
+                'statistics' => $stat,
+                'submits' => $submits
+            ];
+            $this->cacheService->setStatisticCache($data,3600);
+            return $data;
+        }else {
+            return $this->cacheService->getStatisticCache();
+        }
     }
 }

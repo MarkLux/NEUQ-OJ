@@ -57,6 +57,7 @@ class Kernel extends HttpKernel
         'token' => \NEUQOJ\Http\Middleware\TokenMiddleware::class,
         'privilege' => \NEUQOJ\Http\Middleware\PrivilegeMiddleware::class,
         'admin' => \NEUQOJ\Http\Middleware\AdminMiddleware::class,
-        'user' => \NEUQOJ\Http\Middleware\UserMiddleware::class
+        'user' => \NEUQOJ\Http\Middleware\UserMiddleware::class,
+        'bucket' => \NEUQOJ\Http\Middleware\TokenBucketMiddleware::class
     ];
 }
