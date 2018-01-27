@@ -96,7 +96,7 @@ class SolutionRepository extends AbstractRepository
             ->get($columns);
     }
 
-    public function getContestStatus(int $userId, int $contestId, array $columns = ['*'])
+    public function getContestStatus(int $userId,int $contestId,array $columns = ['*'])
     {
         return $this->model
             ->where('user_id', $userId)
@@ -115,7 +115,7 @@ class SolutionRepository extends AbstractRepository
             ->select('users.id', 'users.name', 'solutions.result', 'solutions.created_at', 'solutions.pass_rate', 'solutions.problem_num')
             //注意时间的选择标准，judge_time是批量更新的，应该根据创建时间来排序
             ->orderBy('users.id', 'desc')
-            ->orderBy('solutions.created_at', 'desc')
+            ->orderBy('solutions.created_at','asc')
             ->get();
     }
 
