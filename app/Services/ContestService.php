@@ -249,7 +249,7 @@ class ContestService
     }
 
     //批量重置竞赛中的题目
-    public function updateContestProblem(int $contestId, array $problemIds): bool
+    public function updateContestProblem(int $contestId, array $problemIds,array $newPArray): bool
     {
         //重新组装题目
         $problems = [];
@@ -257,7 +257,7 @@ class ContestService
             $problems[] = ['problem_id' => $problemId, 'problem_score' => null];
         }
 
-        return $this->problemGroupService->updateProblems($contestId, $problems);
+        return $this->problemGroupService->updateProblems($contestId, $problems,$newPArray);
     }
 
     public function resetContestPassword(int $groupId, string $password): bool

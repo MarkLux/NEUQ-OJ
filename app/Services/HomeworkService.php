@@ -170,7 +170,7 @@ class HomeworkService
 
     public function updateHomeworkProblem(int $homeworkId, array $problems): bool
     {
-        return $this->problemGroupService->updateProblems($homeworkId, $problems);
+        return $this->problemGroupService->updateProblems($homeworkId, $problems,$newPArray=null);
     }
 
     public function deleteHomework(int $homeworkId): bool

@@ -400,7 +400,11 @@ class ContestController extends Controller
             'problem_ids' => 'required|array',
             'password' => 'required|string|min:6|max:20'
         ]);
-
+        $NPArray=$request->problem_ids;
+        $newPArray=[];
+        foreach ($NPArray as $key => $value){
+            $newPArray[$value]=$key;
+        }
         if ($validator->fails())
             throw new FormValidatorException($validator->getMessageBag()->all());
 
@@ -414,7 +418,7 @@ class ContestController extends Controller
         }
 
         //拿到的是所有题目id的集合
-        if (!$this->contestService->updateContestProblem($contestId, $request->problem_ids))
+        if (!$this->contestService->updateContestProblem($contestId, $request->problem_ids,$newPArray))
             throw new InnerError("Fail to update Problems in contest " . $contestId);
 
         return response()->json([

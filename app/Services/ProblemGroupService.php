@@ -137,7 +137,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         return !($problemGroup == null);
     }
 
-    public function updateProblems(int $groupId, array $problems): bool
+    public function updateProblems(int $groupId, array $problems,array $newPArray): bool
     {
         //更新整体的题目关系，problems数组要求是多维数组,带有title,如果没有score的话加上设定为null或者0，不能没有该索引
         //整体上看虽然逻辑比较清晰但是感觉设计不太合理，效率低
@@ -160,10 +160,12 @@ class ProblemGroupService implements ProblemGroupServiceInterface
         if (count($confirmProblemIds) != count($problemIds))//有 不存在的题目
             throw new ProblemNotExistException();
 
-        DB::transaction(function () use ($groupId, $problems) {
+        DB::transaction(function () use ($groupId, $problems, $newPArray) {
             //先把原来的solution中的num全部标记为-1（相当于删除）
             $this->solutionRepo->updateWhere(['problem_group_id' => $groupId], ['problem_num' => -1]);
-
+            foreach ($newPArray as $key => $value){
+                $this->solutionRepo->updateWhere(['problem_id'=>$key],['problem_num' => $value]);
+            }
             //删除原关系表
             $this->problemGroupRelationRepo->deleteWhere(['problem_group_id' => $groupId]);
 
@@ -175,6 +177,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
                 $this->problemGroupRelationRepo->updateWhere(['problem_group_id' => $groupId, 'problem_id' => $problem['problem_id']],
                     ['problem_num' => $problem['problem_num'], 'problem_score' => $problem['problem_score']]);
             }
+
         });
 
         return true;
