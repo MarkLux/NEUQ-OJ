@@ -277,7 +277,7 @@ class ContestService
     {
         $group = $this->problemGroupRepo->get($groupId, ['type', 'private'])->first();
         //同上
-        if ($group == null || $group->type != 1 || $group->private != 1)
+        if ($group == null || $group->type != 1 || $group->private != 2)
             return false;
 
         $users = [];
