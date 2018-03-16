@@ -136,9 +136,10 @@ class SolutionController extends Controller
             $days = 30;
         }
 
-        return response()->json(
-            $this->solutionService->getSolutionStatistics($days)
-        );
+        return response()->json([
+            'code' => 0,
+            'data' => $this->solutionService->getSolutionStatistics($days)
+        ]);
     }
 
 }
