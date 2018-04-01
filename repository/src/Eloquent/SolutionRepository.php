@@ -175,6 +175,22 @@ class SolutionRepository extends AbstractRepository
 
         $result = [];
 
+        $todaySubmit = $this->model
+            ->where('created_at', '>', $today . ' 00:00:00')
+            ->where('created_at', '<', $now->toDateTimeString())
+            ->count();
+        $todaySolved = $this->model
+            ->where('created_at', '>', $today . ' 00:00:00')
+            ->where('created_at', '<', $now->toDateTimeString())
+            ->where('result', 4)
+            ->count();
+
+        array_push($result, [
+            'date' => substr($today,4),
+            'submit' => $todaySubmit,
+            'solved' => $todaySolved
+        ]);
+
         for ($i = 0; $i < $days; $i++) {
 
             $thatDayStart = Carbon::createFromFormat('Y-m-d', $today)->subDays($i + 1);
@@ -195,22 +211,6 @@ class SolutionRepository extends AbstractRepository
                 'solved' => $solved
             ]);
         }
-
-        $todaySubmit = $this->model
-            ->where('created_at', '>', $today . ' 00:00:00')
-            ->where('created_at', '<', $now->toDateTimeString())
-            ->count();
-        $todaySolved = $this->model
-            ->where('created_at', '>', $today . ' 00:00:00')
-            ->where('created_at', '<', $now->toDateTimeString())
-            ->where('result', 4)
-            ->count();
-
-        array_push($result, [
-            'date' => substr($today,5),
-            'submit' => $todaySubmit,
-            'solved' => $todaySolved
-        ]);
 
         return $result;
     }
