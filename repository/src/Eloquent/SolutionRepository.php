@@ -96,7 +96,7 @@ class SolutionRepository extends AbstractRepository
             ->get($columns);
     }
 
-    public function getContestStatus(int $userId,int $contestId,array $columns = ['*'])
+    public function getContestStatus(int $userId, int $contestId, array $columns = ['*'])
     {
         return $this->model
             ->where('user_id', $userId)
@@ -115,7 +115,7 @@ class SolutionRepository extends AbstractRepository
             ->select('users.id', 'users.name', 'solutions.result', 'solutions.created_at', 'solutions.pass_rate', 'solutions.problem_num')
             //注意时间的选择标准，judge_time是批量更新的，应该根据创建时间来排序
             ->orderBy('users.id', 'desc')
-            ->orderBy('solutions.created_at','asc')
+            ->orderBy('solutions.created_at', 'asc')
             ->get();
     }
 
@@ -141,8 +141,8 @@ class SolutionRepository extends AbstractRepository
         $startTime = Carbon::create($now->year, $now->month, $now->day, 0, 0, 0);
 
         return $this->model
-            ->where('created_at', '<' ,$now->toDateTimeString())
-            ->where('created_at', '>',  $startTime->toDateTimeString())
+            ->where('created_at', '<', $now->toDateTimeString())
+            ->where('created_at', '>', $startTime->toDateTimeString())
             ->count();
     }
 
@@ -152,8 +152,8 @@ class SolutionRepository extends AbstractRepository
         $startTime = Carbon::now()->startOfWeek();
 
         return $this->model
-            ->where('created_at', '<' ,$now->toDateTimeString())
-            ->where('created_at', '>',  $startTime->toDateTimeString())
+            ->where('created_at', '<', $now->toDateTimeString())
+            ->where('created_at', '>', $startTime->toDateTimeString())
             ->count();
     }
 
@@ -163,8 +163,8 @@ class SolutionRepository extends AbstractRepository
         $startTime = Carbon::now()->startOfMonth();
 
         return $this->model
-            ->where('created_at', '<' ,$now->toDateTimeString())
-            ->where('created_at', '>',  $startTime->toDateTimeString())
+            ->where('created_at', '<', $now->toDateTimeString())
+            ->where('created_at', '>', $startTime->toDateTimeString())
             ->count();
     }
 
@@ -177,37 +177,40 @@ class SolutionRepository extends AbstractRepository
 
         for ($i = 0; $i < $days; $i++) {
 
-            $thatDayStart = Carbon::createFromFormat('Y-m-d',$today)->subDays($i+1);
-            $thatDayEnd = Carbon::createFromFormat('Y-m-d',$today)->subDays($i);
+            $thatDayStart = Carbon::createFromFormat('Y-m-d', $today)->subDays($i + 1);
+            $thatDayEnd = Carbon::createFromFormat('Y-m-d', $today)->subDays($i);
             $submit = $this->model
-                ->where('created_at', '<' ,$thatDayEnd->toDateTimeString())
-                ->where('created_at', '>',  $thatDayStart->toDateTimeString())
+                ->where('created_at', '<', $thatDayEnd->toDateTimeString())
+                ->where('created_at', '>', $thatDayStart->toDateTimeString())
                 ->count();
             $solved = $this->model
-                ->where('created_at', '<' ,$thatDayEnd->toDateTimeString())
-                ->where('created_at', '>',  $thatDayStart->toDateTimeString())
-                ->where('result',4)
+                ->where('created_at', '<', $thatDayEnd->toDateTimeString())
+                ->where('created_at', '>', $thatDayStart->toDateTimeString())
+                ->where('result', 4)
                 ->count();
-            $result[$thatDayStart->format("Y-m-d")] = [
+
+            array_push($result, [
+                'date' => $thatDayStart->format("Y-m-d"),
                 'submit' => $submit,
                 'solved' => $solved
-            ];
+            ]);
         }
 
         $todaySubmit = $this->model
-            ->where('created_at','>',$today.' 00:00:00')
-            ->where('created_at','<',$now->toDateTimeString())
+            ->where('created_at', '>', $today . ' 00:00:00')
+            ->where('created_at', '<', $now->toDateTimeString())
             ->count();
         $todaySolved = $this->model
-            ->where('created_at','>',$today.' 00:00:00')
-            ->where('created_at','<',$now->toDateTimeString())
-            ->where('result',4)
+            ->where('created_at', '>', $today . ' 00:00:00')
+            ->where('created_at', '<', $now->toDateTimeString())
+            ->where('result', 4)
             ->count();
 
-        $result[$today] = [
+        array_push($result, [
+            'date' => $today,
             'submit' => $todaySubmit,
             'solved' => $todaySolved
-        ];
+        ]);
 
         return $result;
     }
