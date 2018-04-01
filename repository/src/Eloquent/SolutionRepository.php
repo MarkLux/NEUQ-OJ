@@ -171,7 +171,7 @@ class SolutionRepository extends AbstractRepository
     public function getSolutionStatistics(int $days)
     {
         $now = Carbon::now();
-        $today = Carbon::create($now->year, $now->month, $now->day, 0, 0, 0)->format("m-d");
+        $today = Carbon::create($now->year, $now->month, $now->day, 0, 0, 0)->toDateString();
 
         $result = [];
 
@@ -207,7 +207,7 @@ class SolutionRepository extends AbstractRepository
             ->count();
 
         array_push($result, [
-            'date' => substr($today,4),
+            'date' => substr($today,5),
             'submit' => $todaySubmit,
             'solved' => $todaySolved
         ]);

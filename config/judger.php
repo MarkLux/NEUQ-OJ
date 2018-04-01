@@ -7,5 +7,5 @@
  */
 
 return [
-    'testcases_path' => '/home/oj/testcases',
+    'testcases_path' => '/home/judge/testcases',
 ];
