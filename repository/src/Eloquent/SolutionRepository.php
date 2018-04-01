@@ -190,7 +190,7 @@ class SolutionRepository extends AbstractRepository
                 ->count();
 
             array_push($result, [
-                'date' => $thatDayStart->format("Y-m-d"),
+                'date' => $thatDayStart->format("m-d"),
                 'submit' => $submit,
                 'solved' => $solved
             ]);
@@ -207,7 +207,7 @@ class SolutionRepository extends AbstractRepository
             ->count();
 
         array_push($result, [
-            'date' => $today,
+            'date' => substr($today,4),
             'submit' => $todaySubmit,
             'solved' => $todaySolved
         ]);
