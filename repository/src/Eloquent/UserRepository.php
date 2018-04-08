@@ -40,24 +40,26 @@ class UserRepository extends AbstractRepository
         {
             $st = $size * ($page -1);
 
-	    $sql = "
+            $sql = "
             select s.solved,t.submit,s.user_id,users.name from (
 	        select count(distinct problem_id) solved, user_id 
 	        from solutions 
 	        where created_at > str_to_date('$startDate','%Y-%m-%d') 
 	        and result=4
 	        group by user_id
-	        limit ".$st.",".$size."
+	        order by solved
+	        limit " . $st . "," . $size . "
 	        ) s left join (
 	        select count(problem_id) submit, user_id 
 	        from solutions 
 	        where created_at > str_to_date('$startDate','%Y-%m-%d') 
 	        group by user_id
-	        limit ".$st.",".($size*2)."
 	        ) t on s.user_id = t.user_id
             left join users on t.user_id = users.id
-            ORDER BY s.`solved` DESC,t.submit,created_at  LIMIT  0,50
-	   ";	    
+            ORDER BY s.solved DESC,t.submit,created_at  LIMIT  0,50
+	        ";
+
+	        // 这个sql在提交量非常巨大的时候可能会很缓慢，不行就加缓存
 
             return DB::select(DB::raw($sql));
         }
