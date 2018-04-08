@@ -40,13 +40,24 @@ class UserRepository extends AbstractRepository
         {
             $st = $size * ($page -1);
 
-            $sql = "SELECT users.`id`,`name`,s.`solved`,t.`submit` FROM `users`
-                                        right join
-                                        (select count(distinct problem_id) solved ,user_id from solutions where created_at>str_to_date('$startDate','%Y-%m-%d') and result=4 group by user_id order by solved desc limit " . $st . ",$size) s on users.id=s.user_id
-                                        left join
-                                        (select count( problem_id) submit ,user_id from solutions where created_at>str_to_date('$startDate','%Y-%m-%d') group by user_id order by submit desc limit " .$st. ",".($size*2).") t on users.id=t.user_id
-                                ORDER BY s.`solved` DESC,t.submit,created_at  LIMIT  0,50
-                         ";
+	    $sql = "
+            select s.solved,t.submit,s.user_id,users.name from (
+	        select count(distinct problem_id) solved, user_id 
+	        from solutions 
+	        where created_at > str_to_date('$startDate','%Y-%m-%d') 
+	        and result=4
+	        group by user_id
+	        limit ".$st.",".$size."
+	        ) s left join (
+	        select count(problem_id) submit, user_id 
+	        from solutions 
+	        where created_at > str_to_date('$startDate','%Y-%m-%d') 
+	        group by user_id
+	        limit ".$st.",".($size*2)."
+	        ) t on s.user_id = t.user_id
+            left join users on t.user_id = users.id
+            ORDER BY s.`solved` DESC,t.submit,created_at  LIMIT  0,50
+	   ";	    
 
             return DB::select(DB::raw($sql));
         }
