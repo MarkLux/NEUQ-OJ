@@ -47,7 +47,7 @@ class UserRepository extends AbstractRepository
 	        where created_at > str_to_date('$startDate','%Y-%m-%d') 
 	        and result=4
 	        group by user_id
-	        order by solved
+	        order by solved desc
 	        limit " . $st . "," . $size . "
 	        ) s left join (
 	        select count(problem_id) submit, user_id 
