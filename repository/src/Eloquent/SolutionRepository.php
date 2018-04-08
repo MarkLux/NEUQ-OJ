@@ -186,7 +186,7 @@ class SolutionRepository extends AbstractRepository
             ->count();
 
         array_push($result, [
-            'date' => substr($today,4),
+            'date' => substr($today,5),
             'submit' => $todaySubmit,
             'solved' => $todaySolved
         ]);
@@ -211,7 +211,7 @@ class SolutionRepository extends AbstractRepository
                 'solved' => $solved
             ]);
         }
-
+	
         return $result;
     }
 }
