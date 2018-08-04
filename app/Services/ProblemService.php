@@ -448,6 +448,7 @@ class ProblemService
         if ($data['language'] == 2) {
             // 为java增加内存限制
             $problem->memory_limit *= 2;
+	    $problem->time_limit*=2;
         }
 
         $result = $this->judgeService->judge([
