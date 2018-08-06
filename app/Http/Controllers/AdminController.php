@@ -16,10 +16,22 @@ use NEUQOJ\Services\UserService;
 class AdminController extends Controller
 {
     private $adminService;
-
-    public function __construct(AdminService $adminService)
+    private $userService;
+    public function __construct(AdminService $adminService,UserService $userService)
     {
         $this->adminService = $adminService;
+        $this->userService = $userService;
+    }
+
+    public function changeUserPassword(Request $request){
+        $identifier=$request->identifier;
+        $password = $request->password;
+        $userId=$this->userService->getUserId($identifier);
+        $this->adminService->changeUserPassword($userId,$password);
+        return response()->json([
+            'code'=>1000,
+            'message'=>'密码修改成功'
+        ]);
     }
 
     public function lockUser(UserService $userService, $id)

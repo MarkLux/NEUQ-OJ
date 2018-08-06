@@ -37,12 +37,12 @@ class RoleService implements RoleServiceInterface
     public function hasRole(int $userId,string $role):bool
     {
 
-        $arr = $this->UserRoleRepo->getBy('user_id',$userId,['role_id']);
-        $roleId = $this->RoleRepo->getBy('name',$role,['id'])->first();
-
+//        $arr = $this->UserRoleRepo->getBy('user_id',$userId,['role_id']);
+//        $roleId = $this->RoleRepo->getBy('name',$role,['id'])->first();
+        $arr = $this->UserRoleRepo->getBy('user_id',$userId,['role_name']);
 
         foreach ($arr as $item) {
-            if($item['role_id'] ==$roleId)
+            if($item['role_name'] ==$role)
                 return true;
         }
 

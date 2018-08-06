@@ -13,6 +13,7 @@ Route::group(['middleware' => 'token'], function () {
     ], function () {
         Route::get('/lock/{id}', 'AdminController@lockUser');
         Route::get('/unlock/{id}', 'AdminController@unlockUser');
+        Route::post('/password/change','AdminController@changeUserPassword');
     });
 
     Route::post('/news/create','NewsController@addNews');

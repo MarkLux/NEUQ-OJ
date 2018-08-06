@@ -169,7 +169,21 @@ class UserService implements UserServiceInterface
 
         return $id;
     }
-
+    public function getUserId($identifier){
+        if (Utils::IsMobile($identifier)) {
+            $user = $this->getUserBy('mobile', $identifier);
+        } elseif (Utils::IsEmail($identifier)) {
+            $user = $this->getUserBy('email', $identifier);
+        } else {
+            //旧用户登录查找
+            $user = $this->getUserBy('login_name', $identifier);
+        }
+        if ($user == null)
+            $user = $this->getUserBy('email', $identifier."@acmclub.cn");
+        if ($user == null)
+            throw new UserNotExistException();
+        return $user->id;
+    }
     public function login(array $data)
     {
         //正则判断登录名类型

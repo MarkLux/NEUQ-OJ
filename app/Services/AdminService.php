@@ -9,6 +9,7 @@
 namespace NEUQOJ\Services;
 
 
+use Illuminate\Support\Facades\DB;
 use NEUQOJ\Common\Utils;
 use NEUQOJ\Repository\Eloquent\UserRepository;
 use NEUQOJ\Services\Contracts\AdminServiceInterface;
@@ -66,5 +67,13 @@ class AdminService implements AdminServiceInterface
             $newUsers[$i]['password'] = $passwords[$i];
         }
         return $newUsers;
+    }
+
+    public function changeUserPassword($userId,$newPassword){
+        DB::table('users')
+            ->where('id','=',$userId)
+            ->update([
+                'password'=>Utils::pwGen($newPassword)
+            ]);
     }
 }
