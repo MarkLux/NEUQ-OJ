@@ -29,7 +29,7 @@ class AdminController extends Controller
         $userId=$this->userService->getUserId($identifier);
         $this->adminService->changeUserPassword($userId,$password);
         return response()->json([
-            'code'=>1000,
+            'code'=>'0',
             'message'=>'密码修改成功'
         ]);
     }
