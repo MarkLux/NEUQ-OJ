@@ -29,7 +29,7 @@ class AdminController extends Controller
         $userId=$this->userService->getUserId($identifier);
         $this->adminService->changeUserPassword($userId,$password);
         return response()->json([
-            'code'=>'0',
+            'code'=>0,
             'message'=>'密码修改成功'
         ]);
     }
@@ -38,7 +38,7 @@ class AdminController extends Controller
     {
         if ($userService->lockUser($id))
             return response()->json([
-                'code' => '0'
+                'code' => 0
             ]);
     }
 
@@ -46,7 +46,7 @@ class AdminController extends Controller
     {
         if ($userService->unlockUser($id))
             return response()->json([
-                'code' => '0'
+                'code' => 0
             ]);
     }
 
