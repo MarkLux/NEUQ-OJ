@@ -399,8 +399,35 @@ class ProblemService
     /**
      * 提交题目
      */
+    public function getCodePrior($code)
+    {
+        if ($code == 5) {
+            return 0;
+        }
+        switch ($code) {
+            case 4:
+                $result = 1;
+                break;
+            case 1:
+                $result = 2;
+                break;
+            case 2:
+                $result = 2;
+                break;
+            case 3:
+                $result = 3;
+                break;
+            case -1:
+                $result = 4;
+                break;
+            default :
+                $result = 0;
+                break;
+        }
+        return $result;
+    }
 
-    public function submitProblem($solutionId,int $problemId, array $data, int $problemNum = -1)
+    public function submitProblem($solutionId, int $problemId, array $data, int $problemNum = -1)
     {
         //写入solution和source_code
         //插入顺序必须是先插入source_code获取id然后再给solution不然一定会编译错误。
@@ -448,7 +475,7 @@ class ProblemService
         if ($data['language'] == 2) {
             // 为java增加内存限制
             $problem->memory_limit *= 2;
-	    $problem->time_limit*=2;
+            $problem->time_limit *= 2;
         }
 
         $result = $this->judgeService->judge([
@@ -457,14 +484,13 @@ class ProblemService
             'max_cpu_time' => $problem->time_limit * 1000,
             'max_memory' => $problem->memory_limit * 1024 * 1024,
             'test_case_id' => $problemId
-        ],$solutionId);
-
+        ], $solutionId);
         if ($result == null || $result->code == -1 || $result->code == -3) {
             $this->solutionRepo->update(['result' => -1, 'judger' => $result->judgerName, 'judge_time' => Carbon::now()], $solutionId);
             return [
                 'result' => -1,
                 'data' => isset($result->data) ? $result->data : 'Unknown Error',
-                'solutionId'=>$solutionId
+                'solutionId' => $solutionId
             ];
         } else if ($result->code == -2) {
             // 编译错误
@@ -475,21 +501,51 @@ class ProblemService
             return [
                 'result' => 2,
                 'data' => $result->data,
-                'solutionId'=>$solutionId
+                'solutionId' => $solutionId
             ];
         } else {
             if (!empty($result->data->UnPassed)) {
                 // 有错误
-                DB::transaction(function () use ($solutionId, $problem, $result) {
+
+                //设为10方便表示，表示未被被赋值
+                $prResult = 10;
+                foreach ($result->data->UnPassed as $res) {
+                    if ($this->getCodePrior($res->Result)<$prResult){
+                        $prResult = $res->Result;
+                    }
+                }
+                switch ($prResult){
+                    case 5:
+                        $total_result = -1;
+                        break;
+                    case 4:
+                        $total_result = 5;
+                        break;
+                    case 1:
+                        $total_result = 6;
+                        break;
+                    case 2:
+                        $total_result = 6;
+                        break;
+                    case 3:
+                        $total_result = 7;
+                        break;
+                    case -1:
+                        $total_result = 8;
+                        break;
+                    default :
+                        $total_result = -1;
+                        break;
+                }
+                DB::transaction(function () use ($solutionId, $problem, $result,$total_result) {
                     $passRate = floatval(count($result->data->Passed) / (count($result->data->Passed) + count($result->data->UnPassed)));
-                    $this->solutionRepo->update(['result' => 3, 'judger' => $result->judgerName, 'pass_rate' => $passRate, 'judge_time' => Carbon::now()], $solutionId);
+                    $this->solutionRepo->update(['result' => $total_result, 'judger' => $result->judgerName, 'pass_rate' => $passRate, 'judge_time' => Carbon::now()], $solutionId);
                     $this->problemRepo->update(['submit' => $problem->submit + 1], $problem->id);
                 });
-
                 return [
-                    'result' => 3,
+                    'result' => $total_result,
                     'data' => $result->data,
-                    'solutionId'=>$solutionId
+                    'solutionId' => $solutionId
                 ];
             } else {
                 // AC
@@ -502,7 +558,7 @@ class ProblemService
                 return [
                     'result' => 4,
                     'data' => $result->data,
-                    'solutionId'=>$solutionId
+                    'solutionId' => $solutionId
                 ];
             }
         }
