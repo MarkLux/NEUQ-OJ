@@ -164,7 +164,7 @@ class ProblemGroupService implements ProblemGroupServiceInterface
             //先把原来的solution中的num全部标记为-1（相当于删除）
             $this->solutionRepo->updateWhere(['problem_group_id' => $groupId], ['problem_num' => -1]);
             foreach ($newPArray as $key => $value){
-                $this->solutionRepo->updateWhere(['problem_id'=>$key],['problem_num' => $value]);
+                $this->solutionRepo->updateWhere(['problem_group_id' => $groupId,'problem_id'=>$key],['problem_num' => $value]);
             }
             //删除原关系表
             $this->problemGroupRelationRepo->deleteWhere(['problem_group_id' => $groupId]);

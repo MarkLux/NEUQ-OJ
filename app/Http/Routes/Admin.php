@@ -25,3 +25,6 @@ Route::group(['middleware' => 'token'], function () {
 
     Route::post('/admin/users/generate/prefix','AdminController@generateUsersByPrefix');
 });
+
+
+Route::get('/hantest','TestController@fixBigBug');
