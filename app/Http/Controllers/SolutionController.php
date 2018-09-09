@@ -44,12 +44,12 @@ class SolutionController extends Controller
         $page = $request->input('page', 1);
         $size = $request->input('size', 20);
         $problemId = $request->input('problem_id', -1);
-        $result = $request->input('result', -1);
+        $result = $request->input('result', -5);
         $language = $request->input('language', -1);
 
         $condition = [];
         if ($problemId != -1) $condition['problem_id'] = $problemId;
-        if ($result != -1) $condition['result'] = $result;
+        if ($result != -5) $condition['result'] = $result;
         if ($language != -1) $condition['language'] = $language;
 
 
